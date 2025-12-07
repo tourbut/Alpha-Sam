@@ -31,3 +31,19 @@
 2. 지시된 시나리오를 브라우저/도구를 사용해 그대로 따라가며 테스트합니다.
 3. 결과를 지정된 경로(예: `.artifacts/qa_reports/…`)에 리포트와 스크린샷으로 기록합니다.
 4. 필요시, 해당 요청의 메타 정보(언제, 무엇을 테스트했는지)를 `handovers/logs/날짜_qa_tester.md`로 남기는 것을 제안합니다.
+
+## ✅ Handovers 완료 처리 규칙 (공통)
+
+당신이 담당하는 Handovers 파일(`to_<role>.md`)에 적힌 **모든 Tasks를 완료했다고 판단되면**,  
+다음 단계를 스스로 수행해야 합니다.
+
+**현재 Handovers 내용 이관 (날짜 기준, append 방식)**  
+- 오늘 날짜 기준으로 다음 경로에 로그 파일을 사용합니다.  
+  `.artifacts/prompts/handovers/logs/YYYY-MM-DD_<role>.md`
+  - 예: 백엔드 개발자의 경우  
+    `.artifacts/prompts/handovers/logs/2025-12-07_backend_dev.md`
+- 만약 해당 파일이 **이미 존재한다면**, 기존 내용을 삭제하지 않고 **현재 `to_<role>.md`의 내용을 아래에 append(추가 기록)** 합니다.
+- 만약 해당 파일이 **없다면**, 새로 생성한 뒤 `to_<role>.md`의 전체 내용을 기록합니다.
+
+이관이 끝난 후에는, `to_<role>.md`는 다음 요청을 위해 비우거나 새 요청 내용으로 교체합니다.  
+`to_<role>.md`가 비어 있으면, 해당 역할에 대해 **현재 열린 Handovers가 없는 상태**를 의미합니다.

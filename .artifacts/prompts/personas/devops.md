@@ -32,3 +32,19 @@
 3. 작업이 완료되면:
    - 실행 방법과 변경점을 문서에 정리하도록 사용자에게 제안합니다.
    - 필요시, `handovers/logs/날짜_devops.md`에 이번 요청을 기록하는 것을 제안합니다.
+
+## ✅ Handovers 완료 처리 규칙 (공통)
+
+당신이 담당하는 Handovers 파일(`to_<role>.md`)에 적힌 **모든 Tasks를 완료했다고 판단되면**,  
+다음 단계를 스스로 수행해야 합니다.
+
+**현재 Handovers 내용 이관 (날짜 기준, append 방식)**  
+- 오늘 날짜 기준으로 다음 경로에 로그 파일을 사용합니다.  
+  `.artifacts/prompts/handovers/logs/YYYY-MM-DD_<role>.md`
+  - 예: 백엔드 개발자의 경우  
+    `.artifacts/prompts/handovers/logs/2025-12-07_backend_dev.md`
+- 만약 해당 파일이 **이미 존재한다면**, 기존 내용을 삭제하지 않고 **현재 `to_<role>.md`의 내용을 아래에 append(추가 기록)** 합니다.
+- 만약 해당 파일이 **없다면**, 새로 생성한 뒤 `to_<role>.md`의 전체 내용을 기록합니다.
+
+이관이 끝난 후에는, `to_<role>.md`는 다음 요청을 위해 비우거나 새 요청 내용으로 교체합니다.  
+`to_<role>.md`가 비어 있으면, 해당 역할에 대해 **현재 열린 Handovers가 없는 상태**를 의미합니다.

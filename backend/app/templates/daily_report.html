@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .header {
+            background-color: #f4f4f4;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .stats {
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        .footer {
+            font-size: 0.8em;
+            text-align: center;
+            color: #888;
+            margin-top: 20px;
+        }
+
+        .positive {
+            color: green;
+        }
+
+        .negative {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Daily Portfolio Report</h2>
+            <p>{{ date_str }}</p>
+        </div>
+        <div class="content">
+            <p>Hello, <strong>{{ user_nickname }}</strong>!</p>
+            <p>Here is your daily portfolio summary:</p>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="label">Total Valuation:</span> ${{ total_valuation }}
+                </div>
+                <div class="stat-item">
+                    <span class="label">Total Profit/Loss:</span>
+                    <span class="{% if is_positive %}positive{% else %}negative{% endif %}">${{ total_profit_loss
+                        }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Return Rate:</span>
+                    <span class="{% if is_positive %}positive{% else %}negative{% endif %}">{{ return_rate }}%</span>
+                </div>
+            </div>
+
+            <p>Check your full portfolio <a href="http://localhost:80">here</a>.</p>
+        </div>
+        <div class="footer">
+            <p>Alpha-Sam Asset Dashboard</p>
+        </div>
+    </div>
+</body>
+
+</html>

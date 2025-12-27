@@ -52,6 +52,9 @@
 - [2025-12-24 14:00:00] **Price Alert Rate Limiting**
     - **Decision**: Redis Key `alert:{user_id}:{asset_id}:{date}` 활용하여 1일 1회 제한.
     - **Reason**: 급격한 변동 장세에서 스팸성 알림 폭탄 방지 (User Experience).
+- [2025-12-27 11:35:00] **v0.8.0 Auth Strategy: Hybrid Mode**
+    - **Decision**: `FastAPI-Users` 도입 시 Phase 1(Hybrid)과 Phase 2(Strict)로 나누어 진행.
+    - **Reason**: 기존 `X-User-Id` 사용 코드/테스트의 급격한 중단을 방지하고, 점진적 마이그레이션을 통해 안정성 확보.
 
 ## 4. Current Status & Roadmap
 

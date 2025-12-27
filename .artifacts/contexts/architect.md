@@ -65,6 +65,12 @@
 - **Task**: `X-User-Id` 제거 및 JWT Auth 도입.
 - **Plan**: `FastAPI Users` 라이브러리 활용하여 표준화된 인증 흐름 구축.
 
+### Decisions
+- [2025-12-27 22:10:00] **Adoption of FastAPI Users**
+    - **Decision**: 직접 구현 대신 `fastapi-users` 라이브러리 채택.
+    - **Reason**: 보안 모범 사례(Oauth2, Hashing)가 내장되어 있고, 소규모 팀에서 인증 로직 유지보수 비용을 최소화하기 위함.
+    - **Ref**: `v0.8.0_implementation_plan.md`
+
 ## 5. Handovers
 - [2025-12-27 10:45:00] **Architect -> Backend**: `owner_id` 누락 없는지 CRUD 코드 리뷰 강화 요청.
 - [2025-12-27 10:45:00] **Architect -> Frontend**: API 호출 시 User Context 전달 방식(Header vs Token) 변경 대비.

@@ -16,16 +16,23 @@
     - [x] Verify Market Data API
     - [x] Verify Frontend Dashboard Loading
 
-- [/] **Plan v0.7.0 (Multi-tenancy & Notifications)**
+- [x] **Plan v0.7.0 (Multi-tenancy & Notifications)**
     - [x] **Architect**: Design v0.7.0 Specs
         - [x] DB Schema (Multi-tenancy)
         - [x] Email Notification Architecture
         - [x] Write `.artifacts/docs/v0.7.0_specs.md`
     - [x] **Backend**: Plan Implementation
-    - [ ] **Frontend**: Plan UI Changes
+    - [x] **Frontend**: Plan UI Changes
 
-- [ ] **Implement v0.7.0**
+- [x] **Implement v0.7.0**
     - [x] **Backend**: DB Schema Migration (trans/pos owner_id)
     - [x] **Backend**: Email Service & Celery Setup
     - [x] **Backend**: Implement Notification Logic
-    - [ ] **Frontend**: User Portfolio View
+    - [x] **Frontend**: User Portfolio View
+
+- [/] **Plan v0.8.0 (Authentication)**
+    - [x] **Architect**: Design v0.8.0 Auth Specs (`v0.8.0_implementation_plan.md`)
+    - [ ] **Backend**: Research FastAPI Users & JWT
+    - [ ] **Frontend**: Research SvelteKit Auth & UI wireframes
+    - [ ] **QA**: Create v0.8.0 Test Plan
+    - [ ] **DevOps**: Verify Email/Auth Infrastructure

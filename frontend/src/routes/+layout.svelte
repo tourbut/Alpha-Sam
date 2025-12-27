@@ -14,6 +14,7 @@
   import { auth } from "$lib/stores/auth";
   import { Button } from "flowbite-svelte";
   import { goto } from "$app/navigation";
+  import { browser } from "$app/environment";
 
   let hidden = true; // Mobile menu hidden by default
   function toggle() {
@@ -24,11 +25,19 @@
     auth.initialize();
   });
 
+  $: if (browser && !$auth.isAuthenticated) {
+    const publicRoutes = ["/login", "/signup"];
+    // Simple check. In real app, might want match logic or use layout groups.
+    if (!publicRoutes.includes($page.url.pathname)) {
+      // Redirect to login
+      goto("/login");
+    }
+  }
+
   function handleLogout() {
     auth.logout();
     goto("/login");
   }
-  import DevUserSwitcher from "$lib/components/DevUserSwitcher.svelte";
 </script>
 
 <div class="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -53,8 +62,6 @@
       {:else}
         <NavLi href="/login">Login</NavLi>
         <NavLi href="/signup">Sign up</NavLi>
-        <!-- For Logic Testing without Auth, show Settings/Assets if needed, but keeping Auth guard is fine if we just simulate login -->
-        <!-- Adding hidden items for dev if not authenticated? No, DevUserSwitcher is enough for now -->
       {/if}
     </NavUl>
   </Navbar>
@@ -64,5 +71,4 @@
   </main>
 
   <Footer />
-  <DevUserSwitcher />
 </div>

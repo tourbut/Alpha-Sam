@@ -8,10 +8,29 @@ interface User {
 }
 
 function createAuthStore() {
+    let initialIsAuthenticated = false;
+    let initialToken: string | null = null;
+    let initialUser: User | null = null;
+
+    if (browser) {
+        const token = localStorage.getItem('access_token');
+        const userStr = localStorage.getItem('user');
+        if (token) { // User might be null if just token exists? Assume we need both or just token implies auth?
+            // Let's assume if token exists, we are tentatively auth, but user might be missing.
+            // If user is missing, we might want to fetch it.
+            // For now, adhere to previous logic: token && userStr
+            if (userStr) {
+                initialIsAuthenticated = true;
+                initialToken = token;
+                initialUser = JSON.parse(userStr);
+            }
+        }
+    }
+
     const { subscribe, set, update } = writable<{ isAuthenticated: boolean; token: string | null; user: User | null }>({
-        isAuthenticated: false,
-        token: null,
-        user: null,
+        isAuthenticated: initialIsAuthenticated,
+        token: initialToken,
+        user: initialUser,
     });
 
     return {
@@ -31,6 +50,7 @@ function createAuthStore() {
             set({ isAuthenticated: false, token: null, user: null });
         },
         initialize: () => {
+            // Redundant if we init on creation, but good for re-verification or if called manually
             if (browser) {
                 const token = localStorage.getItem('access_token');
                 const userStr = localStorage.getItem('user');

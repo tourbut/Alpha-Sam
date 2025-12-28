@@ -41,8 +41,17 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
     의존성 주입을 위한 비동기 세션 생성기
     FastAPI의 Depends에서 사용
     """
+
     async with AsyncSessionLocal() as session:
         yield session
+
+
+from fastapi import Depends
+from fastapi_users.db import SQLAlchemyUserDatabase
+from app.src.models.user import User
+
+async def get_user_db(session: AsyncSession = Depends(get_session)):
+    yield SQLAlchemyUserDatabase(session, User)
 
 
 async def init_db() -> None:

@@ -62,3 +62,22 @@ from app.src.routes.market import router as market_router
 
 app.include_router(api_router, prefix="/api/v1")
 app.include_router(market_router, prefix="/api/v1/market", tags=["Market Data"])
+
+from fastapi_users import FastAPIUsers
+from app.src.models.user import User
+from app.src.core.users import fastapi_users
+from app.src.core.auth import auth_backend
+from app.src.schemas.user import UserRead, UserCreate
+
+# fastapi_users instantiated in app.src.core.users
+
+app.include_router(
+    fastapi_users.get_auth_router(auth_backend),
+    prefix="/api/v1/auth/jwt",
+    tags=["auth"],
+)
+app.include_router(
+    fastapi_users.get_register_router(UserRead, UserCreate),
+    prefix="/api/v1/auth",
+    tags=["auth"],
+)

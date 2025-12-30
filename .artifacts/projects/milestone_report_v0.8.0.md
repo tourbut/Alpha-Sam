@@ -28,5 +28,5 @@ Alpha-Sam 프로젝트의 **v0.8.0 Authentication** 구현이 완료되었습니
 - **Test Report**: [.artifacts/projects/qa_reports/test_report_v0.8.0.md](file:///Users/shin/MyDir/MyGit/Alpha-Sam/.artifacts/projects/qa_reports/test_report_v0.8.0.md)
 
 ## 4. 향후 계획 (Next Steps)
-- **Deployment**: Production 배포 및 데이터 마이그레이션 수행.
-- **Post-Verification**: 배포 후 데이터 무결성 검증 (`owner_id` 연결 확인).
+- **Deployment**: [Complete] Production 배포 및 데이터 마이그레이션 수행 (Transitioned to v0.9.0).
+- **Post-Verification**: [Pending] 배포 후 데이터 무결성 검증 (`owner_id` 연결 확인) (Transitioned to v0.9.0).

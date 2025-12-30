@@ -32,7 +32,11 @@
 
 - [/] **Plan v0.8.0 (Authentication)**
     - [x] **Architect**: Design v0.8.0 Auth Specs (`v0.8.0_implementation_plan.md`)
-    - [ ] **Backend**: Research FastAPI Users & JWT
+    - [x] **Backend**: Research FastAPI Users & JWT
     - [ ] **Frontend**: Research SvelteKit Auth & UI wireframes
     - [ ] **QA**: Create v0.8.0 Test Plan
     - [ ] **DevOps**: Verify Email/Auth Infrastructure
+
+- [/] **Implement v0.8.0 (Authentication)**
+    - [x] **Backend**: Fix `/users/me` 405 Error (Router Missing)
+    - [ ] **Frontend**: Fix related login form issues

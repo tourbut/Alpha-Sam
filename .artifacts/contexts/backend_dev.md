@@ -1,1 +1,3 @@
 - [2025-12-27 10:47:00] v0.7.0 알림 시스템 검증 및 강화를 완료함. 현재 대기 중인 추가 태스크 없음.
+- [2025-12-28 17:50:00] FastAPI Users 도입 완료. User 모델은 int PK를 유지하며 `SQLAlchemyBaseUserTable`을 상속받도록 수정함. `X-User-Id` 헤더는 개발용으로 `deps.get_current_user`에 통합됨.
+- [2025-12-29 23:35:00] QA 이슈(405 Error) 확인 결과, FastAPI Users 라우터 등록 및 설정 코드가 누락되어 있음을 발견. `users_config.py` 작성, `api.py` 라우터 등록, `User` 모델 `is_verified` 추가 후 QA 테스트(`qa_auth_api.py`) 통과함.

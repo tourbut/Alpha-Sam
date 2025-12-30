@@ -1,23 +1,23 @@
 # Handovers: To DevOps
 
 ## 날짜
-2025-12-27
-
-## 브랜치 (Version Control)
-- N/A
+2025-12-30
 
 ## 현재 상황 (Context)
-- v0.7.0 완료. v0.8.0(Authentication) 준비 중입니다.
-- 인증 도입 시 이메일 발송(비밀번호 찾기 등)이 필수적이므로 기존 메일 인프라 점검이 필요합니다.
+- v0.8.0 (Authentication System) 구현 및 QA가 완료되었습니다. (`milestone_report_v0.8.0.md` 참조)
+- Production 환경에 배포가 필요합니다.
 
 ## 해야 할 일 (Tasks)
-1. 비밀번호 해싱 등을 위한 시스템 레벨 의존성(예: `libffi-dev`, `python3-dev` 등)이 Docker 이미지에 누락되어 있는지 확인. (보통은 Python 이미지에 포함되나 확인 필요)
-2. 현재 구축된 Celery + Redis + SMTP 파이프라인이 "비밀번호 재설정 이메일" 발송에도 즉시 사용 가능한지 확인.
-   - 별도의 Rate Limit 정책이 필요한지 고려.
+1. **Deployment**:
+   - `main` 브랜치로 Merge 및 Tagging (`v0.8.0`).
+   - Backend/Frontend 배포.
+   - DB Migration (`alembic upgrade head`) 수행.
+2. **Post-Deployment Support**:
+   - Architect가 작성한 `v0.8.0_post_deployment_verification.md`에 따라 로그 모니터링 지원.
 
 ## 기대 산출물 (Expected Outputs)
-- 특별한 변경사항 없으면 "이상 없음" 리포트.
-- 추가 패키지 필요 시 `Dockerfile` 또는 `docker-compose.yml` 수정 제안.
+- 배포 완료 로그.
+- Live Environment URL.
 
 ## 참고 자료 (References)
-- `.artifacts/contexts/devops.md`
+- [.artifacts/projects/milestone_report_v0.8.0.md](file:///Users/shin/MyDir/MyGit/Alpha-Sam/.artifacts/projects/milestone_report_v0.8.0.md)

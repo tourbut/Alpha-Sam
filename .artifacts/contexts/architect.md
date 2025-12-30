@@ -60,10 +60,13 @@
 - [2025-12-20 10:45:00] Backend Interface: `X-User-Id` Header 기반 시뮬레이션.
 - [2025-12-20 12:00:00] Core Feature: 이메일 알림 발송 로직 구현 (SMTP/Celery).
 - [2025-12-27 10:48:14] v0.7.0 기능 구현 및 QA 마무리. API 문서 및 컨텍스트 동기화 진행 중.
+- [2025-12-30 14:00:00] v0.8.0 QA Complete: Critical Bugs Fixed & Verified. Ready for Deployment.
 
 ### v0.8.0 (Next): Authentication
 - **Task**: `X-User-Id` 제거 및 JWT Auth 도입.
-- **Plan**: `FastAPI Users` 라이브러리 활용하여 표준화된 인증 흐름 구축.
+- **Status**: Development & QA Complete.
+- **Next**: Post-Deployment Verification.
+- **Ref**: `v0.8.0_post_deployment_verification.md`
 
 ### Decisions
 - [2025-12-27 22:10:00] **Adoption of FastAPI Users**

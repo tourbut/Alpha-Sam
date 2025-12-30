@@ -16,6 +16,7 @@ class User(SQLModel, table=True):
     hashed_password: str = Field(max_length=255)
     is_active: bool = Field(default=True)
     is_superuser: bool = Field(default=False)
+    is_verified: bool = Field(default=False)
     nickname: Optional[str] = Field(default=None, max_length=50)
     
     created_at: datetime = Field(

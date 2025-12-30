@@ -33,4 +33,5 @@ class UserRead(SQLModel):
     email: str
     is_active: bool
     is_superuser: bool
+    is_verified: bool
     nickname: Optional[str] = None

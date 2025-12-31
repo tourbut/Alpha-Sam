@@ -1,6 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel, EmailStr
 from sqlmodel import SQLModel
+from fastapi_users import schemas
 
 class Token(BaseModel):
     access_token: str
@@ -14,24 +15,17 @@ class UserBase(SQLModel):
     nickname: Optional[str] = None
 
 # Properties to receive via API on creation
-class UserCreate(UserBase):
-    email: str
-    password: str
+class UserCreate(schemas.BaseUserCreate):
+    nickname: Optional[str] = None
 
 # Properties to receive via API on update
-class UserUpdate(SQLModel):
+class UserUpdate(schemas.BaseUserUpdate):
     nickname: Optional[str] = None
-    email: Optional[EmailStr] = None
 
 class UserPasswordUpdate(SQLModel):
     current_password: str
     new_password: str
 
 # Properties to return to client
-class UserRead(SQLModel):
-    id: int
-    email: str
-    is_active: bool
-    is_superuser: bool
-    is_verified: bool
+class UserRead(schemas.BaseUser[int]):
     nickname: Optional[str] = None

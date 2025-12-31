@@ -192,8 +192,7 @@ async def create_position(
         )
     
     # Position 생성
-    db_position = Position.model_validate(position_in)
-    db_position.owner_id = current_user.id
+    db_position = Position(**position_in.model_dump(), owner_id=current_user.id)
     session.add(db_position)
     await session.commit()
     await session.refresh(db_position)

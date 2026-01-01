@@ -191,10 +191,19 @@ async def create_position(
             detail=f"Asset with id {position_in.asset_id} not found. Please create the asset first."
         )
     
+from sqlalchemy.exc import IntegrityError
+
     # Position 생성
     db_position = Position(**position_in.model_dump(), owner_id=current_user.id)
     session.add(db_position)
-    await session.commit()
+    try:
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Position for this asset already exists. Please update the existing position."
+        )
     await session.refresh(db_position)
     
     # 최신 시세 조회

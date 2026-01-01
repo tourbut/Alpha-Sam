@@ -1,21 +1,24 @@
 <script lang="ts">
   import "../app.css";
-  import { page } from "$app/stores";
   import {
     Navbar,
     NavBrand,
     NavLi,
     NavUl,
     NavHamburger,
+    Button,
   } from "flowbite-svelte";
 
   import Footer from "$lib/components/Footer.svelte";
+  import AssetModal from "$lib/components/AssetModal.svelte";
   import { onMount } from "svelte";
   import { auth } from "$lib/stores/auth";
-  import { Button } from "flowbite-svelte";
   import { goto } from "$app/navigation";
+  import DevUserSwitcher from "$lib/components/DevUserSwitcher.svelte";
 
   let hidden = true; // Mobile menu hidden by default
+  let openAssetModal = false;
+
   function toggle() {
     hidden = !hidden;
   }
@@ -28,7 +31,6 @@
     auth.logout();
     goto("/login");
   }
-  import DevUserSwitcher from "$lib/components/DevUserSwitcher.svelte";
 </script>
 
 <div class="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -48,13 +50,21 @@
         <NavLi href="/">Dashboard</NavLi>
         <NavLi href="/assets">Assets</NavLi>
         <NavLi href="/positions">Positions</NavLi>
+        <div class="flex items-center space-x-4 md:ml-4">
+          <Button size="xs" on:click={() => (openAssetModal = true)}
+            >Add Asset</Button
+          >
+          {#if $auth.user}
+            <span class="text-sm font-medium text-gray-900 dark:text-white">
+              Hello, {$auth.user.nickname || $auth.user.email}
+            </span>
+          {/if}
+          <NavLi class="cursor-pointer" on:click={handleLogout}>Logout</NavLi>
+        </div>
         <NavLi href="/settings">Settings</NavLi>
-        <NavLi class="cursor-pointer" onclick={handleLogout}>Logout</NavLi>
       {:else}
         <NavLi href="/login">Login</NavLi>
         <NavLi href="/signup">Sign up</NavLi>
-        <!-- For Logic Testing without Auth, show Settings/Assets if needed, but keeping Auth guard is fine if we just simulate login -->
-        <!-- Adding hidden items for dev if not authenticated? No, DevUserSwitcher is enough for now -->
       {/if}
     </NavUl>
   </Navbar>
@@ -65,4 +75,5 @@
 
   <Footer />
   <DevUserSwitcher />
+  <AssetModal bind:open={openAssetModal} />
 </div>

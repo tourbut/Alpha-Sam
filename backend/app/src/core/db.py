@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     )
     
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/alpha_sam"
+    environment: str = "dev"
 
 
 settings = Settings()

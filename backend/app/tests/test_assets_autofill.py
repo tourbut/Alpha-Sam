@@ -7,9 +7,20 @@ from app.src.schemas.asset import AssetCreate
 class TestAssetAutoFill(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
+        from app.src.deps import get_current_user
+        from app.src.models.user import User
+        
+        async def mock_get_current_user():
+            return User(id=1, email="test@example.com", is_active=True)
+            
+        app.dependency_overrides[get_current_user] = mock_get_current_user
 
-    @patch("app.src.routes.assets.crud_asset")
-    @patch("app.src.routes.assets.price_service")
+    def tearDown(self):
+        from app.src.deps import get_current_user
+        app.dependency_overrides.pop(get_current_user, None)
+
+    @patch("app.src.engine.asset_service.crud_asset")
+    @patch("app.src.engine.asset_service.price_service")
     def test_create_asset_autofill_success(self, mock_price_service, mock_crud_asset):
         # Mock dependencies
         mock_crud_asset.get_asset_by_symbol = AsyncMock(return_value=None)
@@ -33,8 +44,8 @@ class TestAssetAutoFill(unittest.TestCase):
         self.assertEqual(obj_in.name, "Apple Inc.")
         self.assertEqual(obj_in.category, "EQUITY")
 
-    @patch("app.src.routes.assets.crud_asset")
-    @patch("app.src.routes.assets.price_service")
+    @patch("app.src.engine.asset_service.crud_asset")
+    @patch("app.src.engine.asset_service.price_service")
     def test_create_asset_autofill_fail(self, mock_price_service, mock_crud_asset):
         # Mock dependencies
         mock_crud_asset.get_asset_by_symbol = AsyncMock(return_value=None)

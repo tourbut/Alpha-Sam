@@ -28,12 +28,10 @@ api_router.include_router(
     tags=["users"],
 )
 
-# Manual Routers (Commented out conflicting ones, kept others)
-# api_router.include_router(auth.router, prefix="/auth", tags=["auth"]) # Replaced by FastAPI Users logic
+# Manual Routers
 api_router.include_router(assets.router, prefix="/assets", tags=["assets"])
 api_router.include_router(prices.router, prefix="/prices", tags=["prices"])
 api_router.include_router(positions.router, prefix="/positions", tags=["positions"])
-# api_router.include_router(users.router, prefix="/users", tags=["users"]) # Replaced/Merged by FastAPI Users
 api_router.include_router(user_settings.router, prefix="/users", tags=["users"]) # Keep settings if distinct
 api_router.include_router(portfolio.router, prefix="/portfolio", tags=["portfolio"])
 api_router.include_router(transactions.router, prefix="/transactions", tags=["transactions"])

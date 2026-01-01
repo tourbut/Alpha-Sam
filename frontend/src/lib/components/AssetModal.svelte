@@ -46,14 +46,14 @@
         showDropdown = false;
     }
 
-    function handleInput(event: Event) {
-        const query = (event.target as HTMLInputElement).value;
-        searchQuery = query;
-        symbol = query.toUpperCase(); // Default behavior if manual entry
+    $: symbol = searchQuery ? searchQuery.toUpperCase() : "";
+
+    function handleInput() {
+        const query = searchQuery;
 
         clearTimeout(searchTimeout);
 
-        if (query.length < 2) {
+        if (!query || query.length < 2) {
             searchResults = [];
             showDropdown = false;
             return;
@@ -123,7 +123,7 @@
                 <span>Symbol (Search)</span>
                 <Input
                     type="text"
-                    value={searchQuery}
+                    bind:value={searchQuery}
                     on:input={handleInput}
                     on:focus={() => (showDropdown = searchResults.length > 0)}
                     placeholder="Search e.g. AAPL, BTC"

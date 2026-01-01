@@ -21,6 +21,19 @@ api_router.include_router(
     tags=["auth"],
 )
 
+# [COMPATIBILITY] Redirect /auth/signup -> /auth/register
+# Frontend uses /signup, Backend uses /register.
+from fastapi import Request
+from fastapi.responses import RedirectResponse
+
+@api_router.post("/auth/signup", tags=["auth"], include_in_schema=False)
+async def signup_redirect(request: Request):
+    # Determine the target URL. 
+    # Since we are inside /api/v1 via main.py, and this router is included in main.py,
+    # we can construct the redirect URL manually to be safe.
+    # Logic: Redirect to the sibling path "register" under the same prefix.
+    return RedirectResponse(url="/api/v1/auth/register", status_code=307)
+
 # 3. Users Router - /api/v1/users (Provides /users/me, /users/{id})
 api_router.include_router(
     fastapi_users.get_users_router(UserRead, UserUpdate),

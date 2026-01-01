@@ -44,8 +44,13 @@ api_router.include_router(
 # Manual Routers
 api_router.include_router(assets.router, prefix="/assets", tags=["assets"])
 api_router.include_router(prices.router, prefix="/prices", tags=["prices"])
-api_router.include_router(positions.router, prefix="/positions", tags=["positions"])
-api_router.include_router(user_settings.router, prefix="/users", tags=["users"]) # Keep settings if distinct
+#api_router.include_router(positions.router, prefix="/positions", tags=["positions"])
+# users router is likely handled by distinct settings route or combined above, checking conflicts.
+# The previous line 48 had: api_router.include_router(user_settings.router, prefix="/users", tags=["users"])
+# This conflicts with fastapi_users prefix. We need to decide. 
+# Usually specific routes like /users/settings should be added to the fastapi_users router or have a different prefix.
+# For Refactoring, I will enable user_settings but check its prefix path in next step.
+api_router.include_router(user_settings.router, prefix="/users", tags=["users"]) 
 api_router.include_router(portfolio.router, prefix="/portfolio", tags=["portfolio"])
 api_router.include_router(transactions.router, prefix="/transactions", tags=["transactions"])
 api_router.include_router(market.router, prefix="/market", tags=["market"])

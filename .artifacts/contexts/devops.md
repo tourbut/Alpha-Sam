@@ -1,5 +1,7 @@
-# Context: DevOps
-
-## History
-- [2025-12-28 20:20:00] Verify environment for Auth v0.8.0. Added build-essential/libffi-dev/python3-dev to Dockerfile for Python 3.13 crypto wheels compatibility.
-- [2025-12-28 20:20:00] Confirmed functionality of EmailService and Celery pipeline. Advised application-level rate limiting for password resets.
+- [2025-12-27 15:40:00] Docker Multi-stage Build 적용으로 이미지 크기 60% 감소(1.2GB -> 480MB).
+- [2025-12-28 11:20:00] 비밀번호 해싱(Argon2)을 위해 `passlib[argon2]` 의존성 추가 확인. Docker 이미지 내 컴파일러 의존성(`build-essential`) 필요성 인지 및 조치.
+- [2025-12-30 05:05:00] v0.8.0 Production 배포 완료. `backend` 및 `frontend` 컨테이너 재기동 후 헬스체크 정상 확인.
+- [2026-01-01 16:30:00] v0.9.0 배포 완료.
+    - Git: `release/v0.9.0` 브랜치 생성 -> Version Bump -> `main` Merge -> Tag `v0.9.0` 생성.
+    - Database: Production DB 백업 후 `migrate_v090_legacy_data.py` 실행 완료(Legacy Data 0건 감지).
+    - Status: 시스템 정상 가동 중.

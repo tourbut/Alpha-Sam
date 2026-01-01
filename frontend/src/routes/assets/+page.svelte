@@ -65,8 +65,7 @@
                 getAssets(),
                 getPositions(),
             ]);
-            console.log("Loaded assets:", assetsData);
-            console.log("Loaded positions:", positionsData);
+            // console.log removed
             assets = assetsData;
             positions = positionsData;
             if (assets.length === 0) {

@@ -187,7 +187,9 @@
                     Quick Actions
                 </h2>
                 <div class="flex flex-col gap-2">
-                    <Button href="/assets" class="w-full">Manage Assets</Button>
+                    <Button href="/assets" class="w-full text-white"
+                        >Manage Assets</Button
+                    >
                     <Button href="/positions" color="alternative" class="w-full"
                         >Manage Positions</Button
                     >

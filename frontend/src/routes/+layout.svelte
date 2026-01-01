@@ -7,6 +7,7 @@
     NavUl,
     NavHamburger,
     Button,
+    DarkMode,
   } from "flowbite-svelte";
 
   import Footer from "$lib/components/Footer.svelte";
@@ -29,14 +30,16 @@
 
   function handleLogout() {
     auth.logout();
-    goto("/login");
+    window.location.href = "/login";
   }
 </script>
 
-<div class="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
+<div
+  class="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200"
+>
   <Navbar
     fluid={true}
-    class="fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600"
+    class="fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600 px-4 py-2.5 bg-white dark:bg-gray-800"
   >
     <NavBrand href="/">
       <span
@@ -44,27 +47,57 @@
         >Alpha-Sam</span
       >
     </NavBrand>
-    <NavHamburger onclick={toggle} class="md:hidden" />
-    <NavUl {hidden} class="w-full md:block md:w-auto">
+
+    <div class="flex items-center md:order-2 space-x-3">
+      <DarkMode
+        class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none rounded-lg text-sm p-2.5"
+      />
+
+      {#if $auth.isAuthenticated}
+        <Button
+          size="sm"
+          class="bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800"
+          on:click={() => (openAssetModal = true)}
+        >
+          + Add Asset
+        </Button>
+        {#if $auth.user}
+          <div
+            class="hidden lg:flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full border border-gray-200 dark:border-gray-600"
+          >
+            <span>👤 {$auth.user.nickname || $auth.user.email}</span>
+          </div>
+        {/if}
+        <Button
+          size="xs"
+          color="light"
+          class="border-0 hidden md:block"
+          onclick={handleLogout}>Logout</Button
+        >
+      {:else}
+        <div class="flex items-center gap-2">
+          <Button href="/login" size="xs">Login</Button>
+          <Button href="/signup" size="xs" color="alternative">Sign up</Button>
+        </div>
+      {/if}
+      <NavHamburger onclick={toggle} class="md:hidden" />
+    </div>
+
+    <NavUl
+      {hidden}
+      class="justify-between hidden w-full md:flex md:w-auto md:order-1"
+    >
       {#if $auth.isAuthenticated}
         <NavLi href="/">Dashboard</NavLi>
         <NavLi href="/assets">Assets</NavLi>
         <NavLi href="/positions">Positions</NavLi>
-        <div class="flex items-center space-x-4 md:ml-4">
-          <Button size="xs" on:click={() => (openAssetModal = true)}
-            >Add Asset</Button
-          >
-          {#if $auth.user}
-            <span class="text-sm font-medium text-gray-900 dark:text-white">
-              Hello, {$auth.user.nickname || $auth.user.email}
-            </span>
-          {/if}
-          <NavLi class="cursor-pointer" on:click={handleLogout}>Logout</NavLi>
-        </div>
         <NavLi href="/settings">Settings</NavLi>
+        <NavLi href="#" class="cursor-pointer md:hidden" onclick={handleLogout}
+          >Logout</NavLi
+        >
       {:else}
-        <NavLi href="/login">Login</NavLi>
-        <NavLi href="/signup">Sign up</NavLi>
+        <NavLi href="/login" class="md:hidden">Login</NavLi>
+        <NavLi href="/signup" class="md:hidden">Sign up</NavLi>
       {/if}
     </NavUl>
   </Navbar>

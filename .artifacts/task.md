@@ -39,4 +39,18 @@
 
 - [/] **Implement v0.8.0 (Authentication)**
     - [x] **Backend**: Fix `/users/me` 405 Error (Router Missing)
-    - [ ] **Frontend**: Fix related login form issues
+    - [x] **Frontend**: Fix related login form issues
+    - [x] **QA**: Re-verify v0.8.0 Fixes
+
+- [x] **Release v0.9.0 (Data Migration)**
+    - [x] **Architect**: Plan Migration & Legacy Data Handling
+    - [x] **QA**: Create Migration Test Data & Checklist
+    - [x] **Backend**: Optimize Portfolio (N+1) & Migration Script
+    - [x] **DevOps**: Merge & Deploy to Production
+    - [x] **QA**: Post-deployment Verification (Smoke Test) - *Partial (DB Checked, API Pending)*
+
+- [/] **Plan v1.0.0 (Official Launch: Analytics)**
+    - [x] **Architect**: Write `v1.0.0_implementation_plan.md` (Analytics & Stability)
+    - [/] **Backend**: Analytics API Design (PnL Calculation) - *Designed `v1.0.0_backend_design.md`*
+    - [x] **Frontend**: Chart Library Selection & Dashboard Design - *Selected Chart.js, Designed `v1.0.0_frontend_design.md`*
+    - [ ] **DevOps**: Production Hardening (HTTPS, Health Checks)

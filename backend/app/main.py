@@ -3,7 +3,7 @@ import logging
 from fastapi import FastAPI
 from sqlalchemy import text
 
-from app.src.core.db import engine, init_db
+from app.src.core.db import engine, init_db, settings
 from app.src.core.cache import close_redis_client
 from app.src.models import Asset, Price, Position
 
@@ -27,8 +27,10 @@ async def lifespan(app: FastAPI):
             logger.info(f"데이터베이스 연결 성공: {result.scalar()}")
         
         # 테이블 초기화 (개발 환경용, 프로덕션에서는 Alembic 사용)
-        # await init_db()
-        logger.info("데이터베이스 초기화 완료")
+        if settings.environment == "dev":
+             # await init_db()
+             pass
+        logger.info("데이터베이스 초기화 단계 완료 (Skip in Prod)")
         
     except Exception as e:
         logger.error(f"데이터베이스 연결 실패: {e}")
@@ -45,7 +47,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Alpha-Sam API",
-    version="0.1.0",
+    version="0.9.0",
     lifespan=lifespan
 )
 
@@ -58,7 +60,4 @@ async def health_check():
     return {"status": "ok"}
 
 from app.src.api import api_router
-from app.src.routes.market import router as market_router
-
 app.include_router(api_router, prefix="/api/v1")
-app.include_router(market_router, prefix="/api/v1/market", tags=["Market Data"])

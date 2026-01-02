@@ -1,2 +1,6 @@
 - [2025-12-27 10:47:09] V0.7.0 UI/UX 개선 작업(Settings 즉시 반영, 스켈레톤 UI, 자산 배지 수정 등) 및 QA 완료. 현재 대기 중.
 - [2025-12-29 23:30:00] Critical Bugfix: 로그인 폼이 GET 요청으로 전송되는 문제 해결 (`method="POST"` 명시). Form 관련 작업 시 method 속성 확인 필수.
+- [2025-12-30 17:30:00] Refactoring: `src/lib/api.ts`의 API 경로를 상수(`API_ENDPOINTS`)로 추출하고 JSDoc을 추가하여 유지보수성 향상.
+- [2025-12-31 15:20:00] Refactoring: `src/lib/api.ts`에 401 Unauthorized Interceptor를 구현함. 인증 실패 시 로컬 스토리지 정리 및 로그인 페이지 리다이렉트 처리.
+- [2025-12-31 17:25:00] v0.9.0 배포 대비 Cleanup: `src/lib/api.ts` 리팩토링 사항(인터셉터, 상수화)을 `develop` 브랜치에 커밋 및 푸시함. Production Check 대기 중.
+- [2026-01-01 23:30:00] Bugfix & Feature: Tailwind 4 환경에서 `darkMode: 'class'` 적용 시 `app.css`에 `@config` 지시어 필요함 확인. Logout 버튼(`onclick`) 이벤트 핸들링 문제 해결을 위해 `window.location.href` 사용 및 Syntax 수정.

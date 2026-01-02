@@ -31,6 +31,7 @@
   - `avg_price`: 평단가.
 - **Rules**:
   - `owner_id`는 필수 (Multi-tenancy).
+  - Legacy Data Check: v0.9.0 마이그레이션 시, `owner_id`가 없는 기존 포지션은 시스템 관리자(User ID 1)에게 귀속시킨다.
   - 동일한 `owner_id` 하에서 `asset_id`는 유일해야 함.
 
 ### NotificationSettings (알림 설정)

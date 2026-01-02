@@ -1,192 +1,113 @@
 <script lang="ts">
     import {
+        Button,
         Modal,
         Label,
         Input,
-        Button,
         Select,
-        Badge,
+        Helper,
     } from "flowbite-svelte";
-    import {
-        createAsset,
-        searchSymbol,
-        type SymbolSearchResult,
-    } from "$lib/api";
+    import { createAsset } from "$lib/api";
     import { createEventDispatcher } from "svelte";
-    import { fade } from "svelte/transition";
 
     export let open = false;
+
+    const dispatch = createEventDispatcher();
 
     let symbol = "";
     let name = "";
     let category = "";
-
-    // Search state
-    let searchQuery = "";
-    let searchResults: SymbolSearchResult[] = [];
-    let isSearching = false;
-    let showDropdown = false;
-    let searchTimeout: NodeJS.Timeout;
-
-    const dispatch = createEventDispatcher();
+    let loading = false;
+    let error: string | null = null;
 
     const categories = [
-        { value: "Crypto", name: "Crypto" },
         { value: "Stock", name: "Stock" },
+        { value: "Crypto", name: "Crypto" },
+        { value: "ETF", name: "ETF" },
         { value: "Cash", name: "Cash" },
+        { value: "Other", name: "Other" },
     ];
 
-    $: if (!open) {
-        // Reset state when modal closes
+    async function handleSubmit() {
+        loading = true;
+        error = null;
+        try {
+            await createAsset({
+                symbol,
+                name,
+                category,
+            });
+            dispatch("created");
+            open = false;
+            resetForm();
+        } catch (e: any) {
+            console.error(e);
+            error = e.response?.data?.detail || "Failed to create asset";
+        } finally {
+            loading = false;
+        }
+    }
+
+    function resetForm() {
         symbol = "";
         name = "";
         category = "";
-        searchQuery = "";
-        searchResults = [];
-        showDropdown = false;
-    }
-
-    function handleInput(event: Event) {
-        const query = (event.target as HTMLInputElement).value;
-        searchQuery = query;
-        symbol = query.toUpperCase(); // Default behavior if manual entry
-
-        clearTimeout(searchTimeout);
-
-        if (query.length < 2) {
-            searchResults = [];
-            showDropdown = false;
-            return;
-        }
-
-        isSearching = true;
-        showDropdown = true;
-        searchTimeout = setTimeout(async () => {
-            try {
-                searchResults = await searchSymbol(query);
-            } catch (e) {
-                console.error("Search failed", e);
-                searchResults = [];
-            } finally {
-                isSearching = false;
-            }
-        }, 500);
-    }
-
-    function selectSymbol(result: SymbolSearchResult) {
-        symbol = result.symbol;
-        searchQuery = result.symbol;
-        if (result.longname) {
-            name = result.longname;
-        } else if (result.shortname) {
-            name = result.shortname;
-        }
-
-        // Simple heuristic for category mapping
-        if (
-            result.quoteType === "CRYPTOCURRENCY" ||
-            result.quoteType === "CRYPTO"
-        ) {
-            category = "Crypto";
-        } else if (result.quoteType === "EQUITY") {
-            category = "Stock";
-        } else {
-            // Default based on exchange or manual mapped
-            category = "Stock";
-        }
-
-        showDropdown = false;
-    }
-
-    async function handleSubmit() {
-        try {
-            await createAsset({ symbol, name, category });
-            dispatch("created");
-            open = false;
-            symbol = "";
-            name = "";
-            category = "";
-        } catch (error) {
-            console.error("Failed to create asset:", error);
-            alert("Failed to create asset");
-        }
+        error = null;
     }
 </script>
 
 <Modal bind:open title="Add New Asset" autoclose={false}>
     <form
-        class="flex flex-col space-y-6"
         on:submit|preventDefault={handleSubmit}
+        class="flex flex-col space-y-4"
     >
-        <div class="relative">
-            <Label>
-                <span>Symbol (Search)</span>
-                <Input
-                    type="text"
-                    value={searchQuery}
-                    on:input={handleInput}
-                    on:focus={() => (showDropdown = searchResults.length > 0)}
-                    placeholder="Search e.g. AAPL, BTC"
-                    required
-                    autocomplete="off"
-                />
-            </Label>
-
-            {#if showDropdown && (searchResults.length > 0 || isSearching)}
-                <div
-                    class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
-                    transition:fade={{ duration: 100 }}
-                >
-                    {#if isSearching}
-                        <div
-                            class="p-3 text-center text-gray-500 dark:text-gray-400"
-                        >
-                            Searching...
-                        </div>
-                    {:else}
-                        <ul class="py-1">
-                            {#each searchResults as result}
-                                <li>
-                                    <button
-                                        type="button"
-                                        class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white flex justify-between items-center"
-                                        on:click={() => selectSymbol(result)}
-                                    >
-                                        <span class="font-bold"
-                                            >{result.symbol}</span
-                                        >
-                                        <span
-                                            class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[60%]"
-                                            >{result.longname ||
-                                                result.shortname ||
-                                                ""}</span
-                                        >
-                                    </button>
-                                </li>
-                            {/each}
-                        </ul>
-                    {/if}
-                </div>
-            {/if}
-        </div>
-        <Label>
-            <span>Name</span>
+        <div>
+            <Label for="symbol" class="mb-2">Symbol / Ticker</Label>
             <Input
                 type="text"
-                bind:value={name}
-                placeholder="Bitcoin"
+                id="symbol"
+                placeholder="AAPL"
                 required
+                bind:value={symbol}
             />
-        </Label>
-        <Label>
-            <span>Category</span>
+            <Helper class="text-sm mt-2"
+                >Unique identifier for the asset.</Helper
+            >
+        </div>
+
+        <div>
+            <Label for="name" class="mb-2">Asset Name</Label>
+            <Input
+                type="text"
+                id="name"
+                placeholder="Apple Inc."
+                required
+                bind:value={name}
+            />
+        </div>
+
+        <div>
+            <Label for="category" class="mb-2">Category</Label>
             <Select
-                class="mt-2"
+                id="category"
                 items={categories}
                 bind:value={category}
                 required
+                placeholder="Select category"
             />
-        </Label>
-        <Button type="submit">Create Asset</Button>
+        </div>
+
+        {#if error}
+            <div class="text-red-600 text-sm">{error}</div>
+        {/if}
+
+        <div class="flex justify-end gap-2">
+            <Button color="alternative" on:click={() => (open = false)}
+                >Cancel</Button
+            >
+            <Button type="submit" disabled={loading}
+                >{loading ? "Creating..." : "Create Asset"}</Button
+            >
+        </div>
     </form>
 </Modal>

@@ -61,6 +61,15 @@
 - [2025-12-20 12:00:00] Core Feature: 이메일 알림 발송 로직 구현 (SMTP/Celery).
 - [2025-12-27 10:48:14] v0.7.0 기능 구현 및 QA 마무리. API 문서 및 컨텍스트 동기화 진행 중.
 - [2025-12-30 14:00:00] v0.8.0 QA Complete: Critical Bugs Fixed & Verified. Ready for Deployment.
+- [2025-12-31 16:00:00] v0.9.0 Migration Plan Verified. QA results confirmed successful dirty data migration.
+- [2026-01-01 16:50:00] v0.9.0 Production Verification: DB Migration Success, but API Smoke Test blocked by env issue. release/v0.9.0 merged to main.
+
+### v1.0.0 (Upcoming): Official Launch
+- **Goal**: Full Stability, Dashboard Analytics (Charts), UI Polish.
+- **Key Features**:
+    - Portfolio Performance Charts (pnl history).
+    - Landing Page & User Guide.
+    - Production Infrastructure Hardening (HTTPS, Auto-restart).
 
 ### v0.8.0 (Next): Authentication
 - **Task**: `X-User-Id` 제거 및 JWT Auth 도입.

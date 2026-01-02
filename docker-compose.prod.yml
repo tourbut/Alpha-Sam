@@ -101,7 +101,7 @@ services:
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
     volumes:
-      - celery_beat_data_prod:/app/celerybeat-schedule
+      - celery_beat_data_prod:/app/celerybeat-data
     depends_on:
       db:
         condition: service_healthy
@@ -109,7 +109,7 @@ services:
         condition: service_healthy
       celery_worker:
         condition: service_started
-    command: celery -A app.celery_app beat --loglevel=info
+    command: celery -A app.celery_app beat --loglevel=info -s /app/celerybeat-data/celerybeat-schedule
 
   # Nginx Reverse Proxy
   nginx:

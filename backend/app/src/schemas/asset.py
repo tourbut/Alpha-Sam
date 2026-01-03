@@ -1,13 +1,14 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, ConfigDict, Field
+from sqlmodel import SQLModel, Field
+from pydantic import ConfigDict
 
-class AssetBase(BaseModel):
+class AssetBase(SQLModel):
     symbol: str = Field(..., description="자산 심볼 (예: AAPL, BTC)")
     name: str = Field(..., description="자산 이름")
     category: Optional[str] = Field(None, description="자산 카테고리 (예: EQUITY, CRYPTO)")
 
-class AssetCreate(BaseModel):
+class AssetCreate(SQLModel):
     symbol: str = Field(..., description="자산 심볼")
     name: Optional[str] = Field(None, description="자산 이름 (미입력 시 자동 검색 시도)")
     category: Optional[str] = Field(None, description="자산 카테고리")

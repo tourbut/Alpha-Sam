@@ -49,7 +49,7 @@ class PortfolioService:
             total_pl=summary_metrics["total_profit_loss"] or 0.0
         )
         
-        await crud_portfolio_history.create_portfolio_history(session, history)
+        await crud_portfolio_history.create_portfolio_history(session=session, history=history)
         return history
 
     @staticmethod

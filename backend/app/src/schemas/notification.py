@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class NotificationSettingsBase(BaseModel):
     daily_report_enabled: bool = True
@@ -11,5 +11,4 @@ class NotificationSettingsUpdate(NotificationSettingsBase):
 class NotificationSettingsRead(NotificationSettingsBase):
     user_id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

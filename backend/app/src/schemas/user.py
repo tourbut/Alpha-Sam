@@ -1,9 +1,9 @@
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import EmailStr
 from sqlmodel import SQLModel
 from fastapi_users import schemas
 
-class Token(BaseModel):
+class Token(SQLModel):
     access_token: str
     token_type: str
 

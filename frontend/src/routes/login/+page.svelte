@@ -19,20 +19,30 @@
     });
 
     async function handleSubmit() {
+        console.log("Login attempt starting...", { email, rememberMe });
         try {
             error = "";
+            console.log("Calling login API...");
             const data = await login({ username: email, password });
+            console.log("Login API success:", data);
 
             if (rememberMe) {
+                console.log("Saving email to localStorage");
                 localStorage.setItem("savedEmail", email);
             } else {
+                console.log("Removing email from localStorage");
                 localStorage.removeItem("savedEmail");
             }
 
             // In a real app, we might fetch user details here using the token
+            console.log("Updating auth store...");
             auth.login(data.access_token, { email });
-            goto("/");
+
+            console.log("Navigating to dashboard...");
+            await goto("/");
+            console.log("Navigation called.");
         } catch (e) {
+            console.error("Login Error:", e);
             error = "Login failed. Please check your credentials.";
         }
     }

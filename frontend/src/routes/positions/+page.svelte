@@ -10,13 +10,13 @@
     } from "flowbite-svelte";
     import { onMount } from "svelte";
     import {
-        getPositions,
-        deletePosition,
-        calculatePortfolioSummary,
-        type Position,
-    } from "$lib/api";
+        get_positions as getPositions,
+        delete_position as deletePosition,
+    } from "$lib/apis/positions";
+    import { calculatePortfolioSummary } from "$lib/utils";
+    import type { Position } from "$lib/types";
     import PositionModal from "$lib/components/PositionModal.svelte";
-    import { getAssets } from "$lib/api";
+    import { get_assets as getAssets } from "$lib/apis/assets";
 
     let positions: Position[] = [];
     let assets: any[] = [];

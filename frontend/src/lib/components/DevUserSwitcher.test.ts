@@ -19,6 +19,20 @@ vi.mock('$lib/stores/devUser', () => {
     };
 });
 
+// Mock element.animate for JSDOM
+// @ts-ignore
+if (typeof Element !== 'undefined' && !Element.prototype.animate) {
+    // @ts-ignore
+    Element.prototype.animate = () => ({
+        finished: Promise.resolve(),
+        onfinish: null,
+        cancel: () => { },
+        play: () => { },
+        pause: () => { },
+        reverse: () => { },
+    });
+}
+
 describe('DevUserSwitcher', () => {
     it('should render the current user name', () => {
         render(DevUserSwitcher);

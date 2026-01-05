@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Card, Button, Label, Input, Checkbox } from "flowbite-svelte";
-    import { signup, login } from "$lib/api";
+    import { signup, login } from "$lib/apis/auth";
     import { auth } from "$lib/stores/auth";
     import { goto } from "$app/navigation";
 

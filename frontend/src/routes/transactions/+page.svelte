@@ -15,13 +15,11 @@
         Helper,
     } from "flowbite-svelte";
     import {
-        getTransactions,
-        createTransaction,
-        getAssets,
-        type Transaction,
-        type Asset,
-        type CreateTransaction,
-    } from "$lib/api";
+        get_transactions as getTransactions,
+        create_transaction as createTransaction,
+    } from "$lib/apis/transactions";
+    import { get_assets as getAssets } from "$lib/apis/assets";
+    import type { Transaction, Asset, CreateTransaction } from "$lib/types";
     import { auth } from "$lib/stores/auth";
     import { goto } from "$app/navigation";
 

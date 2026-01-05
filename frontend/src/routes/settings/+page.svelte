@@ -11,11 +11,11 @@
     } from "flowbite-svelte";
     import { auth } from "$lib/stores/auth";
     import {
-        updateProfile,
-        changePassword,
-        getNotificationSettings,
-        updateNotificationSettings,
-    } from "$lib/api";
+        update_me as updateProfile,
+        change_password as changePassword,
+        get_notification_settings as getNotificationSettings,
+        update_notification_settings as updateNotificationSettings,
+    } from "$lib/apis/users";
     import { onMount, onDestroy } from "svelte";
     import type { Unsubscriber } from "svelte/store";
 

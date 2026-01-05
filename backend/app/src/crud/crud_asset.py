@@ -19,8 +19,15 @@ async def get_assets(
         statement = select(Asset).where(
             or_(Asset.owner_id == None, Asset.owner_id == owner_id)
         ).offset(skip).limit(limit)
+        
+        # Debug Logging for Data Leak Investigation
+        with open("/Users/shin/.gemini/antigravity/brain/fe135e23-aef4-4cc1-b5ab-914a5d85fdd6/debug_log.txt", "a") as f:
+            f.write(f"[DEBUG] get_assets called for owner_id={owner_id}\n")
+        
         result = await session.execute(statement)
         assets = result.scalars().all()
+        with open("/Users/shin/.gemini/antigravity/brain/fe135e23-aef4-4cc1-b5ab-914a5d85fdd6/debug_log.txt", "a") as f:
+            f.write(f"[DEBUG] get_assets found {len(assets)} assets (Global + Private)\n")
         
         asset_data = []
         for asset in assets:
@@ -47,11 +54,19 @@ async def get_assets(
         print(e)
         raise e
 
-async def get_asset_by_symbol(*, session: AsyncSession, symbol: str) -> Optional[Asset]:
+async def get_asset_by_symbol(*, session: AsyncSession, symbol: str, owner_id: Optional[int] = None) -> Optional[Asset]:
     try:
-        statement = select(Asset).where(Asset.symbol == symbol)
+        if owner_id is not None:
+             statement = select(Asset).where(
+                 Asset.symbol == symbol,
+                 or_(Asset.owner_id == None, Asset.owner_id == owner_id)
+             )
+        else:
+            statement = select(Asset).where(Asset.symbol == symbol)
+            
         result = await session.execute(statement)
-        return result.scalar_one_or_none()
+        # Use first() to avoid MultipleResultsFound error if data integrity was compromised or concurrent creates happen
+        return result.scalars().first()
     except Exception as e:
         print(e)
         raise e

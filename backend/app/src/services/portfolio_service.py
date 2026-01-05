@@ -57,6 +57,8 @@ class PortfolioService:
         """
         Get portfolio summary and positions.
         """
+        with open("/Users/shin/.gemini/antigravity/brain/fe135e23-aef4-4cc1-b5ab-914a5d85fdd6/debug_log.txt", "a") as f:
+            f.write(f"[DEBUG] PortfolioService.get_summary called for user_id={user_id}\n")
         # 1. Fetch positions with Asset
         stmt = (
             select(Position)

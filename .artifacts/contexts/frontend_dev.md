@@ -4,3 +4,6 @@
 - [2025-12-31 15:20:00] Refactoring: `src/lib/api.ts`에 401 Unauthorized Interceptor를 구현함. 인증 실패 시 로컬 스토리지 정리 및 로그인 페이지 리다이렉트 처리.
 - [2025-12-31 17:25:00] v0.9.0 배포 대비 Cleanup: `src/lib/api.ts` 리팩토링 사항(인터셉터, 상수화)을 `develop` 브랜치에 커밋 및 푸시함. Production Check 대기 중.
 - [2026-01-01 23:30:00] Bugfix & Feature: Tailwind 4 환경에서 `darkMode: 'class'` 적용 시 `app.css`에 `@config` 지시어 필요함 확인. Logout 버튼(`onclick`) 이벤트 핸들링 문제 해결을 위해 `window.location.href` 사용 및 Syntax 수정.
+- [2026-01-04 21:50:00] API Refactor Complete: `src/lib/api.ts` 제거 및 `src/lib/apis/` 모듈화 완료.
+- [2026-01-04 21:55:00] Troubleshooting: `fastapi.js`의 `api_router` 래퍼 사용 시, 매개변수는 반드시 **객체** 형태여야 함을 확인 (예: `getPortfolioHistory({ skip: 0, limit: 30 })`). 숫자를 직접 전달 시 `success_callback`으로 오인되어 TypeError 발생.
+- [2026-01-04 22:00:00] Auth Logic: `auth.js`의 `login` 함수에서 `credentials.email` 대신 `username` 필드를 폼 데이터로 전송하도록 수정함 (FastAPI `OAuth2PasswordRequestForm` 호환).

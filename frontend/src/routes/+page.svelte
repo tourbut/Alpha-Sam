@@ -1,16 +1,18 @@
 <script lang="ts">
     import { Card, Button } from "flowbite-svelte";
     import { onMount } from "svelte";
+    import { get_assets as getAssets } from "$lib/apis/assets";
     import {
-        getAssets,
-        getPortfolioSummary,
-        getPortfolioHistory,
-        type Asset,
-        type Position,
-        type ApiPortfolioSummary,
-        type PortfolioHistory,
-        refreshPrices,
-    } from "$lib/api";
+        get_portfolio_summary as getPortfolioSummary,
+        get_portfolio_history as getPortfolioHistory,
+    } from "$lib/apis/portfolio";
+    import { refresh_prices as refreshPrices } from "$lib/apis/prices";
+    import type {
+        Asset,
+        Position,
+        ApiPortfolioSummary,
+        PortfolioHistory,
+    } from "$lib/types";
     import PortfolioDistributionChart from "$lib/components/PortfolioDistributionChart.svelte";
     import PortfolioHistoryChart from "$lib/components/PortfolioHistoryChart.svelte";
     import { auth } from "$lib/stores/auth";
@@ -50,7 +52,7 @@
                 await Promise.all([
                     getAssets(),
                     getPortfolioSummary(),
-                    getPortfolioHistory(0, 30),
+                    getPortfolioHistory({ skip: 0, limit: 30 }),
                 ]);
             assets = assetsData;
             positions = summaryResponse.positions;

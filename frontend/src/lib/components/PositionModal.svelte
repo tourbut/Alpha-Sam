@@ -1,12 +1,10 @@
 <script lang="ts">
     import { Modal, Label, Input, Button, Select } from "flowbite-svelte";
     import {
-        createPosition,
-        updatePosition,
-        type PositionCreate,
-        type PositionUpdate,
-        type Asset,
-    } from "$lib/api";
+        create_position as createPosition,
+        update_position as updatePosition,
+    } from "$lib/apis/positions";
+    import type { PositionCreate, PositionUpdate, Asset } from "$lib/types";
     import { createEventDispatcher } from "svelte";
 
     export let open = false;

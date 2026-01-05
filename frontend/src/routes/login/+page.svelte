@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onMount } from "svelte";
     import { Card, Button, Label, Input, Checkbox } from "flowbite-svelte";
     import { login } from "$lib/apis/auth";
     import { auth } from "$lib/stores/auth";
@@ -7,11 +8,27 @@
     let email = "";
     let password = "";
     let error = "";
+    let rememberMe = false;
+
+    onMount(() => {
+        const savedEmail = localStorage.getItem("savedEmail");
+        if (savedEmail) {
+            email = savedEmail;
+            rememberMe = true;
+        }
+    });
 
     async function handleSubmit() {
         try {
             error = "";
             const data = await login({ username: email, password });
+
+            if (rememberMe) {
+                localStorage.setItem("savedEmail", email);
+            } else {
+                localStorage.removeItem("savedEmail");
+            }
+
             // In a real app, we might fetch user details here using the token
             auth.login(data.access_token, { email });
             goto("/");
@@ -59,6 +76,14 @@
                         required
                         bind:value={password}
                     />
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <div class="flex items-start">
+                        <Checkbox bind:checked={rememberMe}
+                            >Remember ID</Checkbox
+                        >
+                    </div>
                 </div>
 
                 {#if error}

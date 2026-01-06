@@ -99,6 +99,7 @@ export const api_router = (router, method, endpoint) => {
 
         // 4. Execute Request
         try {
+            console.log(`API Request: ${method} ${url}`, { headers: options.headers });
             const response = await fetch(url, options);
 
             if (!response.ok) {

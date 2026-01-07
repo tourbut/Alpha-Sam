@@ -3,10 +3,6 @@ from pydantic import EmailStr
 from sqlmodel import SQLModel
 from fastapi_users import schemas
 
-class Token(SQLModel):
-    access_token: str
-    token_type: str
-
 # Shared properties
 class UserBase(SQLModel):
     email: Optional[str] = None
@@ -29,3 +25,8 @@ class UserPasswordUpdate(SQLModel):
 # Properties to return to client
 class UserRead(schemas.BaseUser[int]):
     nickname: Optional[str] = None
+
+class Token(SQLModel):
+    access_token: str
+    token_type: str
+    user: UserRead

@@ -2,8 +2,10 @@
     import { onMount } from "svelte";
     import { Card, Button, Label, Input, Checkbox } from "flowbite-svelte";
     import { login } from "$lib/apis/auth";
+    import { get_me } from "$lib/apis/users";
     import { auth } from "$lib/stores/auth";
     import { goto } from "$app/navigation";
+    import type { UserRead } from "$lib/types";
 
     let email = "";
     let password = "";
@@ -23,6 +25,7 @@
         try {
             error = "";
             console.log("Calling login API...");
+            // api_router('auth', 'login', 'jwt/login') returns { access_token, token_type }
             const data = await login({ username: email, password });
             console.log("Login API success:", data);
 
@@ -34,13 +37,30 @@
                 localStorage.removeItem("savedEmail");
             }
 
-            // In a real app, we might fetch user details here using the token
-            console.log("Updating auth store...");
-            auth.login(data.access_token, { email });
+            // 1. Initial Login with minimal data to set token in store/localStorage
+            // This allows api_router (which reads store) to include the token in headers
+            const tempUser: UserRead = {
+                id: 0,
+                email: email,
+                is_active: true,
+                is_superuser: false,
+                is_verified: false,
+            };
+            auth.login(data.access_token, data.user);
 
-            console.log("Navigating to dashboard...");
-            await goto("/");
-            console.log("Navigation called.");
+            try {
+                console.log("Navigating to dashboard...");
+
+                await goto("/");
+                console.log($auth.isAuthenticated);
+                console.log("Navigation called.");
+            } catch (userError) {
+                console.error("Failed to fetch user details:", userError);
+                // CRITICAL: Rollback if profile fetch fails to avoid partial login state
+                auth.logout();
+                error =
+                    "Login succeeded but failed to load profile. Please try again.";
+            }
         } catch (e) {
             console.error("Login Error:", e);
             error = "Login failed. Please check your credentials.";

@@ -43,9 +43,6 @@ export const api_router = (router, method, endpoint) => {
         }
 
         // Ensure trailing slash for REST consistency if not query param
-        // (FastAPI strictly redirects without it usually, but let's see)
-        // Actually, if endpoint was empty, we currently look like `/api/v1/router`
-        // Should likely be `/api/v1/router/`
         if (!url.endsWith('/')) {
             url += '/';
         }
@@ -106,7 +103,7 @@ export const api_router = (router, method, endpoint) => {
                 // Handle 401
                 if (response.status === 401) {
                     if (browser) {
-                        auth.logout();
+                        //auth.logout();
                         window.location.href = '/login';
                     }
                     throw new Error('Unauthorized');

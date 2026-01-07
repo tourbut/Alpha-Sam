@@ -9,6 +9,15 @@ from app.src.deps import SessionDep_async, CurrentUser
 
 router = APIRouter()
 
+@router.get("/me", response_model=UserRead)
+async def read_user_me(
+    current_user: CurrentUser
+):
+    """
+    Get current user profile
+    """
+    return current_user
+
 @router.put("/me", response_model=UserRead)
 async def update_user_me(
     user_in: UserUpdate,

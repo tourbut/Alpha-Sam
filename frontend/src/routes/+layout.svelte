@@ -25,12 +25,14 @@
   }
 
   onMount(() => {
-    auth.initialize();
+    if (!$auth.isAuthenticated) {
+      auth.initialize();
+    }
   });
 
   function handleLogout() {
     auth.logout();
-    window.location.href = "/login";
+    goto("/login");
   }
 </script>
 

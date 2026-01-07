@@ -67,7 +67,7 @@
     }
 
     onMount(() => {
-        if (!$auth.isAuthenticated) {
+        if (!auth.isAuthenticated) {
             auth.initialize();
             goto("/login");
             return;

@@ -17,27 +17,26 @@
         update_notification_settings as updateNotificationSettings,
     } from "$lib/apis/users";
     import { onMount, onDestroy } from "svelte";
-    import type { Unsubscriber } from "svelte/store";
 
-    let email = "";
-    let nickname = "";
+    let email = $state("");
+    let nickname = $state("");
 
     // Profile Form State
-    let updateProfileMessage = "";
-    let updateProfileError = false;
+    let updateProfileMessage = $state("");
+    let updateProfileError = $state(false);
 
     // Password Form State
-    let currentPassword = "";
-    let newPassword = "";
-    let confirmPassword = "";
-    let changePasswordMessage = "";
-    let changePasswordError = false;
+    let currentPassword = $state("");
+    let newPassword = $state("");
+    let confirmPassword = $state("");
+    let changePasswordMessage = $state("");
+    let changePasswordError = $state(false);
 
     // Notification Settings State
-    let notificationSettings: any = null;
-    let notificationMessage = "";
-    let notificationError = false;
-    let updatingSettings = false;
+    let notificationSettings: any = $state(null);
+    let notificationMessage = $state("");
+    let notificationError = $state(false);
+    let updatingSettings = $state(false);
 
     async function handleToggleChange() {
         if (!notificationSettings || updatingSettings) return;
@@ -71,8 +70,6 @@
         }
     }
 
-    let unsubscribe: Unsubscriber;
-
     async function loadNotificationSettings() {
         try {
             notificationSettings = await getNotificationSettings();
@@ -83,16 +80,13 @@
 
     onMount(() => {
         loadNotificationSettings();
-        unsubscribe = auth.subscribe((state) => {
-            if (state.user) {
-                email = state.user.email;
-                nickname = state.user.nickname || "";
-            }
-        });
     });
 
-    onDestroy(() => {
-        if (unsubscribe) unsubscribe();
+    $effect(() => {
+        if (auth.user) {
+            email = auth.user.email;
+            nickname = auth.user.nickname || "";
+        }
     });
 
     async function handleUpdateProfile() {
@@ -152,7 +146,10 @@
             </h5>
             <form
                 class="flex flex-col space-y-4"
-                on:submit|preventDefault={handleUpdateProfile}
+                onsubmit={(e) => {
+                    e.preventDefault();
+                    handleUpdateProfile();
+                }}
             >
                 <div>
                     <Label for="email" class="mb-2">Email</Label>
@@ -197,7 +194,10 @@
             </h5>
             <form
                 class="flex flex-col space-y-4"
-                on:submit|preventDefault={handleChangePassword}
+                onsubmit={(e) => {
+                    e.preventDefault();
+                    handleChangePassword();
+                }}
             >
                 <div>
                     <Label for="current-password" class="mb-2"
@@ -256,7 +256,9 @@
             </h5>
             <form
                 class="flex flex-col space-y-4"
-                on:submit|preventDefault={() => {}}
+                onsubmit={(e) => {
+                    e.preventDefault();
+                }}
             >
                 {#if notificationSettings}
                     <div class="flex justify-between items-center">

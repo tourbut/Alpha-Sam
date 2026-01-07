@@ -3,6 +3,7 @@
     import { signup, login } from "$lib/apis/auth";
     import { auth } from "$lib/stores/auth";
     import { goto } from "$app/navigation";
+    import type { UserRead } from "$lib/types";
 
     let email = "";
     let password = "";
@@ -22,7 +23,16 @@
 
             // Auto login after signup
             const data = await login({ username: email, password });
-            auth.login(data.access_token, { email });
+
+            // Create a temporary UserRead object to satisfy the type
+            const tempUser: UserRead = {
+                id: 0,
+                email: email,
+                is_active: true,
+                is_verified: false,
+                is_superuser: false,
+            };
+            auth.login(data.access_token, tempUser);
             goto("/");
         } catch (e: any) {
             error = "Signup failed. " + (e.message || "");

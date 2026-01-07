@@ -25,7 +25,7 @@
   }
 
   onMount(() => {
-    if (!$auth.isAuthenticated) {
+    if (!auth.isAuthenticated) {
       auth.initialize();
     }
   });
@@ -55,7 +55,7 @@
         class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none rounded-lg text-sm p-2.5"
       />
 
-      {#if $auth.isAuthenticated}
+      {#if auth.isAuthenticated}
         <Button
           size="sm"
           class="bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800"
@@ -63,11 +63,11 @@
         >
           + Add Asset
         </Button>
-        {#if $auth.user}
+        {#if auth.user}
           <div
             class="hidden lg:flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full border border-gray-200 dark:border-gray-600"
           >
-            <span>👤 {$auth.user.nickname || $auth.user.email}</span>
+            <span>👤 {auth.user.nickname || auth.user.email}</span>
           </div>
         {/if}
         <Button
@@ -89,7 +89,7 @@
       {hidden}
       class="justify-between hidden w-full md:flex md:w-auto md:order-1"
     >
-      {#if $auth.isAuthenticated}
+      {#if auth.isAuthenticated}
         <NavLi href="/">Dashboard</NavLi>
         <NavLi href="/assets">Assets</NavLi>
         <NavLi href="/positions">Positions</NavLi>

@@ -52,7 +52,7 @@
                 console.log("Navigating to dashboard...");
 
                 await goto("/");
-                console.log($auth.isAuthenticated);
+                console.log(auth.isAuthenticated);
                 console.log("Navigation called.");
             } catch (userError) {
                 console.error("Failed to fetch user details:", userError);

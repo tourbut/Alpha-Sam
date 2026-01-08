@@ -5,7 +5,7 @@
   import AssetModal from "$lib/components/AssetModal.svelte";
   import { onMount } from "svelte";
   import { auth } from "$lib/stores/auth.svelte";
-  import DevUserSwitcher from "$lib/components/DevUserSwitcher.svelte";
+  import ChatWidget from "$lib/components/chat/ChatWidget.svelte";
 
   let openAssetModal = $state(false);
 
@@ -26,6 +26,6 @@
   </main>
 
   <Footer />
-  <DevUserSwitcher />
+  <ChatWidget />
   <AssetModal bind:open={openAssetModal} />
 </div>

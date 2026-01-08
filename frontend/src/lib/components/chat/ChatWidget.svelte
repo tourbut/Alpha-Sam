@@ -1,18 +1,72 @@
 <script lang="ts">
-    import { Button, Popover } from "flowbite-svelte";
+    import { Button } from "flowbite-svelte";
     import { auth } from "$lib/stores/auth.svelte";
+    import { tick } from "svelte";
 
     let isOpen = $state(false);
     let message = $state("");
+    let chatContainer: HTMLElement;
+
+    // Message type definition
+    type Message = {
+        id: number;
+        text: string;
+        sender: "user" | "bot";
+        timestamp: Date;
+    };
+
+    // Initialize with a welcome message
+    let messages = $state<Message[]>([
+        {
+            id: 1,
+            text: "안녕하세요! Alpha-Sam 도우미입니다 무엇을 도와드릴까요?",
+            sender: "bot",
+            timestamp: new Date(),
+        },
+    ]);
 
     function toggleChat() {
         isOpen = !isOpen;
+        if (isOpen) {
+            scrollToBottom();
+        }
     }
 
-    function sendMessage() {
+    async function sendMessage() {
         if (!message.trim()) return;
-        alert("메시지가 전송되었습니다 (Mock)");
-        message = "";
+
+        // Add user message
+        const userMsg: Message = {
+            id: Date.now(),
+            text: message,
+            sender: "user",
+            timestamp: new Date(),
+        };
+        messages.push(userMsg);
+        message = ""; // input clear
+        await scrollToBottom();
+
+        // Simulate Bot typing/reply
+        setTimeout(async () => {
+            const botMsg: Message = {
+                id: Date.now() + 1,
+                text: "이것은 Mock 봇의 자동 응답입니다. 현재 실제 AI 연결은 되어있지 않습니다.",
+                sender: "bot",
+                timestamp: new Date(),
+            };
+            messages.push(botMsg);
+            await scrollToBottom();
+        }, 1000);
+    }
+
+    async function scrollToBottom() {
+        await tick();
+        if (chatContainer) {
+            chatContainer.scrollTo({
+                top: chatContainer.scrollHeight,
+                behavior: "smooth",
+            });
+        }
     }
 </script>
 
@@ -70,22 +124,33 @@
 
                 <!-- Body -->
                 <div
-                    class="p-4 h-64 overflow-y-auto bg-gray-50 dark:bg-gray-900"
+                    class="p-4 h-80 overflow-y-auto bg-gray-50 dark:bg-gray-900 space-y-3"
+                    bind:this={chatContainer}
                 >
-                    <div class="flex flex-col gap-3">
-                        <div class="flex items-start">
+                    {#each messages as msg (msg.id)}
+                        <div
+                            class="flex w-full {msg.sender === 'user'
+                                ? 'justify-end'
+                                : 'justify-start'}"
+                        >
                             <div
-                                class="bg-gray-200 dark:bg-gray-700 rounded-lg rounded-tl-none p-3 max-w-[85%]"
+                                class="max-w-[85%] p-3 rounded-lg text-sm
+                  {msg.sender === 'user'
+                                    ? 'bg-primary-600 text-white rounded-tr-none'
+                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-tl-none'}"
                             >
-                                <p
-                                    class="text-sm text-gray-800 dark:text-gray-200"
+                                <p>{msg.text}</p>
+                                <span
+                                    class="text-xs opacity-70 block text-right mt-1"
                                 >
-                                    안녕하세요! Alpha-Sam 도우미입니다 무엇을
-                                    도와드릴까요?
-                                </p>
+                                    {msg.timestamp.toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    })}
+                                </span>
                             </div>
                         </div>
-                    </div>
+                    {/each}
                 </div>
 
                 <!-- Footer (Input) -->

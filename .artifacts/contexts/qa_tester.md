@@ -9,3 +9,4 @@
 - [2026-01-01 23:35:00] 이슈 발견: Navbar의 Logout 버튼이 동작하지 않음. **Critical Bug**로 보고.
 - [2026-01-02 23:55:00] v1.0.0 Acceptance Re-verification 완료. Critical Bug(Logout) 해결 확인.
 - [2026-01-07 15:50:00] **v1.0.3 QA FAILED**. 로그인 시 401 에러가 발생하여 대시보드 진입 불가. Remember ID 기능은 동작 확인됨. 테스트 리포트(`test_report_v1.0.3.md`) 작성 후 Developer에게 이슈 전달 필요.
+- [2026-01-08 09:35:00] Verify Auth Refactor: **FAILED**. Critical Blocker found. `auth.ts` using Runes must be renamed to `auth.svelte.ts`. Report: `test_report_auth_refactor.md`.

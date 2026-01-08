@@ -1,5 +1,5 @@
 import { API_URL } from '$lib/constants';
-import { auth } from '$lib/stores/auth';
+import { auth } from '$lib/stores/auth.svelte';
 
 import { browser } from '$app/environment';
 

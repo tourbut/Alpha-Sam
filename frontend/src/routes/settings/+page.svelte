@@ -9,7 +9,7 @@
         Toggle,
         Skeleton,
     } from "flowbite-svelte";
-    import { auth } from "$lib/stores/auth";
+    import { auth } from "$lib/stores/auth.svelte";
     import {
         update_me as updateProfile,
         change_password as changePassword,

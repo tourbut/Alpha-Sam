@@ -3,7 +3,7 @@
     import { Card, Button, Label, Input, Checkbox } from "flowbite-svelte";
     import { login } from "$lib/apis/auth";
     import { get_me } from "$lib/apis/users";
-    import { auth } from "$lib/stores/auth";
+    import { auth } from "$lib/stores/auth.svelte";
     import { goto } from "$app/navigation";
     import type { UserRead } from "$lib/types";
 

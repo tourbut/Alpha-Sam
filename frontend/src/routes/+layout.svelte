@@ -13,7 +13,7 @@
   import Footer from "$lib/components/Footer.svelte";
   import AssetModal from "$lib/components/AssetModal.svelte";
   import { onMount } from "svelte";
-  import { auth } from "$lib/stores/auth";
+  import { auth } from "$lib/stores/auth.svelte";
   import { goto } from "$app/navigation";
   import DevUserSwitcher from "$lib/components/DevUserSwitcher.svelte";
 

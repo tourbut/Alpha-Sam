@@ -101,9 +101,10 @@ export const api_router = (router, method, endpoint) => {
 
             if (!response.ok) {
                 // Handle 401
+                console.log(response.status);
                 if (response.status === 401) {
                     if (browser) {
-                        //auth.logout();
+                        auth.logout();
                         window.location.href = '/login';
                     }
                     throw new Error('Unauthorized');

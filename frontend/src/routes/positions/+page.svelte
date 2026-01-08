@@ -9,10 +9,7 @@
         Button,
     } from "flowbite-svelte";
     import { onMount } from "svelte";
-    import {
-        get_positions as getPositions,
-        delete_position as deletePosition,
-    } from "$lib/apis/positions";
+    import { get_positions as getPositions } from "$lib/apis/positions";
     import { calculatePortfolioSummary } from "$lib/utils";
     import type { Position } from "$lib/types";
     import PositionModal from "$lib/components/PositionModal.svelte";
@@ -51,32 +48,14 @@
         loadData();
     });
 
-    function openAddPositionModal() {
+    function openAddTransactionModal() {
         selectedPosition = null;
         positionModalOpen = true;
     }
 
-    function openEditPositionModal(position: Position) {
+    function openTradeModal(position: Position) {
         selectedPosition = position;
         positionModalOpen = true;
-    }
-
-    async function handleDeletePosition(position: Position) {
-        if (
-            !confirm(
-                `Are you sure you want to delete position for ${position.asset_symbol || "this asset"}?`,
-            )
-        ) {
-            return;
-        }
-
-        try {
-            await deletePosition(position.id);
-            await loadData();
-        } catch (e: any) {
-            console.error("Error deleting position:", e);
-            alert(`Failed to delete position: ${e.message}`);
-        }
     }
 
     function handlePositionCreated() {
@@ -114,7 +93,7 @@
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
             Positions
         </h1>
-        <Button onclick={openAddPositionModal}>Add Position</Button>
+        <Button onclick={openAddTransactionModal}>Add Transaction</Button>
     </div>
 
     {#if loading}
@@ -128,7 +107,8 @@
     {:else if positions.length === 0}
         <div class="text-center py-8">
             <p class="text-gray-600 dark:text-gray-400">
-                No positions found. Add your first position to get started.
+                No positions found. Record your first transaction to get
+                started.
             </p>
         </div>
     {:else}
@@ -211,18 +191,9 @@
                                     <Button
                                         size="xs"
                                         color="alternative"
-                                        onclick={() =>
-                                            openEditPositionModal(position)}
+                                        onclick={() => openTradeModal(position)}
                                     >
-                                        Edit
-                                    </Button>
-                                    <Button
-                                        size="xs"
-                                        color="red"
-                                        onclick={() =>
-                                            handleDeletePosition(position)}
-                                    >
-                                        Delete
+                                        Trade
                                     </Button>
                                 </div>
                             </TableBodyCell>

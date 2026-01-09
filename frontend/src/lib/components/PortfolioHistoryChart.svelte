@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
     import Chart from "chart.js/auto";
-    import type { PortfolioHistory } from "$lib/api";
+    import type { PortfolioHistory } from "$lib/types";
 
     export let history: PortfolioHistory[] = [];
 

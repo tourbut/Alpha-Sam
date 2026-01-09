@@ -1,14 +1,15 @@
-from pydantic import BaseModel, Field, computed_field, ConfigDict
+from sqlmodel import SQLModel, Field
+from pydantic import computed_field, ConfigDict
 from datetime import datetime
 from typing import Literal, Optional
 
-class TransactionCreate(BaseModel):
+class TransactionCreate(SQLModel):
     asset_id: int
     type: Literal["BUY", "SELL"]
     quantity: float = Field(gt=0, description="거래 수량")
     price: float = Field(gt=0, description="거래 단가")
 
-class TransactionRead(BaseModel):
+class TransactionRead(SQLModel):
     id: int
     asset_id: int
     type: str
@@ -23,6 +24,6 @@ class TransactionRead(BaseModel):
     def total_amount(self) -> float:
         return self.quantity * self.price
 
-class TransactionList(BaseModel):
+class TransactionList(SQLModel):
     items: list[TransactionRead]
     count: int

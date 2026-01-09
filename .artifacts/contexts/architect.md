@@ -86,3 +86,5 @@
 ## 5. Handovers
 - [2025-12-27 10:45:00] **Architect -> Backend**: `owner_id` 누락 없는지 CRUD 코드 리뷰 강화 요청.
 - [2025-12-27 10:45:00] **Architect -> Frontend**: API 호출 시 User Context 전달 방식(Header vs Token) 변경 대비.
+- [2026-01-08 17:15:00] **Feature Merged**: `feature/enhanced-mock-chat` (Mock Chat Widget with history) merged into `develop`. QA Verified.
+- [2026-01-09 15:15:00] **v1.1.0 Planning**: Drafted `v1.1.0_architecture_draft.md`. Defined Schema for Social (PortfolioShare, Leaderboard) and Automation (Bot, Alerts).

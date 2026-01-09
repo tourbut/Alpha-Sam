@@ -4,3 +4,10 @@
 - [2025-12-31 15:20:00] Refactoring: `src/lib/api.ts`에 401 Unauthorized Interceptor를 구현함. 인증 실패 시 로컬 스토리지 정리 및 로그인 페이지 리다이렉트 처리.
 - [2025-12-31 17:25:00] v0.9.0 배포 대비 Cleanup: `src/lib/api.ts` 리팩토링 사항(인터셉터, 상수화)을 `develop` 브랜치에 커밋 및 푸시함. Production Check 대기 중.
 - [2026-01-01 23:30:00] Bugfix & Feature: Tailwind 4 환경에서 `darkMode: 'class'` 적용 시 `app.css`에 `@config` 지시어 필요함 확인. Logout 버튼(`onclick`) 이벤트 핸들링 문제 해결을 위해 `window.location.href` 사용 및 Syntax 수정.
+- [2026-01-04 21:50:00] API Refactor Complete: `src/lib/api.ts` 제거 및 `src/lib/apis/` 모듈화 완료.
+- [2026-01-04 21:55:00] Troubleshooting: `fastapi.js`의 `api_router` 래퍼 사용 시, 매개변수는 반드시 **객체** 형태여야 함을 확인 (예: `getPortfolioHistory({ skip: 0, limit: 30 })`). 숫자를 직접 전달 시 `success_callback`으로 오인되어 TypeError 발생.
+- [2026-01-04 22:00:00] Auth Logic: `auth.js`의 `login` 함수 from 폼 데이터로 전송하도록 수정함 (FastAPI `OAuth2PasswordRequestForm` 호환).
+- [2026-01-06 23:55:00] Bugfix & Feature: 'Remember ID' 기능 구현 및 `savedEmail` 로컬 스토리지 연동 완료. Backend CORS 포트(5173) 추가 및 `fastapi.js`의 강제 trailing slash 제거로 리다이렉트/CORS 이슈 해결. `auth.js`를 `api_router` 표준 방식으로 리팩토링함.
+- [2026-01-08 09:10:00] Refactoring: `auth` store를 Svelte 5 Runes(``)로 전환 완료. `` 구독 문법을 제거하고 `auth.User` 등 직접 접근으로 변경함. `settings` 페이지는 Runes 모드로 완전히 리팩토링.
+- [2026-01-08 09:50:00] Fix: Refactoring 'auth.ts' -> 'auth.svelte.ts' to fix Svelte 5 Runes error. Updated imports. Backend  updated to support  scheme.
+- [2026-01-08 15:35:00] Refactoring: `+layout.svelte`에 포함된 Navbar를 `$lib/components/common/AppNavbar.svelte`로 추출하는 작업 시작. Svelte 5 Runes 및 Flowbite-svelte 구조 유지 필수.

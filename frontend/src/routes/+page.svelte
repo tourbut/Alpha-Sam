@@ -1,19 +1,22 @@
 <script lang="ts">
     import { Card, Button } from "flowbite-svelte";
     import { onMount } from "svelte";
+    import { get_assets as getAssets } from "$lib/apis/assets";
     import {
-        getAssets,
-        getPortfolioSummary,
-        getPortfolioHistory,
-        type Asset,
-        type Position,
-        type ApiPortfolioSummary,
-        type PortfolioHistory,
-        refreshPrices,
-    } from "$lib/api";
+        get_portfolio_summary as getPortfolioSummary,
+        get_portfolio_history as getPortfolioHistory,
+    } from "$lib/apis/portfolio";
+    import { refresh_prices as refreshPrices } from "$lib/apis/prices";
+    import type {
+        Asset,
+        Position,
+        ApiPortfolioSummary,
+        PortfolioHistory,
+    } from "$lib/types";
     import PortfolioDistributionChart from "$lib/components/PortfolioDistributionChart.svelte";
     import PortfolioHistoryChart from "$lib/components/PortfolioHistoryChart.svelte";
-    import { auth } from "$lib/stores/auth";
+    import { auth } from "$lib/stores/auth.svelte";
+    import ShareModal from "$lib/components/ShareModal.svelte";
     import { goto } from "$app/navigation";
 
     let assets: Asset[] = [];
@@ -28,6 +31,7 @@
     let error: string | null = null;
     let loading = true;
     let refreshing = false;
+    let showShareModal = $state(false);
 
     async function handleRefresh() {
         refreshing = true;
@@ -50,7 +54,7 @@
                 await Promise.all([
                     getAssets(),
                     getPortfolioSummary(),
-                    getPortfolioHistory(0, 30),
+                    getPortfolioHistory({ skip: 0, limit: 30 }),
                 ]);
             assets = assetsData;
             positions = summaryResponse.positions;
@@ -65,8 +69,8 @@
     }
 
     onMount(() => {
-        auth.initialize();
-        if (!$auth.isAuthenticated) {
+        if (!auth.isAuthenticated) {
+            auth.initialize();
             goto("/login");
             return;
         }
@@ -97,19 +101,30 @@
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
             Portfolio Dashboard
         </h1>
-        <Button
-            color="light"
-            size="sm"
-            on:click={handleRefresh}
-            disabled={refreshing}
-        >
-            {#if refreshing}
-                Refreshing...
-            {:else}
-                Refresh Prices
-            {/if}
-        </Button>
+        <div class="flex gap-2">
+            <Button
+                color="alternative"
+                size="sm"
+                onclick={() => (showShareModal = true)}
+            >
+                Share Portfolio
+            </Button>
+            <Button
+                color="light"
+                size="sm"
+                onclick={handleRefresh}
+                disabled={refreshing}
+            >
+                {#if refreshing}
+                    Refreshing...
+                {:else}
+                    Refresh Prices
+                {/if}
+            </Button>
+        </div>
     </div>
+
+    <ShareModal bind:open={showShareModal} />
 
     {#if loading}
         <div class="text-center py-8">
@@ -118,7 +133,7 @@
     {:else if error}
         <div class="text-center py-8">
             <p class="text-red-600 dark:text-red-400 mb-4">{error}</p>
-            <Button on:click={loadData}>Retry</Button>
+            <Button onclick={loadData}>Retry</Button>
         </div>
     {:else}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -192,6 +207,11 @@
                     >
                     <Button href="/positions" color="alternative" class="w-full"
                         >Manage Positions</Button
+                    >
+                    <Button
+                        href="/social/leaderboard"
+                        color="green"
+                        class="w-full">View Leaderboard</Button
                     >
                 </div>
             </Card>

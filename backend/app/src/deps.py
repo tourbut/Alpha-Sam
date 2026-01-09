@@ -65,3 +65,7 @@ async def get_current_user(
         raise HTTPException(status_code=400, detail="Inactive user")
         
     return user
+
+from typing import Annotated
+SessionDep_async = Annotated[AsyncSession, Depends(get_session)]
+CurrentUser = Annotated[User, Depends(get_current_user)]

@@ -14,15 +14,14 @@
     } from "flowbite-svelte";
     import { onMount } from "svelte";
     import { fade } from "svelte/transition";
+    import { get_assets as getAssets } from "$lib/apis/assets";
+    import { refresh_prices as refreshPrices } from "$lib/apis/prices";
     import {
-        getAssets,
-        refreshPrices,
-        getPositions,
-        calculatePortfolioSummary,
-        deletePosition,
-        type Asset,
-        type Position,
-    } from "$lib/api";
+        get_positions as getPositions,
+        delete_position as deletePosition,
+    } from "$lib/apis/positions";
+    import { calculatePortfolioSummary } from "$lib/utils";
+    import type { Asset, Position } from "$lib/types";
     import AssetModal from "$lib/components/AssetModal.svelte";
     import PositionModal from "$lib/components/PositionModal.svelte";
 

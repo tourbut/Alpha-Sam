@@ -1,12 +1,14 @@
 <script lang="ts">
-    import { Modal, Label, Input, Button, Select } from "flowbite-svelte";
     import {
-        createPosition,
-        updatePosition,
-        type PositionCreate,
-        type PositionUpdate,
-        type Asset,
-    } from "$lib/api";
+        Modal,
+        Label,
+        Input,
+        Button,
+        Select,
+        Radio,
+    } from "flowbite-svelte";
+    import { create_transaction as createTransaction } from "$lib/apis/transactions";
+    import type { Asset } from "$lib/types";
     import { createEventDispatcher } from "svelte";
 
     export let open = false;
@@ -23,41 +25,39 @@
     const dispatch = createEventDispatcher();
 
     let selectedAssetId: number | null = null;
+    let type: "BUY" | "SELL" = "BUY";
     let quantity = "";
-    let buyPrice = "";
-    let buyDate = "";
+    let price = "";
     let error: string | null = null;
     let loading = false;
 
     // 모달이 열릴 때 초기화
     $: if (open) {
         if (position) {
-            // 수정 모드
+            // Pre-fill asset if adding a trade from an existing position row
             selectedAssetId = position.asset_id;
-            quantity = position.quantity.toString();
-            buyPrice = position.buy_price.toString();
-            buyDate = position.buy_date || "";
+            type = "BUY";
+            quantity = "";
+            price = "";
         } else if (asset) {
-            // 특정 Asset에 대한 Position 추가
             selectedAssetId = asset.id;
+            type = "BUY";
             quantity = "";
-            buyPrice = "";
-            buyDate = "";
+            price = "";
         } else {
-            // 새 Position 추가 (Asset 선택 필요)
             selectedAssetId = null;
+            type = "BUY";
             quantity = "";
-            buyPrice = "";
-            buyDate = "";
+            price = "";
         }
         error = null;
     }
 
     function resetForm() {
         selectedAssetId = null;
+        type = "BUY";
         quantity = "";
-        buyPrice = "";
-        buyDate = "";
+        price = "";
         error = null;
     }
 
@@ -68,14 +68,14 @@
         }
 
         const qty = parseFloat(quantity);
-        if (isNaN(qty) || qty < 0) {
-            error = "Quantity must be 0 or greater";
+        if (isNaN(qty) || qty <= 0) {
+            error = "Quantity must be greater than 0";
             return false;
         }
 
-        const price = parseFloat(buyPrice);
-        if (isNaN(price) || price <= 0) {
-            error = "Buy price must be greater than 0";
+        const p = parseFloat(price);
+        if (isNaN(p) || p <= 0) {
+            error = "Price must be greater than 0";
             return false;
         }
 
@@ -91,31 +91,19 @@
         error = null;
 
         try {
-            if (position) {
-                // 수정 모드
-                const updateData: PositionUpdate = {
-                    quantity: parseFloat(quantity),
-                    buy_price: parseFloat(buyPrice),
-                    buy_date: buyDate || undefined,
-                };
-                await updatePosition(position.id, updateData);
-            } else {
-                // 생성 모드
-                const newPosition: PositionCreate = {
-                    asset_id: selectedAssetId!,
-                    quantity: parseFloat(quantity),
-                    buy_price: parseFloat(buyPrice),
-                    buy_date: buyDate || undefined,
-                };
-                await createPosition(newPosition);
-            }
+            await createTransaction({
+                asset_id: Number(selectedAssetId),
+                type,
+                quantity: parseFloat(quantity),
+                price: parseFloat(price),
+            });
 
             dispatch("created");
             open = false;
             resetForm();
         } catch (err: any) {
-            console.error("Failed to save position:", err);
-            error = err.message || "Failed to save position";
+            console.error("Failed to save transaction:", err);
+            error = err.message || "Failed to save transaction";
         } finally {
             loading = false;
         }
@@ -129,7 +117,7 @@
 
 <Modal
     bind:open
-    title={position ? "Edit Position" : "Add Position"}
+    title="Add Transaction"
     autoclose={false}
     onclose={handleClose}
 >
@@ -173,41 +161,35 @@
         {/if}
 
         <Label>
+            <span>Type</span>
+            <div class="flex gap-4 mt-2">
+                <Radio name="type" bind:group={type} value="BUY">Buy</Radio>
+                <Radio name="type" bind:group={type} value="SELL">Sell</Radio>
+            </div>
+        </Label>
+
+        <Label>
             <span>Quantity</span>
             <Input
                 type="number"
                 step="any"
-                min="0"
+                min="0.00000001"
                 bind:value={quantity}
                 placeholder="0.0"
                 required
             />
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Amount of asset you own (must be 0 or greater)
-            </p>
         </Label>
 
         <Label>
-            <span>Buy Price</span>
+            <span>Price</span>
             <Input
                 type="number"
                 step="any"
                 min="0.01"
-                bind:value={buyPrice}
+                bind:value={price}
                 placeholder="0.00"
                 required
             />
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Price per unit when you bought (must be greater than 0)
-            </p>
-        </Label>
-
-        <Label>
-            <span>Buy Date (Optional)</span>
-            <Input type="date" bind:value={buyDate} />
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Date when you purchased this asset
-            </p>
         </Label>
 
         <div class="flex gap-2 justify-end">
@@ -220,7 +202,7 @@
                 Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-                {loading ? "Saving..." : position ? "Update" : "Create"}
+                {loading ? "Saving..." : "Record Transaction"}
             </Button>
         </div>
     </form>

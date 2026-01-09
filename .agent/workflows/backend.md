@@ -21,6 +21,7 @@ description: RDBMS에 능숙한 백엔드 개발
 - 기존 코드 스타일(네이밍, 레이어 구조)에 맞추어 새로운 코드를 작성합니다.
 - 변경 시 영향 범위를 고려하고, 필요한 경우 간단한 테스트 코드라도 함께 추가합니다.
 - **Version Control**: 커밋 메시지, 브랜치 전략 등은 반드시 `.artifacts/projects/version_control_guidelines.md` 규칙을 따릅니다.
+- **Backend Code Style**: 백앤드 코드 작성시 반드시 `.artifacts/projects/backend_code_style.md` 규칙을 따릅니다.
 
 ## 개발 환경
 - backend: `uv run`

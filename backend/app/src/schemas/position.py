@@ -3,11 +3,13 @@ Position (보유 내역) 스키마
 """
 from datetime import date, datetime
 from typing import Optional
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from sqlmodel import SQLModel, Field
+from pydantic import ConfigDict
+from pydantic import field_validator
 from decimal import Decimal
 
 
-class PositionBase(BaseModel):
+class PositionBase(SQLModel):
     asset_id: int
     quantity: float = Field(ge=0.0, description="보유 수량 (0 이상)")
     buy_price: float = Field(gt=0.0, description="매수 단가 (0 초과)")
@@ -32,7 +34,7 @@ class PositionCreate(PositionBase):
     pass
 
 
-class PositionUpdate(BaseModel):
+class PositionUpdate(SQLModel):
     quantity: Optional[float] = Field(default=None, ge=0.0)
     buy_price: Optional[float] = Field(default=None, gt=0.0)
     buy_date: Optional[date] = None

@@ -9,3 +9,5 @@
 - [2026-01-04 22:00:00] Auth Logic: `auth.js`의 `login` 함수 from 폼 데이터로 전송하도록 수정함 (FastAPI `OAuth2PasswordRequestForm` 호환).
 - [2026-01-06 23:55:00] Bugfix & Feature: 'Remember ID' 기능 구현 및 `savedEmail` 로컬 스토리지 연동 완료. Backend CORS 포트(5173) 추가 및 `fastapi.js`의 강제 trailing slash 제거로 리다이렉트/CORS 이슈 해결. `auth.js`를 `api_router` 표준 방식으로 리팩토링함.
 - [2026-01-08 09:10:00] Refactoring: `auth` store를 Svelte 5 Runes(``)로 전환 완료. `` 구독 문법을 제거하고 `auth.User` 등 직접 접근으로 변경함. `settings` 페이지는 Runes 모드로 완전히 리팩토링.
+- [2026-01-08 09:50:00] Fix: Refactoring 'auth.ts' -> 'auth.svelte.ts' to fix Svelte 5 Runes error. Updated imports. Backend  updated to support  scheme.
+- [2026-01-08 15:35:00] Refactoring: `+layout.svelte`에 포함된 Navbar를 `$lib/components/common/AppNavbar.svelte`로 추출하는 작업 시작. Svelte 5 Runes 및 Flowbite-svelte 구조 유지 필수.

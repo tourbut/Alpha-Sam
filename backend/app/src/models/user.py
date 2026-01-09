@@ -18,6 +18,7 @@ class User(SQLModel, table=True):
     is_superuser: bool = Field(default=False)
     is_verified: bool = Field(default=False)
     nickname: Optional[str] = Field(default=None, max_length=50)
+    is_public_leaderboard: bool = Field(default=False)
     
     created_at: datetime = Field(
         default_factory=datetime.utcnow,

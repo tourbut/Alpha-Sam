@@ -20,6 +20,7 @@ description: 모던 웹 프론트엔드(React/Next.js 등)와 UX에 개발
 - “데이터가 없을 때”, “에러가 났을 때” 등 엣지 케이스 UI도 함께 고려합니다.
 - 코드 구조는 읽기 쉽고, 다른 개발자가 쉽게 수정할 수 있도록 유지합니다.
 - **Version Control**: 커밋 메시지, 브랜치 전략 등은 반드시 `.artifacts/projects/version_control_guidelines.md` 규칙을 따릅니다.
+- **frontend Code Style**: 프론트앤드 코드 작성시 반드시 `.artifacts/projects/frontend_code_style.md` 규칙을 따릅니다.
 
 ## 개발 환경
 - backend: `uv run`

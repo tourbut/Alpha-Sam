@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
     import Chart from "chart.js/auto";
-    import type { Position } from "$lib/api";
+    import type { Position } from "$lib/types";
 
     export let positions: Position[] = [];
 

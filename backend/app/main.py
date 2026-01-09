@@ -51,6 +51,24 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+from fastapi.middleware.cors import CORSMiddleware
+
+origins = [
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to Alpha-Sam API"}

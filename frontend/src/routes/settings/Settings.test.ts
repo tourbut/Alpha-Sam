@@ -1,23 +1,23 @@
 import { render, fireEvent, screen, waitFor } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import SettingsPage from './+page.svelte';
-import * as api from '$lib/api';
-import { auth } from '$lib/stores/auth';
+import * as usersApi from '$lib/apis/users';
+import { auth } from '$lib/stores/auth.svelte';
 
-// Mock $lib/api
-vi.mock('$lib/api', async () => {
-    const actual = await vi.importActual('$lib/api');
+// Mock $lib/apis/users
+vi.mock('$lib/apis/users', async () => {
+    const actual = await vi.importActual('$lib/apis/users');
     return {
         ...actual,
-        getNotificationSettings: vi.fn(),
-        updateNotificationSettings: vi.fn(),
-        updateProfile: vi.fn(),
-        changePassword: vi.fn()
+        get_notification_settings: vi.fn(),
+        update_notification_settings: vi.fn(),
+        update_me: vi.fn(),
+        change_password: vi.fn()
     };
 });
 
-// Mock $lib/stores/auth
-vi.mock('$lib/stores/auth', () => {
+// Mock $lib/stores/auth.svelte
+vi.mock('$lib/stores/auth.svelte', () => {
     const { writable } = require('svelte/store');
     return {
         auth: {
@@ -36,14 +36,14 @@ describe('Settings Page', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        (api.getNotificationSettings as any).mockResolvedValue(mockSettings);
+        (usersApi.get_notification_settings as any).mockResolvedValue(mockSettings);
     });
 
     it('should load and display notification settings', async () => {
         render(SettingsPage);
 
         await waitFor(() => {
-            expect(api.getNotificationSettings).toHaveBeenCalled();
+            expect(usersApi.get_notification_settings).toHaveBeenCalled();
         });
 
         const dailyToggle = screen.getByLabelText(/Daily Portfolio Report/i) as HTMLInputElement;
@@ -54,31 +54,28 @@ describe('Settings Page', () => {
     });
 
     it('should call updateNotificationSettings when toggle is clicked', async () => {
-        (api.updateNotificationSettings as any).mockResolvedValue({ ...mockSettings, price_alert_enabled: true });
+        vi.useFakeTimers();
+        (usersApi.update_notification_settings as any).mockResolvedValue({ ...mockSettings, price_alert_enabled: true });
 
         render(SettingsPage);
 
         // Wait for settings to load
         await waitFor(() => {
-            expect(api.getNotificationSettings).toHaveBeenCalled();
+            expect(usersApi.get_notification_settings).toHaveBeenCalled();
         });
 
-        // Toggle elements in Flowbite-Svelte are often nested.
-        // We find the label and click its parent or the input inside.
-        const priceToggleLabel = screen.getByText(/Price Alerts/i);
-        const priceToggleContainer = priceToggleLabel.closest('label');
-        const input = priceToggleContainer?.querySelector('input');
+        const input = screen.getByLabelText(/Price Alerts/i);
 
-        if (input) {
-            await fireEvent.click(input);
+        await fireEvent.click(input);
 
-            await waitFor(() => {
-                expect(api.updateNotificationSettings).toHaveBeenCalled();
-            }, { timeout: 2000 });
+        // Fast-forward time for setTimeout(..., 0)
+        vi.runAllTimers();
 
-            expect(screen.getByText(/Preferences updated automatically/i)).toBeTruthy();
-        } else {
-            throw new Error('Toggle input not found');
-        }
+        await waitFor(() => {
+            expect(usersApi.update_notification_settings).toHaveBeenCalled();
+        });
+
+        expect(screen.getByText(/Preferences updated automatically/i)).toBeTruthy();
+        vi.useRealTimers();
     });
 });

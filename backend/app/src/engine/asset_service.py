@@ -18,7 +18,7 @@ class AssetService:
         """
         자산 목록 조회 및 메트릭(평가액, 손익 등) 계산
         """
-        assets_data = await crud_asset.get_assets(session, owner_id=user_id, skip=skip, limit=limit)
+        assets_data = await crud_asset.get_assets(session=session, owner_id=user_id, skip=skip, limit=limit)
         
         asset_reads = []
         for asset, latest_price, latest_timestamp, position_obj in assets_data:
@@ -61,7 +61,7 @@ class AssetService:
         자산 생성 (심볼 자동 검색 및 채우기 포함)
         """
         # 중복 체크
-        existing_asset = await crud_asset.get_asset_by_symbol(session, symbol=asset_in.symbol)
+        existing_asset = await crud_asset.get_asset_by_symbol(session=session, symbol=asset_in.symbol, owner_id=user_id)
         if existing_asset and (existing_asset.owner_id is None or existing_asset.owner_id == user_id):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -80,14 +80,20 @@ class AssetService:
                 if not asset_in.category and match.get("type"):
                     asset_in.category = match["type"]
             else:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST, 
-                    detail="Name is required (could not auto-fill from symbol)"
-                )
+                # If auto-fill failed and name is not provided, we can't proceed
+                # Instead of raising immediately here if match failed, we double check below
+                pass
+
+        # Double check: Name is mandatory
+        if not asset_in.name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail="Asset name is required (could not auto-fill from symbol)"
+            )
 
         # 소유자 설정
         asset_in.owner_id = user_id if asset_in.owner_id is None else asset_in.owner_id
 
-        return await crud_asset.create_asset(session, obj_in=asset_in)
+        return await crud_asset.create_asset(session=session, obj_in=asset_in)
 
 asset_service = AssetService()

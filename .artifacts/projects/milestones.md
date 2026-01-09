@@ -20,11 +20,17 @@
   - Portfolio N+1 Optimization.
   - Production Deployment Pipeline Test.
 
-## 🚀 v1.0.0: Official Launch (Upcoming)
-- **Target Date**: 2026-01-05
+## ✅ v1.0.0: Official Launch (Completed)
+- **Date**: 2026-01-03
 - **Themes**: Analytics, Stability, UX.
+- **Key Achievements**:
+  - Full PnL Analytics & Portfolio Charts.
+  - UI/UX Polish (Dark Mode, Responsive Navbar).
+  - Production Deployment with Docker Compose (Nginx, Redis, Celery).
+  - Hotfixes Applied: `v1.0.1` (Dependency), `v1.0.2` (Volume Config).
+
+## 🔮 v1.1.0: Advanced Features (Planned)
+- **Themes**: Social, Automation.
 - **Tasks**:
-  1. **Analytics**: Portfolio History & PnL Charts (Frontend/Backend).
-  2. **Stability**: Auto-restart configuration (Docker/Systemd), Health Checks.
-  3. **UX**: Landing Page, Responsive Design Polish.
-  4. **Documentation**: User Manual, API Docs (Swagger public).
+  1. **Social**: Share Portfolio, Leaderboard.
+  2. **Automation**: Auto-rebalance alerts, Trading Bot integration (Paper Trading).

@@ -7,7 +7,7 @@
         Select,
         Helper,
     } from "flowbite-svelte";
-    import { createAsset } from "$lib/api";
+    import { create_asset as createAsset } from "$lib/apis/assets";
     import { createEventDispatcher } from "svelte";
 
     export let open = false;

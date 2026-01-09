@@ -8,7 +8,8 @@ from app.src.models.user import User
 from app.src.models.transaction import Transaction
 from app.src.models.portfolio_history import PortfolioHistory
 from app.src.models.notification import NotificationSettings
+from app.src.models.portfolio_share import PortfolioShare
 
-__all__ = ["Asset", "Price", "Position", "User", "Transaction", "PortfolioHistory", "NotificationSettings"]
+__all__ = ["Asset", "Price", "Position", "User", "Transaction", "PortfolioHistory", "NotificationSettings", "PortfolioShare"]
 
 

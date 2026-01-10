@@ -48,6 +48,10 @@ celery_app.conf.update(
     worker_max_tasks_per_child=1000,
     # Celery Beat 스케줄 설정
     beat_schedule={
+        "collect-market-prices": {
+            "task": "app.src.engine.tasks.price_tasks.collect_market_prices",
+            "schedule": 120.0,  # 2분마다 실행
+        },
         "update-all-prices": {
             "task": "app.src.engine.tasks.price_tasks.update_all_prices",
             "schedule": 300.0,  # 5분마다 실행 (초 단위)

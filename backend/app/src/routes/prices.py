@@ -24,11 +24,14 @@ async def refresh_prices(
         
         updated_count = 0
         
-        # 2. 각 자산별 시세 조회 및 저장
+        # 2. 각 자산별 시세 조회 및 저장 (캐시 무효화 후 조회)
         from datetime import datetime
         for asset in assets:
-            # [Refactor] Redis에서 최신 가격 조회 (Collector가 업데이트함)
-            current_price = await price_service.get_current_price(asset.symbol)
+            # 캐시 무효화
+            await price_service.invalidate_cache(asset.symbol)
+            
+            # 캐시를 사용하지 않고 최신 가격 조회
+            current_price = await price_service.get_current_price(asset.symbol, use_cache=False)
             
             new_price = Price(
                 asset_id=asset.id,

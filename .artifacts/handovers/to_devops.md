@@ -1,28 +1,24 @@
 # Handovers: To DevOps
 
 ## 날짜
-- 2026-01-11
+- 2026-01-05
 
 ## 현재 상황 (Context)
-- v1.2.0 기능 개발 및 QA가 완료되었습니다 ("Ready for Deployment").
-- 이제 배포 파이프라인(Release Branching & Migration)을 가동해야 합니다.
+- v1.0.0에서 발견된 Critical Bug(Backend 500 Error, Data Leak)가 수정되었습니다.
+- QA 검증이 완료되었으며, 해당 수정 사항을 포함한 `v1.0.1` 릴리즈가 필요합니다.
 
 ## 해야 할 일 (Tasks)
-1. **Release Branching**:
-    - `develop` 브랜치에서 `release/v1.2.0` 브랜치 생성.
-    - 버전 정보 업데이트 (필요 시).
-2. **Merge to Main**:
-    - `release/v1.2.0` -> `main` 병합.
-    - **Tag `v1.2.0` 생성 및 Push**.
-3. **Deployment (Local/Simulated)**:
-    - 로컬 환경 백업 수행 (만약 운영 데이터가 있다면).
-    - `alembic upgrade head` 실행하여 DB 마이그레이션 적용.
-    - 서버 재기동 및 헬스체크 확인.
+1.  **Release v1.0.1 (Git Tag & Merge)**
+    - 현재 작업 내용을 확인하고 커밋하십시오 (Message: `fix: resolve asset creation error and data leak`).
+    - Git Tag `v1.0.1`을 생성하십시오.
+    - `main` 및 `develop` 브랜치에 병합(Merge)하고 원격 저장소에 Push 하십시오.
+
+2.  **Deployment Verification**
+    - 로컬 도커 환경(또는 배포 환경)에서 clean build 후 서버가 정상 기동되는지 최종 확인하십시오.
 
 ## 기대 산출물 (Expected Outputs)
-- Git Tag `v1.2.0` 존재.
-- 마이그레이션이 적용된 DB 스키마 (`portfolios` 테이블 존재).
-- 정상 동작하는 v1.2.0 애플리케이션.
+- Git Tag `v1.0.1`
+- Clean `git status` (on `develop` branch)
 
 ## 참고 자료 (References)
-- `.artifacts/projects/deployment_checklist_v1.2.0.md`
+- `.artifacts/projects/version_control_guidelines.md`

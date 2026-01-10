@@ -1,14 +1,15 @@
 # Handovers: To Frontend Developer
 
 ## 날짜
-- 2026-01-11
+- 2026-01-04
 
 ## 현재 상황 (Context)
-- v1.2.0 개발이 완료되어 배포 단계에 진입했습니다.
+- QA 회귀 테스트에서 Backend 이슈(Data Leak, 500 Error)가 발견되어 Backend 팀이 수정 중입니다.
 
 ## 해야 할 일 (Tasks)
-- (Standby) 배포 후 사용성 관련 피드백 대응 대기.
-- (Optional) v1.3.0 차트 고도화(Portfolio Growth Chart) 관련 라이브러리 리서치.
+- **[Standby]**
+  - Backend 수정이 완료될 때까지 대기하십시오.
+  - 필요시 Frontend API 호출 파라미터 수정이 필요할 수 있으니 `to_frontend_dev.md`를 주시하십시오.
 
 ## 기대 산출물 (Expected Outputs)
-- N/A
+- (없음 - 대기)

@@ -20,7 +20,7 @@
     } from "$lib/apis/transactions";
     import { get_assets as getAssets } from "$lib/apis/assets";
     import type { Transaction, Asset, CreateTransaction } from "$lib/types";
-    import { auth } from "$lib/stores/auth.svelte";
+    import { auth } from "$lib/stores/auth";
     import { goto } from "$app/navigation";
 
     let transactions: Transaction[] = [];
@@ -62,7 +62,7 @@
     }
 
     onMount(() => {
-        if (!auth.isAuthenticated) {
+        if (!$auth.isAuthenticated) {
             goto("/login");
             return;
         }

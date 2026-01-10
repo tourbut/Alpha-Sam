@@ -7,7 +7,3 @@
 - [2026-01-02 23:30:00] v1.0.0 Release 작업 시작.
 - [2026-01-03 00:20:00] v1.0.0 배포 실패(Migration/Dep Issue). Hotfix v1.0.1(`fastapi-users` 의존성 누락), v1.0.2(`celery-beat` volume mount 이슈) 적용 후 Production 배포 성공.
     - Status: Backend, Frontend, Celery(Worker/Beat), Nginx, DB, Redis 모두 정상 동작.
-- [2026-01-10 10:00:00] v1.0.3 배포 후 모니터링: Backend `/health` 및 Frontend `/login` 정상 응답 확인. 시스템 안정 상태 유지 중.
-- [2026-01-10 21:15:00] **Price Collector 스케줄링 및 태스크 최적화 완료**
-    - `Price Collector`를 Celery 태스크로 통합하고 Celery Beat(120초 주기)에 등록함.
-    - `PriceService` 리팩토링에 맞춰 `price_tasks.py`의 캐시 무효화 로직을 제거하고 Redis 우선 조회로 수정함.

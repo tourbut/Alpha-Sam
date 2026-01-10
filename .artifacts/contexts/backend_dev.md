@@ -6,8 +6,3 @@
 - [2026-01-01 17:30:00] v1.0.0 대비 Backend Refactoring 완료. `main.py`/`api.py` 라우터 정리, `AssetService` 분리(비즈니스 로직 캡슐화), `security.py` JWT 로직 중앙화, `deps.py` 환경 분리 적용. 테스트(`test_assets_autofill` 등) 수정 및 통과 확인.
 
 - [2026-01-04 22:35:00] Hotfix: Frontend 연동 검증 중 `AssetService.get_assets_with_metrics`에서 `crud_asset.get_assets` 호출 시 `session` 인자가 Positional로 전달되어 TypeError 발생하는 문제 확인. Keyword Argument (`session=session`)로 수정하여 해결함. Style Guide 준수 확인.
-
-- [2026-01-10 21:10:00] **PriceService Redis Refactoring 완료**
-    - `PriceService.get_current_price`를 Redis 전용으로 전환하여 성능 및 안정성 확보.
-    - 별도의 가격 수집기(`scripts/price_collector.py`) 구현 완료.
-    - `validate_symbol`은 신규 자산 검증을 위해 외부 체크 유지. (Decoupling with UX fallback)

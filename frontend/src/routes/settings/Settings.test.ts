@@ -2,7 +2,7 @@ import { render, fireEvent, screen, waitFor } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import SettingsPage from './+page.svelte';
 import * as usersApi from '$lib/apis/users';
-import { auth } from '$lib/stores/auth.svelte';
+import { auth } from '$lib/stores/auth';
 
 // Mock $lib/apis/users
 vi.mock('$lib/apis/users', async () => {
@@ -16,8 +16,8 @@ vi.mock('$lib/apis/users', async () => {
     };
 });
 
-// Mock $lib/stores/auth.svelte
-vi.mock('$lib/stores/auth.svelte', () => {
+// Mock $lib/stores/auth
+vi.mock('$lib/stores/auth', () => {
     const { writable } = require('svelte/store');
     return {
         auth: {

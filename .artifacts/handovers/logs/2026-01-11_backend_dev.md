@@ -24,5 +24,15 @@
 - Confirmed the fix for the "Double Prefix" issue (removed `prefix="/portfolios"` from `APIRouter` init, as `api.py` already handles it).
 - Validated `POST /api/v1/portfolios/{id}/transactions` endpoint exists and calls `portfolio_service` correctly.
 
-## Next Steps
-- DevOps role to execute the migration on Staging/Production.
+## Incident Response (Git Merge Conflict)
+- **Action**: Resolved conflicts in `release/v1.2.0` merge from `main`.
+- **Strategy**: Adopted `HEAD` (v1.2.0) changes for all Backend logic to ensure new features (Multi-Portfolio, Transactions) work correctly.
+- **Resolved Files**:
+    - `backend/app/main.py`: Kept v1.2.0 origin settings.
+    - `backend/app/src/routes/positions.py`: Kept v1.2.0 `PortfolioService` integration logic.
+    - `backend/app/src/crud/crud_transaction.py`: Kept v1.2.0 WAP logic & error messages.
+    - `backend/app/src/schemas/*`: Enforced v1.2.0 schemas using `--theirs`.
+    - `backend/app/src/routes/prices.py`: Enforced v1.2.0 logic using `--theirs`.
+
+## Handovers
+- Pass control to Frontend Developer for UI conflict resolution.

@@ -9,42 +9,78 @@
         Button,
     } from "flowbite-svelte";
     import { onMount } from "svelte";
+    import {
+        get_positions as getPositions,
+        delete_position as deletePosition,
+    } from "$lib/apis/positions";
     import { calculatePortfolioSummary } from "$lib/utils";
     import type { Position } from "$lib/types";
-    import TransactionFormModal from "$lib/components/transaction/TransactionFormModal.svelte";
-    import { portfolioStore } from "$lib/stores/portfolio.svelte";
+    import PositionModal from "$lib/components/PositionModal.svelte";
+    import { get_assets as getAssets } from "$lib/apis/assets";
 
-    let transactionModalOpen = $state(false);
-    let selectedPosition: Position | null = $state(null);
-    let selectedAssetId = $state(0);
-    let selectedAssetSymbol = $state("");
-
-    // Use store positions
-    let positions = $derived(portfolioStore.positions);
-    let loading = $derived(portfolioStore.loading);
+    let positions: Position[] = [];
+    let assets: any[] = [];
+    let positionModalOpen = false;
+    let selectedPosition: Position | null = null;
+    let loading = false;
+    let error: string | null = null;
 
     // 포트폴리오 요약
-    let portfolioSummary = $derived(calculatePortfolioSummary(positions));
+    $: portfolioSummary = calculatePortfolioSummary(positions);
 
-    onMount(() => {
-        // AppNavbar loads portfolios which triggers loading positions for default.
-        // If we landed here directly and store is empty, Navbar logic will handle it,
-        // but we can ensure load if auth is ready.
-        if (portfolioStore.selectedPortfolioId) {
-            portfolioStore.loadPositions(portfolioStore.selectedPortfolioId);
+    async function loadData() {
+        loading = true;
+        error = null;
+        try {
+            const [positionsData, assetsData] = await Promise.all([
+                getPositions(),
+                getAssets(),
+            ]);
+            // console.log removed
+            positions = positionsData;
+            assets = assetsData;
+        } catch (e) {
+            console.error("Error loading positions:", e);
+            error = "Failed to load positions";
+        } finally {
+            loading = false;
         }
-    });
-
-    function openAddTransactionModal() {
-        selectedAssetId = 0;
-        selectedAssetSymbol = "";
-        transactionModalOpen = true;
     }
 
-    function openTradeModal(position: Position) {
-        selectedAssetId = position.asset_id;
-        selectedAssetSymbol = position.asset_symbol || "";
-        transactionModalOpen = true;
+    onMount(() => {
+        loadData();
+    });
+
+    function openAddPositionModal() {
+        selectedPosition = null;
+        positionModalOpen = true;
+    }
+
+    function openEditPositionModal(position: Position) {
+        selectedPosition = position;
+        positionModalOpen = true;
+    }
+
+    async function handleDeletePosition(position: Position) {
+        if (
+            !confirm(
+                `Are you sure you want to delete position for ${position.asset_symbol || "this asset"}?`,
+            )
+        ) {
+            return;
+        }
+
+        try {
+            await deletePosition(position.id);
+            await loadData();
+        } catch (e: any) {
+            console.error("Error deleting position:", e);
+            alert(`Failed to delete position: ${e.message}`);
+        }
+    }
+
+    function handlePositionCreated() {
+        loadData();
     }
 
     function formatCurrency(value: number | undefined): string {
@@ -58,32 +94,41 @@
     }
 </script>
 
-<TransactionFormModal
-    bind:open={transactionModalOpen}
-    assetId={selectedAssetId}
-    assetSymbol={selectedAssetSymbol}
+<PositionModal
+    bind:open={positionModalOpen}
+    {assets}
+    position={selectedPosition
+        ? {
+              id: selectedPosition.id,
+              asset_id: selectedPosition.asset_id,
+              quantity: selectedPosition.quantity,
+              buy_price: selectedPosition.buy_price,
+              buy_date: selectedPosition.buy_date,
+          }
+        : null}
+    on:created={handlePositionCreated}
 />
 
 <div class="container mx-auto p-4">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-            {#if portfolioStore.selectedPortfolio}
-                {portfolioStore.selectedPortfolio.name} Positions
-            {:else}
-                Positions
-            {/if}
+            Positions
         </h1>
-        <Button onclick={openAddTransactionModal}>Add Transaction</Button>
+        <Button onclick={openAddPositionModal}>Add Position</Button>
     </div>
 
     {#if loading}
         <div class="text-center py-8">
             <p class="text-gray-600 dark:text-gray-400">Loading positions...</p>
         </div>
+    {:else if error}
+        <div class="text-center py-8">
+            <p class="text-red-600 dark:text-red-400">{error}</p>
+        </div>
     {:else if positions.length === 0}
         <div class="text-center py-8">
             <p class="text-gray-600 dark:text-gray-400">
-                No positions found. Record your first transaction to get start.
+                No positions found. Add your first position to get started.
             </p>
         </div>
     {:else}
@@ -94,8 +139,7 @@
                     <TableHeadCell>Symbol</TableHeadCell>
                     <TableHeadCell>Category</TableHeadCell>
                     <TableHeadCell>Quantity</TableHeadCell>
-                    <TableHeadCell>Avg Price</TableHeadCell>
-                    <!-- Renamed from Buy Price -->
+                    <TableHeadCell>Buy Price</TableHeadCell>
                     <TableHeadCell>Current Price</TableHeadCell>
                     <TableHeadCell>Valuation</TableHeadCell>
                     <TableHeadCell>Profit/Loss</TableHeadCell>
@@ -124,10 +168,7 @@
                                 })}
                             </TableBodyCell>
                             <TableBodyCell>
-                                <!-- Using avg_price or fallback to buy_price for legacy -->
-                                {formatCurrency(
-                                    position.avg_price || position.buy_price,
-                                )}
+                                {formatCurrency(position.buy_price)}
                             </TableBodyCell>
                             <TableBodyCell>
                                 {position.current_price
@@ -170,9 +211,18 @@
                                     <Button
                                         size="xs"
                                         color="alternative"
-                                        onclick={() => openTradeModal(position)}
+                                        onclick={() =>
+                                            openEditPositionModal(position)}
                                     >
-                                        Trade
+                                        Edit
+                                    </Button>
+                                    <Button
+                                        size="xs"
+                                        color="red"
+                                        onclick={() =>
+                                            handleDeletePosition(position)}
+                                    >
+                                        Delete
                                     </Button>
                                 </div>
                             </TableBodyCell>
@@ -184,7 +234,6 @@
 
         {#if positions.length > 0}
             <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-                <!-- Summary Section Reuse -->
                 <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                     <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
                         Total Valuation

@@ -34,11 +34,3 @@
 - **Tasks**:
   1. **Social**: Share Portfolio, Leaderboard.
   2. **Automation**: Auto-rebalance alerts, Trading Bot integration (Paper Trading).
-
-## 🚀 v1.2.0: Multi-Portfolio Structure (Ready for Deployment)
-- **Date**: 2026-01-11
-- **Key Features**:
-  - **Multi-Portfolio Support**: Users can create and manage multiple portfolios (e.g., "Main", "Crypto", "High Risk").
-  - **Transaction-Centric Model**: `Position` is now a computed snapshot of `Transactions`. `owner_id` replaced by `portfolio_id`.
-  - **Dashboard Fix**: Resolved API routing issue causing 404/Loading freeze.
-- **Status**: Development & QA Complete. Deployment Checklist Prepared.

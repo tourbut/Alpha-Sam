@@ -8,18 +8,19 @@ from app.src.core.users_config import fastapi_users, auth_backend
 from app.src.schemas.user import UserRead, UserCreate, UserUpdate
 
 # 1. Auth Router (Login) - /api/v1/auth/jwt/login
-api_router.include_router(
-    fastapi_users.get_auth_router(auth_backend),
-    prefix="/auth/jwt",
-    tags=["auth"]
-)
+# 1. Auth Router (Login) - /api/v1/auth/jwt/login
+# api_router.include_router(
+#     fastapi_users.get_auth_router(auth_backend),
+#     prefix="/auth/jwt",
+#     tags=["auth"]
+# )
 
 # 2. Register Router - /api/v1/auth/register
-api_router.include_router(
-    fastapi_users.get_register_router(UserRead, UserCreate),
-    prefix="/auth",
-    tags=["auth"],
-)
+# api_router.include_router(
+#     fastapi_users.get_register_router(UserRead, UserCreate),
+#     prefix="/auth",
+#     tags=["auth"],
+# )
 
 # 0. Custom Auth Router (Login, Signup, Me)
 # Provides /auth/login, /auth/signup, /auth/me

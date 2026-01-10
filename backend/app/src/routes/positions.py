@@ -19,31 +19,19 @@ async def read_positions(
     """
     return await crud_position.get_positions(session=session, owner_id=current_user.id)
 
-@router.post("/", response_model=PositionRead, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=PositionRead, status_code=status.HTTP_201_CREATED, include_in_schema=False)
 async def create_position(
     position_in: PositionCreate,
     session: SessionDep_async,
     current_user: CurrentUser
 ):
     """
-    새 포지션 생성
+    [DEPRECATED] Manual position creation is disabled. Use Transaction API instead.
     """
-    # 1. 이미 존재하는지 확인
-    existing_position = await crud_position.get_position_by_asset(
-        session=session, asset_id=position_in.asset_id, owner_id=current_user.id
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Manual position creation is disabled. Please use the Transaction API (BUY/SELL)."
     )
-    if existing_position:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Position for this asset already exists. Use update instead."
-        )
-
-    # 2. 생성
-    new_position = Position(
-        **position_in.model_dump(),
-        owner_id=current_user.id
-    )
-    return await crud_position.create_position(session=session, position_in=new_position)
 
 @router.get("/{position_id}", response_model=PositionRead)
 async def read_position(
@@ -61,7 +49,7 @@ async def read_position(
     
     return position
 
-@router.put("/{position_id}", response_model=PositionRead)
+@router.put("/{position_id}", response_model=PositionRead, include_in_schema=False)
 async def update_position(
     position_id: int,
     position_in: PositionUpdate,
@@ -69,28 +57,23 @@ async def update_position(
     current_user: CurrentUser
 ):
     """
-    포지션 수정
+    [DEPRECATED] Manual position update is disabled. Use Transaction API instead.
     """
-    position = await crud_position.get_position(session=session, position_id=position_id, owner_id=current_user.id)
-    
-    if not position:
-        raise HTTPException(status_code=404, detail="Position not found")
-        
-    update_data = position_in.model_dump(exclude_unset=True)
-    return await crud_position.update_position(session=session, position=position, update_data=update_data)
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Manual position modification is disabled. Please use the Transaction API (BUY/SELL)."
+    )
 
-@router.delete("/{position_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{position_id}", status_code=status.HTTP_204_NO_CONTENT, include_in_schema=False)
 async def delete_position(
     position_id: int,
     session: SessionDep_async,
     current_user: CurrentUser
 ):
     """
-    포지션 삭제
+    [DEPRECATED] Manual position deletion is disabled.
     """
-    position = await crud_position.get_position(session=session, position_id=position_id, owner_id=current_user.id)
-    
-    if not position:
-        raise HTTPException(status_code=404, detail="Position not found")
-        
-    await crud_position.remove_position(session=session, position=position)
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Manual position deletion is disabled. Assets are managed via Transactions."
+    )

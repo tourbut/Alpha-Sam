@@ -26,44 +26,34 @@ class PriceService:
 
     async def get_current_price(self, symbol: str, use_cache: bool = True) -> float:
         """
-        Returns current price of an asset (yfinance + Redis)
+        Returns current price of an asset (Redis only)
         
         Args:
             symbol: Asset symbol
-            use_cache: Whether to use cache (default: True)
+            use_cache: Legacy parameter, now always uses cache (Redis)
         
         Returns:
-            Current price
+            Current price from Redis, or Fallback Mock
         """
         symbol_upper = symbol.upper()
         cache_key = f"{self.CACHE_KEY_PREFIX}{symbol_upper}"
         
-        # 1. Check Cache
-        if use_cache:
-            cached_value = await cache_service.get(cache_key)
-            if cached_value is not None:
-                try:
-                    return float(cached_value)
-                except (ValueError, TypeError):
-                    pass 
+        # 1. Check Redis Cache
+        cached_value = await cache_service.get(cache_key)
+        if cached_value is not None:
+            try:
+                return float(cached_value)
+            except (ValueError, TypeError):
+                logger.error(f"Invalid price value in cache for {symbol_upper}: {cached_value}")
         
-        # 2. Fetch from yfinance
-        try:
-            # Add timeout to prevent hanging threads
-            current_price = await asyncio.wait_for(
-                self._fetch_price_from_yfinance(symbol_upper),
-                timeout=5.0
-            )
-        except (asyncio.TimeoutError, Exception) as e:
-            logger.error(f"Failed to fetch price for {symbol_upper} from yfinance: {e}")
-            # Fallback to mock/last known
-            current_price = self.MOCK_PRICES.get(symbol_upper, 0.0)
-            if current_price == 0.0:
-                pass
+        # 2. Refactoring: No dynamic fetch from Yahoo Finance to avoid latency/instability.
+        # Everything should be populated by the Price Collector.
         
-        # 3. Update Cache
-        if use_cache and current_price > 0:
-            await cache_service.set(cache_key, str(current_price), ttl=self.CACHE_TTL)
+        # Fallback to Mock prices for development/safety
+        current_price = self.MOCK_PRICES.get(symbol_upper, 0.0)
+        
+        if current_price == 0.0:
+            logger.warning(f"Price for {symbol_upper} not found in Redis and no mock available.")
         
         return current_price
 
@@ -154,12 +144,12 @@ class PriceService:
 
     async def validate_symbol(self, symbol: str) -> bool:
         """
-        Validates if a symbol exists on Yahoo Finance
+        Validates if a symbol exists on Yahoo Finance (Direct check)
         """
-        # We can reuse _fetch_price_from_yfinance or just try to get info
-        # If price fetch works, it's valid.
         try:
-            price = await self.get_current_price(symbol, use_cache=False)
+            # New assets might not be in Redis yet, so we check Yahoo Finance directly
+            # once for validation purposes.
+            price = await self._fetch_price_from_yfinance(symbol.upper())
             return price > 0
         except:
             return False

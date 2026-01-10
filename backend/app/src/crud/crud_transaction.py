@@ -8,7 +8,7 @@ from app.src.models.transaction import Transaction
 from app.src.schemas.transaction import TransactionCreate
 from app.src.models.position import Position
 from app.src.models.asset import Asset
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 async def create_transaction(*, session: AsyncSession, transaction_in: TransactionCreate, owner_id: int) -> Transaction:
     """
@@ -48,45 +48,50 @@ async def create_transaction(*, session: AsyncSession, transaction_in: Transacti
         
         if not position:
             if transaction_in.type == "SELL":
-                raise HTTPException(status_code=400, detail="Cannot sell asset without position")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, 
+                    detail="Cannot sell asset without an existing position"
+                )
                 
-            # 첫 매수: 새 포지션 생성
+            # First purchase: Create new position
             position = Position(
                 asset_id=transaction_in.asset_id,
                 owner_id=owner_id,
                 quantity=transaction_in.quantity,
                 buy_price=transaction_in.price,
-                buy_date=func.current_date() # 오늘 날짜
+                buy_date=func.current_date()
             )
             session.add(position)
             
         else:
-            # 기존 포지션 업데이트
+            # Update existing position using Weighted Average Cost method
             current_qty = float(position.quantity)
             current_avg_price = float(position.buy_price)
             
             if transaction_in.type == "BUY":
-                # 매수: 수량 증가, 평단가 재계산
-                # New Price = ((Old Qty * Old Price) + (New Qty * New Price)) / (Old Qty + New Qty)
+                # BUY: Increase quantity and recalculate average price
                 new_qty = current_qty + transaction_in.quantity
-                total_cost = (current_qty * current_avg_price) + (transaction_in.quantity * transaction_in.price)
-                new_avg_price = total_cost / new_qty
+                if new_qty > 0:
+                    total_cost = (current_qty * current_avg_price) + (transaction_in.quantity * transaction_in.price)
+                    new_avg_price = total_cost / new_qty
+                    position.buy_price = new_avg_price
                 
                 position.quantity = new_qty
-                position.buy_price = new_avg_price
                 
             elif transaction_in.type == "SELL":
-                # 매도: 수량 감소, 평단가 유지
+                # SELL: Decrease quantity, keep average price
                 if current_qty < transaction_in.quantity:
-                    raise HTTPException(status_code=400, detail="Insufficient quantity to sell")
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST, 
+                        detail=f"Insufficient quantity. Owned: {current_qty}, Requested: {transaction_in.quantity}"
+                    )
                 
                 new_qty = current_qty - transaction_in.quantity
                 position.quantity = new_qty
                 
-                # 전량 매도 시 포지션을 삭제할지 0으로 남길지 결정 필요.
-                # 0으로 남기면 평단가 정보가 남아 재진입 시 왜곡될 수 있으나, 0이면 평단가 의미 없음.
-                # 여기서는 0이 되면 포지션 삭제 로직을 추가할 수도 있음.
-                # 일단 0으로 유지.
+                # If quantity reaches zero, we could delete the position, but keeping it at 0 
+                # might be easier for history tracking. However, most users prefer it gone.
+                # For now, we keep it as 0 to avoid breaking potential foreign keys if any.
                 
         await session.commit()
         await session.refresh(db_transaction)

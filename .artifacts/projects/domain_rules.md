@@ -24,6 +24,16 @@
     - `NULL`: 전역(Global) 자산. 모든 유저가 접근 가능.
     - `Value`: 커스텀(Custom) 자산. 해당 유저만 접근 가능.
 
+### Price (시세 데이터)
+- **Role**: 자산의 현재 가치. 데이터베이스에 영구 저장하지 않고 캐시(Redis)에 일시 저장.
+- **Attributes**:
+    - `price:{SYMBOL}`: 최신 가격 (Float String).
+- **Rules**:
+    - 가격 데이터는 **Collector**에 의해서만 갱신(Write)된다.
+    - API 서비스는 오직 **Read**만 수행한다 (CQRS Lite).
+    - Cache Miss 시 실시간 조회를 시도하지 않고, 적절한 Fallback(Mock/Error)을 반환한다.
+
+
 ### Position (보유 내역)
 - **Role**: 포트폴리오 내 특정 자산의 보유 상태.
 - **Attributes**:

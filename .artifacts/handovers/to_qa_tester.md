@@ -1,19 +1,20 @@
 # Handovers: To QA Tester
 
 ## 날짜
-- 2026-01-10
+- 2026-01-11
 
 ## 현재 상황 (Context)
-- 백엔드 `PriceService` 구조가 변경됩니다 (Yahoo Finance 직접 호출 제거).
+- v1.2.0 배포 절차가 진행 중입니다.
+- 배포 완료 후 최종 운영 환경 검증(Smoke Test)이 필요합니다.
 
 ## 해야 할 일 (Tasks)
-1. **테스트 시나리오 준비**:
-    - Redis에 데이터가 없을 때, API가 에러 없이 Mock/Default 값을 반환하는지.
-    - `price_collector.py` 실행 후, API가 정상적으로 Redis 값을 반환하는지.
-    - 데이터가 갱신(TTL 만료)되는지 확인.
+1. **Standby**: DevOps의 배포 완료 신호 대기.
+2. **Post-Deployment Verification**:
+    - `main` 브랜치(또는 배포 환경)에서 핵심 시나리오(로그인 -> 대시보드 -> 포트폴리오 생성 -> 매수) 정상 동작 확인.
+    - 기존 데이터(Default Portfolio)가 정상적으로 보이는지 확인.
 
 ## 기대 산출물 (Expected Outputs)
-- QA Test Case 문서 업데이트 (Redis 의존성 추가).
+- `test_report_v1.2.0_post_deployment.md`
 
 ## 참고 자료 (References)
-- `.artifacts/handovers/to_backend_dev.md`
+- `.artifacts/projects/qa_reports/test_report_v1.2.0_20260111.md`

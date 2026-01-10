@@ -9,8 +9,8 @@ import { browser } from '$app/environment';
  * @param {string} method - HTTP method ('get', 'post', 'put', 'delete') or 'login'.
  * @param {string} endpoint - The endpoint path (e.g., '', 'search', '{id}').
  */
-export const api_router = (router, method, endpoint) => {
-    return async (params = {}, success_callback, failure_callback) => {
+export const api_router = (router: string, method: string, endpoint: string) => {
+    return async (params: Record<string, any> = {}, success_callback?: (data: any) => void, failure_callback?: (err: any) => void) => {
         const fetchMethod = method.toUpperCase();
         let url = `${API_URL}/${router}`;
 
@@ -46,14 +46,15 @@ export const api_router = (router, method, endpoint) => {
         // Ensure trailing slash for REST consistency if not query param
         // 일부 백엔드 설정(기본 FastAPI)에서는 후행 슬래시가 필요함.
         // 단, Query Parameter가 붙거나 이미 슬래시로 끝나는 경우는 제외.
-        if (!url.endsWith('/')) {
-            url += '/';
-        }
+        // Ensure trailing slash logic removed to avoid CORS redirects
+        // if (!url.endsWith('/')) {
+        //     url += '/';
+        // }
 
         // 2. Prepare Fetch Options
-        let options = {
+        let options: RequestInit = {
             method: method === 'login' ? 'POST' : fetchMethod,
-            headers: {},
+            headers: {} as Record<string, string>,
         };
 
         // Dev User ID (from localStorage)
@@ -66,12 +67,12 @@ export const api_router = (router, method, endpoint) => {
         // Auth Header (from store)
         // const $auth = get(auth);
         if (auth.token) {
-            options.headers['Authorization'] = `Bearer ${auth.token}`;
+            (options.headers as Record<string, string>)['Authorization'] = `Bearer ${auth.token}`;
         }
 
         // 3. Handle Body / Query Params
         if (method === 'login') {
-            options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+            (options.headers as Record<string, string>)['Content-Type'] = 'application/x-www-form-urlencoded';
             const formData = new URLSearchParams();
             Object.entries(requestParams).forEach(([k, v]) => {
                 if (v !== undefined && v !== null) formData.append(k, String(v));
@@ -93,7 +94,7 @@ export const api_router = (router, method, endpoint) => {
             }
         } else {
             // POST, PUT, DELETE (JSON)
-            options.headers['Content-Type'] = 'application/json';
+            (options.headers as Record<string, string>)['Content-Type'] = 'application/json';
             options.body = JSON.stringify(requestParams);
         }
 

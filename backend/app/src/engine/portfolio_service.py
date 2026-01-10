@@ -4,6 +4,12 @@ domain_rules.md의 계산 규칙을 정확히 따름
 """
 from typing import Optional, List, Dict
 from decimal import Decimal
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.src.models.portfolio import Portfolio
+from app.src.models.position import Position
+from app.src.models.transaction import Transaction
+from app.src.models.asset import Asset
 
 
 def calculate_position_metrics(
@@ -118,3 +124,112 @@ def calculate_portfolio_summary(
         "portfolio_return_rate": portfolio_return_rate
     }
 
+
+class PortfolioService:
+    async def create_portfolio(self, session: AsyncSession, owner_id: int, name: str, description: str = None) -> Portfolio:
+        portfolio = Portfolio(owner_id=owner_id, name=name, description=description)
+        session.add(portfolio)
+        await session.commit()
+        await session.refresh(portfolio)
+        return portfolio
+
+    async def get_user_portfolios(self, session: AsyncSession, owner_id: int) -> List[Portfolio]:
+        stmt = select(Portfolio).where(Portfolio.owner_id == owner_id)
+        result = await session.execute(stmt)
+        return result.scalars().all()
+
+    async def get_portfolio(self, session: AsyncSession, portfolio_id: int, owner_id: int) -> Optional[Portfolio]:
+        stmt = select(Portfolio).where(Portfolio.id == portfolio_id, Portfolio.owner_id == owner_id)
+        result = await session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_portfolio_positions(self, session: AsyncSession, portfolio_id: int) -> List[Position]:
+        stmt = select(Position).where(Position.portfolio_id == portfolio_id)
+        result = await session.execute(stmt)
+        return result.scalars().all()
+
+    async def add_transaction(self, session: AsyncSession, portfolio_id: int, asset_id: int, type: str, quantity: float, price: float, executed_at) -> Transaction:
+        # 1. Add Transaction
+        tx = Transaction(
+            portfolio_id=portfolio_id,
+            asset_id=asset_id,
+            type=type,
+            quantity=quantity,
+            price=price,
+            executed_at=executed_at
+        )
+        session.add(tx)
+        await session.flush() # get ID
+
+        # 2. Re-calculate Position
+        await self._recalculate_position(session, portfolio_id, asset_id)
+        
+        await session.commit()
+        await session.refresh(tx)
+        return tx
+
+    async def _recalculate_position(self, session: AsyncSession, portfolio_id: int, asset_id: int):
+        # Fetch all transactions for this asset in this portfolio, ordered by time
+        stmt = select(Transaction).where(
+            Transaction.portfolio_id == portfolio_id,
+            Transaction.asset_id == asset_id
+        ).order_by(Transaction.executed_at, Transaction.id)
+        
+        result = await session.execute(stmt)
+        transactions = result.scalars().all()
+        
+        current_qty = Decimal("0")
+        total_cost = Decimal("0") # for avg price calc
+        
+        # Simple Weighted Average Price Calculation
+        for tx in transactions:
+            qty = Decimal(str(tx.quantity))
+            price = Decimal(str(tx.price))
+            
+            if tx.type == "BUY":
+                current_qty += qty
+                total_cost += (qty * price)
+            elif tx.type == "SELL":
+                # For SELL, we reduce quantity. Avg price doesn't change usually, but realized PnL happens.
+                # However, we need to maintain total_cost proportional to remaining qty to keep Avg Price same.
+                if current_qty > 0:
+                    avg_price = total_cost / current_qty
+                    current_qty -= qty
+                    # New total cost matches the remaining qty * avg_price
+                    total_cost = current_qty * avg_price
+                else:
+                    # Selling from 0 or negative (shouldn't happen with constraints)
+                    current_qty -= qty
+            
+            if current_qty < 0:
+                 # Logic for short selling? For now assume long-only.
+                 current_qty = Decimal("0")
+                 total_cost = Decimal("0")
+
+        # Update or Create Position
+        avg_price = (total_cost / current_qty) if current_qty > 0 else Decimal("0")
+        
+        # Check existing position
+        stmt_pos = select(Position).where(
+            Position.portfolio_id == portfolio_id,
+            Position.asset_id == asset_id
+        )
+        result_pos = await session.execute(stmt_pos)
+        position = result_pos.scalar_one_or_none()
+        
+        if position:
+            position.quantity = float(current_qty)
+            position.avg_price = float(avg_price)
+            if transactions:
+                position.last_transaction_id = transactions[-1].id
+        else:
+            position = Position(
+                portfolio_id=portfolio_id,
+                asset_id=asset_id,
+                quantity=float(current_qty),
+                avg_price=float(avg_price),
+                last_transaction_id=transactions[-1].id if transactions else None
+            )
+            session.add(position)
+
+portfolio_service_instance = PortfolioService()

@@ -28,8 +28,7 @@ async def lifespan(app: FastAPI):
         
         # 테이블 초기화 (개발 환경용, 프로덕션에서는 Alembic 사용)
         if settings.environment == "dev":
-             # await init_db()
-             pass
+             await init_db()
         logger.info("데이터베이스 초기화 단계 완료 (Skip in Prod)")
         
     except Exception as e:

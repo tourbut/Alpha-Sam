@@ -69,7 +69,16 @@
     - **Decision**: Decouple Price Fetching (Collector) from Serving (Service).
     - **Reason**: Performance & Stability. Yahoo Finance API is too slow/unreliable for direct synchronous calls.
     - **Ref**: `.artifacts/projects/redis_schema.md`
+    - **Ref**: `.artifacts/projects/redis_schema.md`
 
+### v1.2.0 (Ready for Release): Multi-Portfolio & Transactions
+- [2026-01-10 21:50:00] **Adoption of Multi-Portfolio Transaction Model**
+    - **Decision**: Introduce `Portfolio` entity and make `Position` a computed snapshot of `Transactions`.
+    - **Reason**: To support multiple portfolios per user and ensure auditability/correctness of PnL via transaction history (Single Source of Truth).
+    - **Ref**: `.artifacts/projects/v1.2.0_schema_design.md`
+- [2026-01-11 01:25:00] **Implementation Verified**
+    - **Status**: Code complete, QA passed (TC-DASH-01 ~ TC-API-01), Review approved.
+    - **Action**: Handed over to DevOps for deployment.
 
 ### v1.0.0 (Upcoming): Official Launch
 - **Goal**: Full Stability, Dashboard Analytics (Charts), UI Polish.

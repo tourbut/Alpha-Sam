@@ -2,34 +2,28 @@
     import { Card, Button } from "flowbite-svelte";
     import { onMount } from "svelte";
     import { get_assets as getAssets } from "$lib/apis/assets";
-    import {
-        get_portfolio_summary as getPortfolioSummary,
-        get_portfolio_history as getPortfolioHistory,
-    } from "$lib/apis/portfolio";
     import { refresh_prices as refreshPrices } from "$lib/apis/prices";
-    import type {
-        Asset,
-        Position,
-        ApiPortfolioSummary,
-        PortfolioHistory,
-    } from "$lib/types";
+    import type { Asset, Position, PortfolioHistory } from "$lib/types";
     import PortfolioDistributionChart from "$lib/components/PortfolioDistributionChart.svelte";
-    import PortfolioHistoryChart from "$lib/components/PortfolioHistoryChart.svelte";
+    // import PortfolioHistoryChart from "$lib/components/PortfolioHistoryChart.svelte"; // History not ready for v1.2.0
     import { auth } from "$lib/stores/auth.svelte";
+    import { portfolioStore } from "$lib/stores/portfolio.svelte";
+    import { calculatePortfolioSummary } from "$lib/utils";
     import ShareModal from "$lib/components/ShareModal.svelte";
     import { goto } from "$app/navigation";
 
     let assets: Asset[] = $state([]);
-    let positions: Position[] = $state([]);
-    let portfolioSummary: ApiPortfolioSummary = $state({
-        total_value: 0,
-        total_cost: 0,
-        total_pl: 0,
-        total_pl_stats: { percent: 0, direction: "flat" },
-    });
+    // Positions from store
+    let positions = $derived(portfolioStore.positions);
+    let loading = $derived(portfolioStore.loading);
+
+    // Computed Summary
+    let portfolioSummary = $derived(calculatePortfolioSummary(positions));
+
+    // History mocked for now
     let history: PortfolioHistory[] = $state([]);
+
     let error: string | null = $state(null);
-    let loading = $state(true);
     let refreshing = $state(false);
     let showShareModal = $state(false);
 
@@ -37,7 +31,11 @@
         refreshing = true;
         try {
             await refreshPrices();
-            await loadData();
+            if (portfolioStore.selectedPortfolioId) {
+                await portfolioStore.loadPositions(
+                    portfolioStore.selectedPortfolioId,
+                );
+            }
         } catch (e) {
             console.error("Failed to refresh prices:", e);
             alert("Failed to refresh prices");
@@ -46,29 +44,7 @@
         }
     }
 
-    async function loadData() {
-        loading = true;
-        error = null;
-        try {
-            const [assetsData, summaryResponse, historyData] =
-                await Promise.all([
-                    getAssets(),
-                    getPortfolioSummary(),
-                    getPortfolioHistory({ skip: 0, limit: 30 }),
-                ]);
-            assets = assetsData;
-            positions = summaryResponse.positions;
-            portfolioSummary = summaryResponse.summary;
-            history = historyData;
-        } catch (e) {
-            console.error("Error loading data:", e);
-            error = "Failed to load portfolio data. Please try again later.";
-        } finally {
-            loading = false;
-        }
-    }
-
-    onMount(() => {
+    onMount(async () => {
         if (!auth.isAuthenticated) {
             auth.initialize();
             if (!auth.isAuthenticated) {
@@ -76,7 +52,18 @@
                 return;
             }
         }
-        loadData();
+
+        // Load assets for the count display
+        try {
+            assets = await getAssets();
+        } catch (e) {
+            console.error("Failed to load assets", e);
+        }
+
+        // Ensure positions are loaded if not already
+        if (portfolioStore.selectedPortfolioId) {
+            portfolioStore.loadPositions(portfolioStore.selectedPortfolioId);
+        }
     });
 
     function formatCurrency(value: number | undefined): string {
@@ -101,7 +88,11 @@
 <div class="container mx-auto p-4">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-            Portfolio Dashboard
+            {#if portfolioStore.selectedPortfolio}
+                {portfolioStore.selectedPortfolio.name} Dashboard
+            {:else}
+                Portfolio Dashboard
+            {/if}
         </h1>
         <div class="flex gap-2">
             <Button
@@ -128,20 +119,19 @@
 
     <ShareModal bind:open={showShareModal} />
 
-    {#if loading}
+    {#if loading && positions.length === 0}
         <div class="text-center py-8">
             <p class="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
     {:else if error}
         <div class="text-center py-8">
             <p class="text-red-600 dark:text-red-400 mb-4">{error}</p>
-            <Button onclick={loadData}>Retry</Button>
         </div>
     {:else}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <Card class="p-6">
                 <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    Total Assets
+                    Market Assets
                 </div>
                 <div class="text-3xl font-bold text-gray-900 dark:text-white">
                     {assets.length}
@@ -160,7 +150,7 @@
                     Total Valuation
                 </div>
                 <div class="text-3xl font-bold text-gray-900 dark:text-white">
-                    {formatCurrency(portfolioSummary.total_value)}
+                    {formatCurrency(portfolioSummary.totalValuation)}
                 </div>
             </Card>
             <Card class="p-6">
@@ -169,10 +159,10 @@
                 </div>
                 <div
                     class="text-3xl font-bold {getColorClass(
-                        portfolioSummary.total_pl_stats.percent,
+                        portfolioSummary.totalReturnRate,
                     )}"
                 >
-                    {formatPercent(portfolioSummary.total_pl_stats.percent)}
+                    {formatPercent(portfolioSummary.totalReturnRate)}
                 </div>
             </Card>
         </div>
@@ -186,13 +176,21 @@
                 </h2>
                 <PortfolioDistributionChart {positions} />
             </Card>
+            <!-- History Chart Disabled -->
             <Card class="p-6">
                 <h2
                     class="text-xl font-bold text-gray-900 dark:text-white mb-4"
                 >
-                    Performance (Value)
+                    Performance (Coming Soon)
                 </h2>
-                <PortfolioHistoryChart {history} />
+                <div
+                    class="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-800 rounded"
+                >
+                    <p class="text-gray-500">
+                        History chart update needed for v1.2.0
+                    </p>
+                </div>
+                <!-- <PortfolioHistoryChart {history} /> -->
             </Card>
         </div>
 
@@ -229,7 +227,7 @@
                             >Total Invested:</span
                         >
                         <span class="font-medium text-gray-900 dark:text-white">
-                            {formatCurrency(portfolioSummary.total_cost)}
+                            {formatCurrency(portfolioSummary.totalInvested)}
                         </span>
                     </div>
                     <div class="flex justify-between">
@@ -238,10 +236,10 @@
                         >
                         <span
                             class="font-medium {getColorClass(
-                                portfolioSummary.total_pl,
+                                portfolioSummary.totalProfitLoss,
                             )}"
                         >
-                            {formatCurrency(portfolioSummary.total_pl)}
+                            {formatCurrency(portfolioSummary.totalProfitLoss)}
                         </span>
                     </div>
                 </div>

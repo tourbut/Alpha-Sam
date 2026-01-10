@@ -9,57 +9,42 @@
         Button,
     } from "flowbite-svelte";
     import { onMount } from "svelte";
-    import { get_positions as getPositions } from "$lib/apis/positions";
     import { calculatePortfolioSummary } from "$lib/utils";
     import type { Position } from "$lib/types";
-    import PositionModal from "$lib/components/PositionModal.svelte";
-    import { get_assets as getAssets } from "$lib/apis/assets";
+    import TransactionFormModal from "$lib/components/transaction/TransactionFormModal.svelte";
+    import { portfolioStore } from "$lib/stores/portfolio.svelte";
 
-    let positions: Position[] = [];
-    let assets: any[] = [];
-    let positionModalOpen = false;
-    let selectedPosition: Position | null = null;
-    let loading = false;
-    let error: string | null = null;
+    let transactionModalOpen = $state(false);
+    let selectedPosition: Position | null = $state(null);
+    let selectedAssetId = $state(0);
+    let selectedAssetSymbol = $state("");
+
+    // Use store positions
+    let positions = $derived(portfolioStore.positions);
+    let loading = $derived(portfolioStore.loading);
 
     // 포트폴리오 요약
-    $: portfolioSummary = calculatePortfolioSummary(positions);
-
-    async function loadData() {
-        loading = true;
-        error = null;
-        try {
-            const [positionsData, assetsData] = await Promise.all([
-                getPositions(),
-                getAssets(),
-            ]);
-            // console.log removed
-            positions = positionsData;
-            assets = assetsData;
-        } catch (e) {
-            console.error("Error loading positions:", e);
-            error = "Failed to load positions";
-        } finally {
-            loading = false;
-        }
-    }
+    let portfolioSummary = $derived(calculatePortfolioSummary(positions));
 
     onMount(() => {
-        loadData();
+        // AppNavbar loads portfolios which triggers loading positions for default.
+        // If we landed here directly and store is empty, Navbar logic will handle it,
+        // but we can ensure load if auth is ready.
+        if (portfolioStore.selectedPortfolioId) {
+            portfolioStore.loadPositions(portfolioStore.selectedPortfolioId);
+        }
     });
 
     function openAddTransactionModal() {
-        selectedPosition = null;
-        positionModalOpen = true;
+        selectedAssetId = 0;
+        selectedAssetSymbol = "";
+        transactionModalOpen = true;
     }
 
     function openTradeModal(position: Position) {
-        selectedPosition = position;
-        positionModalOpen = true;
-    }
-
-    function handlePositionCreated() {
-        loadData();
+        selectedAssetId = position.asset_id;
+        selectedAssetSymbol = position.asset_symbol || "";
+        transactionModalOpen = true;
     }
 
     function formatCurrency(value: number | undefined): string {
@@ -73,25 +58,20 @@
     }
 </script>
 
-<PositionModal
-    bind:open={positionModalOpen}
-    {assets}
-    position={selectedPosition
-        ? {
-              id: selectedPosition.id,
-              asset_id: selectedPosition.asset_id,
-              quantity: selectedPosition.quantity,
-              buy_price: selectedPosition.buy_price,
-              buy_date: selectedPosition.buy_date,
-          }
-        : null}
-    on:created={handlePositionCreated}
+<TransactionFormModal
+    bind:open={transactionModalOpen}
+    assetId={selectedAssetId}
+    assetSymbol={selectedAssetSymbol}
 />
 
 <div class="container mx-auto p-4">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-            Positions
+            {#if portfolioStore.selectedPortfolio}
+                {portfolioStore.selectedPortfolio.name} Positions
+            {:else}
+                Positions
+            {/if}
         </h1>
         <Button onclick={openAddTransactionModal}>Add Transaction</Button>
     </div>
@@ -100,15 +80,10 @@
         <div class="text-center py-8">
             <p class="text-gray-600 dark:text-gray-400">Loading positions...</p>
         </div>
-    {:else if error}
-        <div class="text-center py-8">
-            <p class="text-red-600 dark:text-red-400">{error}</p>
-        </div>
     {:else if positions.length === 0}
         <div class="text-center py-8">
             <p class="text-gray-600 dark:text-gray-400">
-                No positions found. Record your first transaction to get
-                started.
+                No positions found. Record your first transaction to get start.
             </p>
         </div>
     {:else}
@@ -119,7 +94,8 @@
                     <TableHeadCell>Symbol</TableHeadCell>
                     <TableHeadCell>Category</TableHeadCell>
                     <TableHeadCell>Quantity</TableHeadCell>
-                    <TableHeadCell>Buy Price</TableHeadCell>
+                    <TableHeadCell>Avg Price</TableHeadCell>
+                    <!-- Renamed from Buy Price -->
                     <TableHeadCell>Current Price</TableHeadCell>
                     <TableHeadCell>Valuation</TableHeadCell>
                     <TableHeadCell>Profit/Loss</TableHeadCell>
@@ -148,7 +124,10 @@
                                 })}
                             </TableBodyCell>
                             <TableBodyCell>
-                                {formatCurrency(position.buy_price)}
+                                <!-- Using avg_price or fallback to buy_price for legacy -->
+                                {formatCurrency(
+                                    position.avg_price || position.buy_price,
+                                )}
                             </TableBodyCell>
                             <TableBodyCell>
                                 {position.current_price
@@ -205,6 +184,7 @@
 
         {#if positions.length > 0}
             <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Summary Section Reuse -->
                 <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                     <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
                         Total Valuation

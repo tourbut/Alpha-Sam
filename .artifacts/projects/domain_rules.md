@@ -24,6 +24,25 @@
     - `NULL`: 전역(Global) 자산. 모든 유저가 접근 가능.
     - `Value`: 커스텀(Custom) 자산. 해당 유저만 접근 가능.
 
+### Portfolio (포트폴리오)
+- **Role**: 자산 및 거래 내역을 그룹화하는 컨테이너.
+- **Attributes**:
+  - `owner_id`: 소유자 FK.
+  - `name`: 포트폴리오 명칭 (예: "메인 계좌", "비상금").
+- **Rules**:
+  - 유저는 최소 1개의 기본 포트폴리오를 가져야 한다.
+  - 모든 Position과 Transaction은 반드시 하나의 Portfolio에 귀속된다.
+
+### Transaction (거래 내역)
+- **Role**: 자산의 매수/매도 행위 기록. 포지션 산출의 근거 데이터(Source of Truth).
+- **Attributes**:
+  - `portfolio_id`: 귀속 포트폴리오.
+  - `type`: 매수(BUY)/매도(SELL).
+  - `quantity`: 수량.
+  - `price`: 체결 단가.
+- **Rules**:
+  - Transaction 추가/수정/삭제 시 귀속된 Portfolio의 해당 Asset Position을 재계산해야 한다.
+
 ### Price (시세 데이터)
 - **Role**: 자산의 현재 가치. 데이터베이스에 영구 저장하지 않고 캐시(Redis)에 일시 저장.
 - **Attributes**:
@@ -34,15 +53,16 @@
     - Cache Miss 시 실시간 조회를 시도하지 않고, 적절한 Fallback(Mock/Error)을 반환한다.
 
 
-### Position (보유 내역)
-- **Role**: 포트폴리오 내 특정 자산의 보유 상태.
+### Position (보유 내역 - Computed Snapshot)
+- **Role**: Transaction 이력을 기반으로 계산된 "현재 보유 상태".
 - **Attributes**:
-  - `quantity`: 보유 수량. 양수여야 함.
+  - `portfolio_id`: 귀속 포트폴리오.
+  - `quantity`: 보유 수량.
   - `avg_price`: 평단가.
 - **Rules**:
-  - `owner_id`는 필수 (Multi-tenancy).
-  - Legacy Data Check: v0.9.0 마이그레이션 시, `owner_id`가 없는 기존 포지션은 시스템 관리자(User ID 1)에게 귀속시킨다.
-  - 동일한 `owner_id` 하에서 `asset_id`는 유일해야 함.
+  - **Read-Only**: 사용자가 직접 수량을 수정할 수 없다. 오직 Transaction을 통해서만 변경된다.
+  - **Constraint**: `(portfolio_id, asset_id)`는 유일해야 한다.
+  - **Legacy Migration**: v1.2.0 이전 데이터는 "Default Portfolio" 생성 후 이동시킨다.
 
 ### NotificationSettings (알림 설정)
 - **Role**: 사용자별 알림 수신 설정.
@@ -53,9 +73,9 @@
 
 ## 2. Invariants & Business Logic
 
-### Multi-tenancy
-- 모든 개인화 리소스(Position, Transaction, NotificationSettings)는 `owner_id`를 가져야 한다.
-- DB 쿼리 시 반드시 `owner_id` 필터링을 수행하여 타 사용자의 데이터 접근을 원천 차단한다.
+### Multi-Portfolio & Tenancy
+- 모든 자산 관련 데이터(Position, Transaction)는 `Portfolio`를 통해 간접적으로 `User`와 연결된다 (`User -> Portfolio -> Transaction`).
+- 조회 시 `portfolio_id`가 해당 유저 소유인지 검증 필수.
 - **v0.8.0 Change**: `X-User-Id` 헤더 기반의 식별을 폐지하고, JWT Token의 `sub` 클레임을 신뢰한다.
 
 ### Authentication & Authorization

@@ -37,12 +37,15 @@ export const api_router = (router, method, endpoint) => {
         }
 
         // Append endpoint to URL
-        // If processedEndpoint is empty string, we might just append '/' if backend expects it
         if (processedEndpoint) {
-            url += `/${processedEndpoint}`;
+            // endpoint가 시작할 때 '/'가 있으면 제거 (URL 중복 슬래시 방지)
+            const cleanEndpoint = processedEndpoint.startsWith('/') ? processedEndpoint.slice(1) : processedEndpoint;
+            url += `/${cleanEndpoint}`;
         }
 
         // Ensure trailing slash for REST consistency if not query param
+        // 일부 백엔드 설정(기본 FastAPI)에서는 후행 슬래시가 필요함.
+        // 단, Query Parameter가 붙거나 이미 슬래시로 끝나는 경우는 제외.
         if (!url.endsWith('/')) {
             url += '/';
         }

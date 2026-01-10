@@ -8,7 +8,7 @@ from app.src.deps import SessionDep_async, CurrentUser
 router = APIRouter()
 
 
-@router.post("/snapshot", status_code=status.HTTP_201_CREATED)
+@router.post("/snapshot/", status_code=status.HTTP_201_CREATED)
 async def create_portfolio_snapshot(
     session: SessionDep_async,
     current_user: CurrentUser
@@ -21,7 +21,7 @@ async def create_portfolio_snapshot(
     return {"message": "Snapshot created", "data": history}
 
 
-@router.get("/summary", response_model=PortfolioResponse)
+@router.get("/summary/", response_model=PortfolioResponse)
 async def get_portfolio_summary(
     session: SessionDep_async,
     current_user: CurrentUser
@@ -33,7 +33,7 @@ async def get_portfolio_summary(
     return await PortfolioService.get_summary(session, current_user.id)
 
 
-@router.get("/history", response_model=List[PortfolioHistoryRead])
+@router.get("/history/", response_model=List[PortfolioHistoryRead])
 async def read_portfolio_history(
     skip: int = 0,
     limit: int = 30,  # Default to 30 for chart

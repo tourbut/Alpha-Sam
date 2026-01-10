@@ -19,18 +19,18 @@
     import ShareModal from "$lib/components/ShareModal.svelte";
     import { goto } from "$app/navigation";
 
-    let assets: Asset[] = [];
-    let positions: Position[] = [];
-    let portfolioSummary: ApiPortfolioSummary = {
+    let assets: Asset[] = $state([]);
+    let positions: Position[] = $state([]);
+    let portfolioSummary: ApiPortfolioSummary = $state({
         total_value: 0,
         total_cost: 0,
         total_pl: 0,
         total_pl_stats: { percent: 0, direction: "flat" },
-    };
-    let history: PortfolioHistory[] = [];
-    let error: string | null = null;
-    let loading = true;
-    let refreshing = false;
+    });
+    let history: PortfolioHistory[] = $state([]);
+    let error: string | null = $state(null);
+    let loading = $state(true);
+    let refreshing = $state(false);
     let showShareModal = $state(false);
 
     async function handleRefresh() {
@@ -71,8 +71,10 @@
     onMount(() => {
         if (!auth.isAuthenticated) {
             auth.initialize();
-            goto("/login");
-            return;
+            if (!auth.isAuthenticated) {
+                goto("/login");
+                return;
+            }
         }
         loadData();
     });

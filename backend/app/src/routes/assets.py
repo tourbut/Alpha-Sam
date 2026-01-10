@@ -6,8 +6,7 @@ from app.src.core.db import get_session
 from app.src.schemas.asset import AssetCreate, AssetRead
 from app.src.engine.asset_service import asset_service
 from app.src.crud import crud_asset
-from app.src.deps import get_current_user
-from app.src.models.user import User
+from app.src.deps import SessionDep_async, CurrentUser
 
 router = APIRouter()
 
@@ -15,8 +14,8 @@ router = APIRouter()
 async def read_assets(
     skip: int = 0,
     limit: int = 100,
-    session: AsyncSession = Depends(get_session),
-    current_user: User = Depends(get_current_user)
+    session: SessionDep_async = None, # Default None to silence linter if needed, but Depends handles it
+    current_user: CurrentUser = None
 ):
     """
     자산 목록 조회 (최신 시세 포함, Multi-tenancy 적용)
@@ -31,8 +30,8 @@ async def read_assets(
 @router.post("/", response_model=AssetRead, status_code=status.HTTP_201_CREATED)
 async def create_asset(
     asset_in: AssetCreate,
-    session: AsyncSession = Depends(get_session),
-    current_user: User = Depends(get_current_user)
+    session: SessionDep_async,
+    current_user: CurrentUser
 ):
     """
     신규 자산 등록 (Multi-tenancy 적용)
@@ -46,18 +45,18 @@ async def create_asset(
 @router.delete("/{asset_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_asset(
     asset_id: int,
-    session: AsyncSession = Depends(get_session),
-    current_user: User = Depends(get_current_user)
+    session: SessionDep_async,
+    current_user: CurrentUser
 ):
     """
     자산 삭제 (Security Check: 본인 것만 삭제 가능)
     """
-    asset = await crud_asset.get_asset(session, asset_id=asset_id)
+    asset = await crud_asset.get_asset(session=session, asset_id=asset_id)
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
         
     if asset.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Forbidden: You cannot delete global or other users' assets")
 
-    return await crud_asset.remove_asset(session, asset_id=asset_id)
+    return await crud_asset.remove_asset(session=session, asset_id=asset_id)
 

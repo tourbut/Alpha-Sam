@@ -1,11 +1,7 @@
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import EmailStr
 from sqlmodel import SQLModel
 from fastapi_users import schemas
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
 
 # Shared properties
 class UserBase(SQLModel):
@@ -29,3 +25,8 @@ class UserPasswordUpdate(SQLModel):
 # Properties to return to client
 class UserRead(schemas.BaseUser[int]):
     nickname: Optional[str] = None
+
+class Token(SQLModel):
+    access_token: str
+    token_type: str
+    user: UserRead

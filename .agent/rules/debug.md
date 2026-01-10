@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # System Verification & Debugging Commands
 
 ## Backend (FastAPI)
@@ -33,3 +37,8 @@
   cd frontend
   npm run check
   ```
+
+## Test User
+항상 아래 계정으로 테스트합니다.
+- ID: tester@example.com
+- PW: password123

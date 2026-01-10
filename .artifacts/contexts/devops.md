@@ -4,4 +4,7 @@
 - [2026-01-01 16:30:00] v0.9.0 배포 완료.
     - Git: `release/v0.9.0` 브랜치 생성 -> Version Bump -> `main` Merge -> Tag `v0.9.0` 생성.
     - Database: Production DB 백업 후 `migrate_v090_legacy_data.py` 실행 완료(Legacy Data 0건 감지).
-    - Status: 시스템 정상 가동 중.
+- [2026-01-02 23:30:00] v1.0.0 Release 작업 시작.
+- [2026-01-03 00:20:00] v1.0.0 배포 실패(Migration/Dep Issue). Hotfix v1.0.1(`fastapi-users` 의존성 누락), v1.0.2(`celery-beat` volume mount 이슈) 적용 후 Production 배포 성공.
+    - Status: Backend, Frontend, Celery(Worker/Beat), Nginx, DB, Redis 모두 정상 동작.
+- [2026-01-07 10:00:00] v1.0.3 배포 후 모니터링: Backend `/health` 및 Frontend `/login` 정상 응답 확인. 시스템 안정 상태 유지 중.

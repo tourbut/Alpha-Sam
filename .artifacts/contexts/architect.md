@@ -64,6 +64,13 @@
 - [2025-12-31 16:00:00] v0.9.0 Migration Plan Verified. QA results confirmed successful dirty data migration.
 - [2026-01-01 16:50:00] v0.9.0 Production Verification: DB Migration Success, but API Smoke Test blocked by env issue. release/v0.9.0 merged to main.
 
+### v1.1.0 (In Progress): Architecture Refinement
+- [2026-01-10 20:55:00] **Price Service Refactoring (Redis Decoupling)**
+    - **Decision**: Decouple Price Fetching (Collector) from Serving (Service).
+    - **Reason**: Performance & Stability. Yahoo Finance API is too slow/unreliable for direct synchronous calls.
+    - **Ref**: `.artifacts/projects/redis_schema.md`
+
+
 ### v1.0.0 (Upcoming): Official Launch
 - **Goal**: Full Stability, Dashboard Analytics (Charts), UI Polish.
 - **Key Features**:
@@ -86,3 +93,5 @@
 ## 5. Handovers
 - [2025-12-27 10:45:00] **Architect -> Backend**: `owner_id` 누락 없는지 CRUD 코드 리뷰 강화 요청.
 - [2025-12-27 10:45:00] **Architect -> Frontend**: API 호출 시 User Context 전달 방식(Header vs Token) 변경 대비.
+- [2026-01-08 17:15:00] **Feature Merged**: `feature/enhanced-mock-chat` (Mock Chat Widget with history) merged into `develop`. QA Verified.
+- [2026-01-09 15:15:00] **v1.1.0 Planning**: Drafted `v1.1.0_architecture_draft.md`. Defined Schema for Social (PortfolioShare, Leaderboard) and Automation (Bot, Alerts).

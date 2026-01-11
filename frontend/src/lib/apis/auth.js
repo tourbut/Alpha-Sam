@@ -1,6 +1,6 @@
 import { API_URL } from '$lib/constants';
 import { api_router } from "$lib/fastapi";
-import { auth } from '$lib/stores/auth';
+import { auth } from '$lib/stores/auth.svelte';
 
 export const login = async (credentials, success_callback, failure_callback) => {
     try {

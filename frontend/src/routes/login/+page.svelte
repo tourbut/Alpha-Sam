@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Card, Button, Label, Input, Checkbox } from "flowbite-svelte";
     import { login } from "$lib/apis/auth";
-    import { auth } from "$lib/stores/auth";
+    import { auth } from "$lib/stores/auth.svelte";
     import { goto } from "$app/navigation";
 
     let email = "";

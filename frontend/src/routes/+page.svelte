@@ -15,7 +15,7 @@
     } from "$lib/types";
     import PortfolioDistributionChart from "$lib/components/PortfolioDistributionChart.svelte";
     import PortfolioHistoryChart from "$lib/components/PortfolioHistoryChart.svelte";
-    import { auth } from "$lib/stores/auth";
+    import { auth } from "$lib/stores/auth.svelte";
     import { goto } from "$app/navigation";
 
     let assets: Asset[] = [];
@@ -68,7 +68,7 @@
 
     onMount(() => {
         auth.initialize();
-        if (!$auth.isAuthenticated) {
+        if (!auth.isAuthenticated) {
             goto("/login");
             return;
         }

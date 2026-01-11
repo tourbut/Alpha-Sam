@@ -60,3 +60,7 @@ export const fetchPortfolioPositions = async (id: number): Promise<any[]> => {
 export const createTransaction = async (portfolioId: number, data: TransactionCreate): Promise<Transaction> => {
     return await _createTransaction({ id: portfolioId, ...data });
 }
+
+export const get_portfolio_history = api_router('portfolio', 'get', 'history');
+export const create_portfolio_snapshot = api_router('portfolio', 'post', 'snapshot');
+export const get_portfolio_summary = api_router('portfolio', 'get', 'summary');

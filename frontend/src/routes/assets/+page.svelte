@@ -114,7 +114,7 @@
             return;
         }
         try {
-            await deletePosition(positionId);
+            await deletePosition({ id: positionId });
             await loadAssets();
         } catch (e) {
             console.error(e);

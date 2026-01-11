@@ -2,7 +2,7 @@ import { render, fireEvent, screen, waitFor } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import SettingsPage from './+page.svelte';
 import * as usersApi from '$lib/apis/users';
-import { auth } from '$lib/stores/auth';
+import { auth } from '$lib/stores/auth.svelte';
 
 // Mock $lib/apis/users
 vi.mock('$lib/apis/users', async () => {

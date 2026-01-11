@@ -1,6 +1,5 @@
 import { API_URL } from '$lib/constants';
-import { auth } from '$lib/stores/auth';
-import { get } from 'svelte/store';
+import { auth } from '$lib/stores/auth.svelte';
 import { browser } from '$app/environment';
 
 /**
@@ -64,9 +63,8 @@ export const api_router = (router, method, endpoint) => {
         // }
 
         // Auth Header (from store)
-        const $auth = get(auth);
-        if ($auth.token) {
-            options.headers['Authorization'] = `Bearer ${$auth.token}`;
+        if (auth.token) {
+            options.headers['Authorization'] = `Bearer ${auth.token}`;
         }
 
         // 3. Handle Body / Query Params

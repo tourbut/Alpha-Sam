@@ -71,7 +71,7 @@
         }
 
         try {
-            await deletePosition(position.id);
+            await deletePosition({ id: position.id });
             await loadData();
         } catch (e: any) {
             console.error("Error deleting position:", e);

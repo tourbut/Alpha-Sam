@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Card, Button, Label, Input, Checkbox } from "flowbite-svelte";
-    import { login } from "$lib/apis/auth";
+    import { login, get_me } from "$lib/apis/auth";
     import { auth } from "$lib/stores/auth.svelte";
     import { goto } from "$app/navigation";
 
@@ -12,10 +12,17 @@
         try {
             error = "";
             const data = await login({ username: email, password });
-            // In a real app, we might fetch user details here using the token
-            auth.login(data.access_token, { email });
+
+            // Set token temporarily to fetch user info
+            auth.token = data.access_token;
+
+            // Fetch full user info using the token (get_me imported from same module)
+            const user = await get_me();
+
+            auth.login(data.access_token, user);
             goto("/");
         } catch (e) {
+            console.error("Login failed:", e);
             error = "Login failed. Please check your credentials.";
         }
     }

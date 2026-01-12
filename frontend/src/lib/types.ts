@@ -75,14 +75,14 @@ export interface SymbolSearchResult {
     exchange?: string;
 }
 
+// Position: 읽기 전용 (Transaction 집계 결과)
 export interface Position {
-    id: number;
+    id?: number; // Optional: DB ID 없음 (동적 계산)
     asset_id: number;
     quantity: number;
-    buy_price: number;
-    buy_date?: string;
-    created_at?: string;
-    updated_at?: string;
+    avg_price: number; // buy_price → avg_price
+    created_at?: string; // Optional
+    updated_at?: string; // Optional
     valuation?: number;
     profit_loss?: number;
     return_rate?: number;
@@ -92,18 +92,19 @@ export interface Position {
     asset_category?: string;
 }
 
-export interface PositionCreate {
-    asset_id: number;
-    quantity: number;
-    buy_price: number;
-    buy_date?: string;
-}
-
-export interface PositionUpdate {
-    quantity?: number;
-    buy_price?: number;
-    buy_date?: string;
-}
+// Position Create/Update는 더 이상 사용하지 않음 (Transaction으로 대체)
+// export interface PositionCreate {
+// 	asset_id: number;
+// 	quantity: number;
+// 	buy_price: number;
+// 	buy_date?: string;
+// }
+//
+// export interface PositionUpdate {
+// 	quantity?: number;
+// 	buy_price?: number;
+// 	buy_date?: string;
+// }
 
 export interface PortfolioSummary {
     totalValuation: number;

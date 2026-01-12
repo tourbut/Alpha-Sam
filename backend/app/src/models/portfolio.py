@@ -10,7 +10,6 @@ from sqlalchemy import Column, DateTime, String, func
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.src.models.user import User
-    from app.src.models.position import Position
     from app.src.models.transaction import Transaction
 
 class Portfolio(SQLModel, table=True):
@@ -58,5 +57,4 @@ class Portfolio(SQLModel, table=True):
 
     # Relationships
     owner: "User" = Relationship(back_populates="portfolios")
-    positions: List["Position"] = Relationship(back_populates="portfolio")
     transactions: List["Transaction"] = Relationship(back_populates="portfolio")

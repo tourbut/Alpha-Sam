@@ -38,18 +38,16 @@ export const api_router = (router: string, method: string, endpoint: string) => 
 
         // Append endpoint to URL
         if (processedEndpoint) {
-            // endpoint가 시작할 때 '/'가 있으면 제거 (URL 중복 슬래시 방지)
-            const cleanEndpoint = processedEndpoint.startsWith('/') ? processedEndpoint.slice(1) : processedEndpoint;
-            url += `/${cleanEndpoint}`;
+            url += `/${processedEndpoint}`;
         }
 
-        // Ensure trailing slash for REST consistency if not query param
-        // 일부 백엔드 설정(기본 FastAPI)에서는 후행 슬래시가 필요함.
-        // 단, Query Parameter가 붙거나 이미 슬래시로 끝나는 경우는 제외.
-        // Ensure trailing slash logic removed to avoid CORS redirects
-        // if (!url.endsWith('/')) {
-        //     url += '/';
-        // }
+        // REMOVED: Automatic trailing slash. FastAPI routes might not expect it, 
+        // and redirects can lose Authorization headers in some client configurations.
+        /*
+        if (!url.endsWith('/')) {
+            url += '/';
+        }
+        */
 
         // 2. Prepare Fetch Options
         let options: RequestInit = {
@@ -65,7 +63,7 @@ export const api_router = (router: string, method: string, endpoint: string) => 
         // }
 
         // Auth Header (from store)
-        // const $auth = get(auth);
+        console.log(`Checking Auth Token for ${url}:`, auth.token ? "PRESENT" : "MISSING");
         if (auth.token) {
             (options.headers as Record<string, string>)['Authorization'] = `Bearer ${auth.token}`;
         }
@@ -74,10 +72,19 @@ export const api_router = (router: string, method: string, endpoint: string) => 
         if (method === 'login') {
             (options.headers as Record<string, string>)['Content-Type'] = 'application/x-www-form-urlencoded';
             const formData = new URLSearchParams();
-            Object.entries(requestParams).forEach(([k, v]) => {
+
+            // Map email to username for OAuth2 compliance if needed
+            const loginParams = { ...requestParams };
+            if (loginParams.email && !loginParams.username) {
+                loginParams.username = loginParams.email;
+                delete loginParams.email;
+            }
+
+            Object.entries(loginParams).forEach(([k, v]) => {
                 if (v !== undefined && v !== null) formData.append(k, String(v));
             });
             options.body = formData;
+            console.log(`Login Request Data:`, formData.toString());
         } else if (fetchMethod === 'GET') {
             const searchParams = new URLSearchParams();
             Object.entries(requestParams).forEach(([key, value]) => {

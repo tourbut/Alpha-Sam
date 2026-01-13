@@ -10,3 +10,7 @@
 - [2026-01-02 23:55:00] v1.0.0 Acceptance Re-verification 완료. Critical Bug(Logout) 해결 확인.
 - [2026-01-07 15:50:00] **v1.0.3 QA FAILED**. 로그인 시 401 에러가 발생하여 대시보드 진입 불가. Remember ID 기능은 동작 확인됨. 테스트 리포트(`test_report_v1.0.3.md`) 작성 후 Developer에게 이슈 전달 필요.
 - [2026-01-08 09:35:00] Verify Auth Refactor: **FAILED**. Critical Blocker found. `auth.ts` using Runes must be renamed to `auth.svelte.ts`. Report: `test_report_auth_refactor.md`.
+- [2026-01-08 16:05:00] QA Verified: `feature/chat-widget-cleanup`. Navbar Regression, Chat Widget(Mock), Dev Tools Removal all **PASSED**. Report: `test_report_chat_cleanup.md`.
+- [2026-01-09 17:05:00] QA Start: `feature/enhanced-mock-chat`. Verifying Dynamic Message History & Auto-scroll.
+- [2026-01-09 16:21:00] v1.1.0 Social & Automation 기능 테스트 계획 수립 완료. `.artifacts/projects/qa_reports/test_plan_v1.1.0.md` 생성됨.
+- [2026-01-11 21:55:00] v1.2.1 Smoke Test: **FAILED**. Backend `PortfolioCreate` Import 누락으로 인한 가동 중단 문제 발견. QA가 긴급 수정하여 서버 기동했으나, 이후 Login Integration(422 Error) 및 Frontend Route(404) 이슈로 대시보드 진입 불가. 리포트(`test_report_v1.2.0_smoke.md`) 업데이트 완료.

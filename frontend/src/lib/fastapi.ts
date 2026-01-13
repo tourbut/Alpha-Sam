@@ -9,8 +9,8 @@ import { browser } from '$app/environment';
  * @param {string} method - HTTP method ('get', 'post', 'put', 'delete') or 'login'.
  * @param {string} endpoint - The endpoint path (e.g., '', 'search', '{id}').
  */
-export const api_router = (router, method, endpoint) => {
-    return async (params = {}, success_callback, failure_callback) => {
+export const api_router = (router: string, method: string, endpoint: string) => {
+    return async (params: Record<string, any> = {}, success_callback?: (data: any) => void, failure_callback?: (err: any) => void) => {
         const fetchMethod = method.toUpperCase();
         let url = `${API_URL}/${router}`;
 
@@ -37,20 +37,22 @@ export const api_router = (router, method, endpoint) => {
         }
 
         // Append endpoint to URL
-        // If processedEndpoint is empty string, we might just append '/' if backend expects it
         if (processedEndpoint) {
             url += `/${processedEndpoint}`;
         }
 
-        // Ensure trailing slash for REST consistency if not query param
+        // REMOVED: Automatic trailing slash. FastAPI routes might not expect it, 
+        // and redirects can lose Authorization headers in some client configurations.
+        /*
         if (!url.endsWith('/')) {
             url += '/';
         }
+        */
 
         // 2. Prepare Fetch Options
-        let options = {
+        let options: RequestInit = {
             method: method === 'login' ? 'POST' : fetchMethod,
-            headers: {},
+            headers: {} as Record<string, string>,
         };
 
         // Dev User ID (from localStorage)
@@ -61,19 +63,28 @@ export const api_router = (router, method, endpoint) => {
         // }
 
         // Auth Header (from store)
-        // const $auth = get(auth);
+        console.log(`Checking Auth Token for ${url}:`, auth.token ? "PRESENT" : "MISSING");
         if (auth.token) {
-            options.headers['Authorization'] = `Bearer ${auth.token}`;
+            (options.headers as Record<string, string>)['Authorization'] = `Bearer ${auth.token}`;
         }
 
         // 3. Handle Body / Query Params
         if (method === 'login') {
-            options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+            (options.headers as Record<string, string>)['Content-Type'] = 'application/x-www-form-urlencoded';
             const formData = new URLSearchParams();
-            Object.entries(requestParams).forEach(([k, v]) => {
+
+            // Map email to username for OAuth2 compliance if needed
+            const loginParams = { ...requestParams };
+            if (loginParams.email && !loginParams.username) {
+                loginParams.username = loginParams.email;
+                delete loginParams.email;
+            }
+
+            Object.entries(loginParams).forEach(([k, v]) => {
                 if (v !== undefined && v !== null) formData.append(k, String(v));
             });
             options.body = formData;
+            console.log(`Login Request Data:`, formData.toString());
         } else if (fetchMethod === 'GET') {
             const searchParams = new URLSearchParams();
             Object.entries(requestParams).forEach(([key, value]) => {
@@ -90,7 +101,7 @@ export const api_router = (router, method, endpoint) => {
             }
         } else {
             // POST, PUT, DELETE (JSON)
-            options.headers['Content-Type'] = 'application/json';
+            (options.headers as Record<string, string>)['Content-Type'] = 'application/json';
             options.body = JSON.stringify(requestParams);
         }
 

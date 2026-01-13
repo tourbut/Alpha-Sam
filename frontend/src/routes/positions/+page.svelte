@@ -6,19 +6,14 @@
         TableBodyRow,
         TableHead,
         TableHeadCell,
-        Button,
+        Card,
     } from "flowbite-svelte";
     import { onMount } from "svelte";
-    import { get_positions as getPositions } from "$lib/apis/positions";
+    import { get_portfolio_summary as getPortfolioSummary } from "$lib/apis/portfolio";
     import { calculatePortfolioSummary } from "$lib/utils";
     import type { Position } from "$lib/types";
-    import PositionModal from "$lib/components/PositionModal.svelte";
-    import { get_assets as getAssets } from "$lib/apis/assets";
 
     let positions: Position[] = [];
-    let assets: any[] = [];
-    let positionModalOpen = false;
-    let selectedPosition: Position | null = null;
     let loading = false;
     let error: string | null = null;
 
@@ -29,13 +24,8 @@
         loading = true;
         error = null;
         try {
-            const [positionsData, assetsData] = await Promise.all([
-                getPositions(),
-                getAssets(),
-            ]);
-            // console.log removed
-            positions = positionsData;
-            assets = assetsData;
+            const summaryData = await getPortfolioSummary();
+            positions = summaryData.positions;
         } catch (e) {
             console.error("Error loading positions:", e);
             error = "Failed to load positions";
@@ -48,20 +38,6 @@
         loadData();
     });
 
-    function openAddTransactionModal() {
-        selectedPosition = null;
-        positionModalOpen = true;
-    }
-
-    function openTradeModal(position: Position) {
-        selectedPosition = position;
-        positionModalOpen = true;
-    }
-
-    function handlePositionCreated() {
-        loadData();
-    }
-
     function formatCurrency(value: number | undefined): string {
         if (value === undefined || value === null) return "-";
         return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -73,27 +49,14 @@
     }
 </script>
 
-<PositionModal
-    bind:open={positionModalOpen}
-    {assets}
-    position={selectedPosition
-        ? {
-              id: selectedPosition.id,
-              asset_id: selectedPosition.asset_id,
-              quantity: selectedPosition.quantity,
-              buy_price: selectedPosition.buy_price,
-              buy_date: selectedPosition.buy_date,
-          }
-        : null}
-    on:created={handlePositionCreated}
-/>
-
 <div class="container mx-auto p-4">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
             Positions
         </h1>
-        <Button onclick={openAddTransactionModal}>Add Transaction</Button>
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+            읽기 전용 - Transaction을 추가하여 Position을 변경하세요
+        </p>
     </div>
 
     {#if loading}
@@ -107,8 +70,7 @@
     {:else if positions.length === 0}
         <div class="text-center py-8">
             <p class="text-gray-600 dark:text-gray-400">
-                No positions found. Record your first transaction to get
-                started.
+                No positions found. Add transactions to create positions.
             </p>
         </div>
     {:else}
@@ -119,15 +81,14 @@
                     <TableHeadCell>Symbol</TableHeadCell>
                     <TableHeadCell>Category</TableHeadCell>
                     <TableHeadCell>Quantity</TableHeadCell>
-                    <TableHeadCell>Buy Price</TableHeadCell>
+                    <TableHeadCell>Avg Price</TableHeadCell>
                     <TableHeadCell>Current Price</TableHeadCell>
                     <TableHeadCell>Valuation</TableHeadCell>
                     <TableHeadCell>Profit/Loss</TableHeadCell>
                     <TableHeadCell>Return Rate</TableHeadCell>
-                    <TableHeadCell>Actions</TableHeadCell>
                 </TableHead>
                 <TableBody>
-                    {#each positions as position (position.id)}
+                    {#each positions as position (position.asset_id)}
                         <TableBodyRow>
                             <TableBodyCell
                                 class="font-medium text-gray-900 dark:text-white"
@@ -148,7 +109,7 @@
                                 })}
                             </TableBodyCell>
                             <TableBodyCell>
-                                {formatCurrency(position.buy_price)}
+                                {formatCurrency(position.avg_price)}
                             </TableBodyCell>
                             <TableBodyCell>
                                 {position.current_price
@@ -186,17 +147,6 @@
                                     ? formatPercent(position.return_rate)
                                     : "-"}
                             </TableBodyCell>
-                            <TableBodyCell>
-                                <div class="flex gap-2">
-                                    <Button
-                                        size="xs"
-                                        color="alternative"
-                                        onclick={() => openTradeModal(position)}
-                                    >
-                                        Trade
-                                    </Button>
-                                </div>
-                            </TableBodyCell>
                         </TableBodyRow>
                     {/each}
                 </TableBody>
@@ -205,7 +155,7 @@
 
         {#if positions.length > 0}
             <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <Card class="p-4">
                     <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
                         Total Valuation
                     </div>
@@ -214,8 +164,8 @@
                     >
                         {formatCurrency(portfolioSummary.totalValuation)}
                     </div>
-                </div>
-                <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                </Card>
+                <Card class="p-4">
                     <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
                         Total Invested
                     </div>
@@ -224,8 +174,8 @@
                     >
                         {formatCurrency(portfolioSummary.totalInvested)}
                     </div>
-                </div>
-                <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                </Card>
+                <Card class="p-4">
                     <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
                         Total Profit/Loss
                     </div>
@@ -239,8 +189,8 @@
                     >
                         {formatCurrency(portfolioSummary.totalProfitLoss)}
                     </div>
-                </div>
-                <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                </Card>
+                <Card class="p-4">
                     <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
                         Portfolio Return
                     </div>
@@ -254,7 +204,7 @@
                     >
                         {formatPercent(portfolioSummary.totalReturnRate)}
                     </div>
-                </div>
+                </Card>
             </div>
         {/if}
     {/if}

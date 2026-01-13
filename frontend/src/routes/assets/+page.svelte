@@ -17,21 +17,22 @@
     import { get_assets as getAssets } from "$lib/apis/assets";
     import { refresh_prices as refreshPrices } from "$lib/apis/prices";
     import {
-        get_positions as getPositions,
-        delete_position as deletePosition,
-    } from "$lib/apis/positions";
+        get_portfolio_summary as getPortfolioSummary,
+        fetchPortfolios,
+    } from "$lib/apis/portfolio";
     import { calculatePortfolioSummary } from "$lib/utils";
     import type { Asset, Position } from "$lib/types";
     import AssetModal from "$lib/components/AssetModal.svelte";
-    import PositionModal from "$lib/components/PositionModal.svelte";
+    import TransactionModal from "$lib/components/TransactionModal.svelte";
 
     let assets: Asset[] = [];
     let positions: Position[] = [];
+    let transactionModalOpen = false;
     let assetModalOpen = false;
-    let positionModalOpen = false;
     let selectedAsset: Asset | null = null;
     let loading = false;
     let error: string | null = null;
+    let portfolioId: number | null = null;
 
     // Position을 Asset ID로 매핑
     $: positionMap = new Map<number, Position>();
@@ -48,8 +49,7 @@
             profit_loss: position?.profit_loss,
             return_rate: position?.return_rate,
             quantity: position?.quantity,
-            buy_price: position?.buy_price,
-            position_id: position?.id,
+            avg_price: position?.avg_price,
         };
     });
 
@@ -60,13 +60,19 @@
         loading = true;
         error = null;
         try {
-            const [assetsData, positionsData] = await Promise.all([
+            const [assetsData, summaryData, portfolios] = await Promise.all([
                 getAssets(),
-                getPositions(),
+                getPortfolioSummary(),
+                fetchPortfolios(),
             ]);
-            // console.log removed
             assets = assetsData;
-            positions = positionsData;
+            positions = summaryData.positions;
+
+            // 첫 번째 Portfolio ID 가져오기
+            if (portfolios.length > 0) {
+                portfolioId = portfolios[0].id;
+            }
+
             if (assets.length === 0) {
                 console.warn("No assets found");
             }
@@ -100,26 +106,13 @@
         loadAssets();
     }
 
-    function openAddPositionModal(asset: Asset) {
+    function openAddTransactionModal(asset: Asset) {
         selectedAsset = asset;
-        positionModalOpen = true;
+        transactionModalOpen = true;
     }
 
-    function handlePositionCreated() {
+    function handleTransactionCreated() {
         loadAssets();
-    }
-
-    async function handleDeletePosition(positionId: number) {
-        if (!confirm("Are you sure you want to delete this position?")) {
-            return;
-        }
-        try {
-            await deletePosition(positionId);
-            await loadAssets();
-        } catch (e) {
-            console.error(e);
-            alert("Failed to delete position");
-        }
     }
 
     function formatCurrency(value: number | undefined): string {
@@ -134,11 +127,12 @@
 </script>
 
 <AssetModal bind:open={assetModalOpen} on:created={handleAssetCreated} />
-<PositionModal
-    bind:open={positionModalOpen}
+<TransactionModal
+    bind:open={transactionModalOpen}
     {assets}
     asset={selectedAsset}
-    on:created={handlePositionCreated}
+    portfolioId={portfolioId || 1}
+    on:created={handleTransactionCreated}
 />
 
 <div class="container mx-auto p-4">
@@ -221,7 +215,7 @@
                     <TableHeadCell>Category</TableHeadCell>
                     <TableHeadCell>Current Price</TableHeadCell>
                     <TableHeadCell>Quantity</TableHeadCell>
-                    <TableHeadCell>Buy Price</TableHeadCell>
+                    <TableHeadCell>Avg Price</TableHeadCell>
                     <TableHeadCell>Valuation</TableHeadCell>
                     <TableHeadCell>Profit/Loss</TableHeadCell>
                     <TableHeadCell>Return Rate</TableHeadCell>
@@ -284,7 +278,7 @@
                     <TableHeadCell>Category</TableHeadCell>
                     <TableHeadCell>Current Price</TableHeadCell>
                     <TableHeadCell>Quantity</TableHeadCell>
-                    <TableHeadCell>Buy Price</TableHeadCell>
+                    <TableHeadCell>Avg Price</TableHeadCell>
                     <TableHeadCell>Valuation</TableHeadCell>
                     <TableHeadCell>Profit/Loss</TableHeadCell>
                     <TableHeadCell>Return Rate</TableHeadCell>
@@ -332,8 +326,8 @@
                                     : "-"}
                             </TableBodyCell>
                             <TableBodyCell>
-                                {asset.buy_price !== undefined
-                                    ? formatCurrency(asset.buy_price)
+                                {asset.avg_price !== undefined
+                                    ? formatCurrency(asset.avg_price)
                                     : "-"}
                             </TableBodyCell>
                             <TableBodyCell>
@@ -370,26 +364,12 @@
                             <TableBodyCell>
                                 <Button
                                     size="xs"
-                                    color={asset.position_id
-                                        ? "alternative"
-                                        : "blue"}
-                                    onclick={() => openAddPositionModal(asset)}
-                                    class="mr-2"
+                                    color="blue"
+                                    onclick={() =>
+                                        openAddTransactionModal(asset)}
                                 >
-                                    {asset.position_id ? "Edit" : "Add"}
+                                    Add Transaction
                                 </Button>
-                                {#if asset.position_id}
-                                    <Button
-                                        size="xs"
-                                        color="red"
-                                        onclick={() =>
-                                            handleDeletePosition(
-                                                asset.position_id!,
-                                            )}
-                                    >
-                                        Delete
-                                    </Button>
-                                {/if}
                             </TableBodyCell>
                         </TableBodyRow>
                     {/each}

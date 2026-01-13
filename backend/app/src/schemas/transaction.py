@@ -8,6 +8,7 @@ class TransactionCreate(SQLModel):
     type: Literal["BUY", "SELL"]
     quantity: float = Field(gt=0, description="거래 수량")
     price: float = Field(gt=0, description="거래 단가")
+    executed_at: Optional[str] = Field(None, description="거래 실행 일시 (ISO 8601)")
 
 class TransactionRead(SQLModel):
     id: int
@@ -15,7 +16,7 @@ class TransactionRead(SQLModel):
     type: str
     quantity: float
     price: float
-    timestamp: datetime
+    executed_at: datetime  # timestamp → executed_at으로 변경
     
     model_config = ConfigDict(from_attributes=True)
 

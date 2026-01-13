@@ -1,12 +1,11 @@
 from typing import List, Dict, Optional, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
-from app.src.models.position import Position
 from app.src.models.price import Price
 from app.src.models.portfolio_history import PortfolioHistory
 from app.src.schemas.position import PositionWithAsset
 from app.src.schemas.portfolio import PortfolioResponse, PortfolioSummary, PortfolioStats
-from app.src.engine.portfolio_service import calculate_position_metrics, calculate_portfolio_summary
+from app.src.engine.portfolio_service import calculate_position_metrics, calculate_portfolio_summary, calculate_positions_from_transactions
 from app.src.crud import crud_portfolio_history
 from sqlalchemy.orm import selectinload
 
@@ -16,10 +15,26 @@ class PortfolioService:
         """
         Create a portfolio snapshot for the given user.
         """
-        # 1. Fetch all positions
-        stmt = select(Position).where(Position.owner_id == user_id)
-        result = await session.execute(stmt)
-        positions = result.scalars().all()
+        # TODO: 여러 Portfolio를 지원하려면 모든 Portfolio의 Position을 합산해야 함
+        # 일단은 user의 첫 번째 Portfolio를 사용
+        from app.src.models.portfolio import Portfolio
+        stmt_portfolio = select(Portfolio).where(Portfolio.owner_id == user_id).limit(1)
+        result_portfolio = await session.execute(stmt_portfolio)
+        portfolio = result_portfolio.scalar_one_or_none()
+        
+        if not portfolio:
+            # Portfolio가 없으면 빈 snapshot 생성
+            history = PortfolioHistory(
+                owner_id=user_id,
+                total_value=0.0,
+                total_cost=0.0,
+                total_pl=0.0
+            )
+            await crud_portfolio_history.create_portfolio_history(session=session, history=history)
+            return history
+        
+        # 1. Transaction 기반으로 Positions 계산
+        positions = await calculate_positions_from_transactions(session, portfolio.id)
         
         summary_input_data = []
 
@@ -34,7 +49,7 @@ class PortfolioService:
             current_price = price_map.get(position.asset_id)
             summary_input_data.append({
                 "quantity": float(position.quantity),
-                "buy_price": float(position.buy_price),
+                "buy_price": float(position.avg_price),
                 "current_price": current_price
             })
 
@@ -59,14 +74,27 @@ class PortfolioService:
         """
         with open("/Users/shin/.gemini/antigravity/brain/fe135e23-aef4-4cc1-b5ab-914a5d85fdd6/debug_log.txt", "a") as f:
             f.write(f"[DEBUG] PortfolioService.get_summary called for user_id={user_id}\n")
-        # 1. Fetch positions with Asset
-        stmt = (
-            select(Position)
-            .where(Position.owner_id == user_id)
-            .options(selectinload(Position.asset))
-        )
-        result = await session.execute(stmt)
-        positions = result.scalars().all()
+        
+        # TODO: 여러 Portfolio를 지원하려면 모든 Portfolio의 Position을 합산해야 함
+        # 일단은 user의 첫 번째 Portfolio를 사용
+        from app.src.models.portfolio import Portfolio
+        stmt_portfolio = select(Portfolio).where(Portfolio.owner_id == user_id).limit(1)
+        result_portfolio = await session.execute(stmt_portfolio)
+        portfolio = result_portfolio.scalar_one_or_none()
+        
+        if not portfolio:
+            return PortfolioResponse(
+                summary=PortfolioSummary(
+                    total_value=0.0,
+                    total_cost=0.0,
+                    total_pl=0.0,
+                    total_pl_stats=PortfolioStats(percent=0.0, direction="flat")
+                ),
+                positions=[]
+            )
+        
+        # 1. Transaction 기반으로 Positions 계산
+        positions = await calculate_positions_from_transactions(session, portfolio.id)
         
         if not positions:
             return PortfolioResponse(
@@ -87,36 +115,25 @@ class PortfolioService:
         summary_input_data = []
 
         for position in positions:
-            asset = position.asset
             current_price = price_map.get(position.asset_id)
             
             metrics = calculate_position_metrics(
                 quantity=position.quantity,
-                buy_price=position.buy_price,
+                buy_price=position.avg_price,
                 current_price=current_price
             )
             
-            position_dict = {
-                "id": position.id,
-                "asset_id": position.asset_id,
-                "quantity": float(position.quantity),
-                "buy_price": float(position.buy_price),
-                "buy_date": position.buy_date,
-                "created_at": position.created_at,
-                "updated_at": position.updated_at,
-                "valuation": metrics["valuation"],
-                "profit_loss": metrics["profit_loss"],
-                "return_rate": metrics["return_rate"],
-                "current_price": current_price,
-                "asset_symbol": asset.symbol if asset else None,
-                "asset_name": asset.name if asset else None,
-                "asset_category": asset.category if asset else None,
-            }
-            position_reads.append(PositionWithAsset(**position_dict))
+            # Position 데이터 업데이트 (계산된 필드 추가)
+            position.valuation = metrics["valuation"]
+            position.profit_loss = metrics["profit_loss"]
+            position.return_rate = metrics["return_rate"]
+            position.current_price = current_price
+            
+            position_reads.append(position)
             
             summary_input_data.append({
                 "quantity": float(position.quantity),
-                "buy_price": float(position.buy_price),
+                "buy_price": float(position.avg_price),
                 "current_price": current_price
             })
 
@@ -163,4 +180,4 @@ class PortfolioService:
         result = await session.execute(stmt)
         latest_prices = result.scalars().all()
         
-        return {price.asset_id: price.value for price in latest_prices}
+        return {price.asset_id: float(price.value) for price in latest_prices}

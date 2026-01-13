@@ -1,7 +1,10 @@
 from datetime import datetime
-from typing import Optional
-from sqlmodel import SQLModel, Field
+from typing import Optional, List, TYPE_CHECKING
+from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import Column, DateTime, func, String
+
+if TYPE_CHECKING:
+    from app.src.models.portfolio import Portfolio
 
 class User(SQLModel, table=True):
     """
@@ -28,3 +31,6 @@ class User(SQLModel, table=True):
         default_factory=datetime.utcnow,
         sa_column=Column(DateTime(timezone=True), onupdate=func.now())
     )
+
+    # Relationships
+    portfolios: List["Portfolio"] = Relationship(back_populates="owner")

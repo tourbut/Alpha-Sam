@@ -6,6 +6,12 @@
 - [2026-01-01 23:30:00] Bugfix & Feature: Tailwind 4 환경에서 `darkMode: 'class'` 적용 시 `app.css`에 `@config` 지시어 필요함 확인. Logout 버튼(`onclick`) 이벤트 핸들링 문제 해결을 위해 `window.location.href` 사용 및 Syntax 수정.
 - [2026-01-04 21:50:00] API Refactor Complete: `src/lib/api.ts` 제거 및 `src/lib/apis/` 모듈화 완료.
 - [2026-01-04 21:55:00] Troubleshooting: `fastapi.js`의 `api_router` 래퍼 사용 시, 매개변수는 반드시 **객체** 형태여야 함을 확인 (예: `getPortfolioHistory({ skip: 0, limit: 30 })`). 숫자를 직접 전달 시 `success_callback`으로 오인되어 TypeError 발생.
-- [2026-01-04 22:00:00] Auth Logic: `auth.js`의 `login` 함수 from 폼 데이터로 전송하도록 수정함 (FastAPI `OAuth2PasswordRequestForm` 호환).
-- [2026-01-06 23:55:00] Bugfix & Feature: 'Remember ID' 기능 구현 및 `savedEmail` 로컬 스토리지 연동 완료. Backend CORS 포트(5173) 추가 및 `fastapi.js`의 강제 trailing slash 제거로 리다이렉트/CORS 이슈 해결. `auth.js`를 `api_router` 표준 방식으로 리팩토링함.
-- [2026-01-08 09:10:00] Refactoring: `auth` store를 Svelte 5 Runes(``)로 전환 완료. `` 구독 문법을 제거하고 `auth.User` 등 직접 접근으로 변경함. `settings` 페이지는 Runes 모드로 완전히 리팩토링.
+- [2026-01-04 22:00:00] Auth Logic: `auth.js`의 `login` 함수에서 `credentials.email` 대신 `username` 필드를 폼 데이터로 전송하도록 수정함 (FastAPI `OAuth2PasswordRequestForm` 호환).
+
+- [2026-01-12 14:50:00] **Position UI 리팩토링 완료**. Backend Position 모델 제거에 따라 Frontend를 Transaction 기반 UI로 전환함. 주요 변경:
+  - Position Type 수정: `avg_price` 사용, `id/created_at/updated_at` Optional
+  - PositionModal 제거 → TransactionModal 생성
+  - Assets 페이지: Transaction 추가 UI로 변경
+  - Positions 페이지: 읽기 전용으로 변경 (수정/삭제 버튼 제거)
+  - Portfolio Summary API로 Position 데이터 조회
+  - Type Check 통과

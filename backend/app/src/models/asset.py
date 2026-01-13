@@ -49,7 +49,6 @@ class Asset(SQLModel, table=True):
     
     # Relationships
     prices: list["Price"] = Relationship(back_populates="asset")
-    positions: list["Position"] = Relationship(back_populates="asset")
     transactions: list["Transaction"] = Relationship(back_populates="asset")
 
 

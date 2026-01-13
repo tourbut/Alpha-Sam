@@ -19,3 +19,4 @@
 ## 참고 자료 (References)
 - `.artifacts/projects/milestones.md` (v1.1.0 계획 내용)
 - `.artifacts/projects/v1.0.0_backend_design.md`
+

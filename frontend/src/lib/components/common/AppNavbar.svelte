@@ -9,6 +9,7 @@
         DarkMode,
     } from "flowbite-svelte";
     import { auth } from "$lib/stores/auth.svelte";
+    import PortfolioSelector from "$lib/components/portfolio/PortfolioSelector.svelte";
     import { goto } from "$app/navigation";
 
     let { openAssetModal = $bindable(false) } = $props();
@@ -43,6 +44,7 @@
         />
 
         {#if auth.isAuthenticated}
+            <PortfolioSelector />
             <Button
                 size="sm"
                 class="bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800"
@@ -84,6 +86,7 @@
             <NavLi href="/">Dashboard</NavLi>
             <NavLi href="/assets">Assets</NavLi>
             <NavLi href="/positions">Positions</NavLi>
+            <NavLi href="/social/leaderboard">Leaderboard</NavLi>
             <NavLi href="/settings">Settings</NavLi>
             <NavLi
                 href="#"

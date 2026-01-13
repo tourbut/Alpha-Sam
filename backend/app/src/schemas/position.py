@@ -12,8 +12,7 @@ from decimal import Decimal
 class PositionBase(SQLModel):
     asset_id: int
     quantity: float = Field(ge=0.0, description="보유 수량 (0 이상)")
-    buy_price: float = Field(gt=0.0, description="매수 단가 (0 초과)")
-    buy_date: Optional[date] = None
+    avg_price: float = Field(ge=0.0, description="평단가 (0 이상)")
 
     @field_validator("quantity")
     @classmethod
@@ -22,42 +21,18 @@ class PositionBase(SQLModel):
             raise ValueError("quantity must be >= 0")
         return v
 
-    @field_validator("buy_price")
+    @field_validator("avg_price")
     @classmethod
-    def validate_buy_price(cls, v: float) -> float:
-        if v <= 0:
-            raise ValueError("buy_price must be > 0")
-        return v
-
-
-class PositionCreate(PositionBase):
-    pass
-
-
-class PositionUpdate(SQLModel):
-    quantity: Optional[float] = Field(default=None, ge=0.0)
-    buy_price: Optional[float] = Field(default=None, gt=0.0)
-    buy_date: Optional[date] = None
-
-    @field_validator("quantity")
-    @classmethod
-    def validate_quantity(cls, v: Optional[float]) -> Optional[float]:
-        if v is not None and v < 0:
-            raise ValueError("quantity must be >= 0")
-        return v
-
-    @field_validator("buy_price")
-    @classmethod
-    def validate_buy_price(cls, v: Optional[float]) -> Optional[float]:
-        if v is not None and v <= 0:
-            raise ValueError("buy_price must be > 0")
+    def validate_avg_price(cls, v: float) -> float:
+        if v < 0:
+            raise ValueError("avg_price must be >= 0")
         return v
 
 
 class PositionRead(PositionBase):
-    id: int
-    created_at: datetime
-    updated_at: datetime
+    id: Optional[int] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     # 계산된 필드
     valuation: Optional[float] = None
     profit_loss: Optional[float] = None

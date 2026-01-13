@@ -4,6 +4,21 @@ from sqlmodel import SQLModel, Field
 from pydantic import ConfigDict
 from app.src.schemas.position import PositionWithAsset
 
+class PortfolioBase(SQLModel):
+    name: str = Field(index=True)
+    description: Optional[str] = None
+    currency: str = Field(default="USD")
+
+class PortfolioCreate(PortfolioBase):
+    pass
+
+class PortfolioRead(PortfolioBase):
+    id: int
+    owner_id: int
+    created_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)
+
 class PortfolioStats(SQLModel):
     percent: Optional[float] = Field(None, description="수익률 (%)")
     direction: Literal["up", "down", "flat"] = Field("flat", description="수익 방향")

@@ -29,6 +29,14 @@
   - Production Deployment with Docker Compose (Nginx, Redis, Celery).
   - Hotfixes Applied: `v1.0.1` (Dependency), `v1.0.2` (Volume Config).
 
+## ✅ v1.2.0: Multi-Portfolio Structure (Completed)
+- **Date**: 2026-01-11
+- **Key Achievements**:
+  - **Multi-Portfolio Support**: Users can manage multiple portfolios.
+  - **Transaction-Centric Model**: Position accuracy improved via transaction history.
+  - **Dashboard Fix**: Resolved API routing issue causing 404/Loading freeze.
+- **Status**: Deployed to Production.
+
 ## 🔮 v1.1.0: Advanced Features (Planned)
 - **Themes**: Social, Automation.
 - **Tasks**:

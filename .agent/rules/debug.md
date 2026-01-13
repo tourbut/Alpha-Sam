@@ -13,7 +13,7 @@ trigger: always_on
 - **Run v0.9.0 Data Migration**:
   ```bash
   cd backend
-  uv run python scripts/migrate_v090_legacy_data.py
+  uv run uvicorn app.main:app --reload| tee ../.artifacts/logs/backend.log
   ```
 - **Generate QA Dirty Data (Legacy Simulation)**:
   ```bash
@@ -30,7 +30,7 @@ trigger: always_on
 - **Run Development Server**:
   ```bash
   cd frontend
-  npm run dev
+  npm run dev 2>&1| tee ../.artifacts/logs/frontend.log
   ```
 - **Run Type/Svelte Check**:
   ```bash

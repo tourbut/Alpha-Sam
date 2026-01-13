@@ -1,56 +1,26 @@
-# Tasks - v0.5.0 Release & v0.6.0 Planning
+# Tasks - v1.2.x Refactoring & v1.1.0 Social Features
 
-- [x] **Release v0.5.0**
-    - [x] Update `handovers/to_devops.md` with deployment instructions
-    - [x] Verify release readiness (Tagging, etc. - mostly on DevOps side)
+- [x] **Release v1.0.0 (Official Launch)**
+    - [x] Initial Release with Analytics & Dashboard
+    - [x] Hotfixes (v1.0.1, v1.0.2) Completed
 
-- [x] **Plan v0.6.0 (External Data & Analytics)**
-    - [x] Analyze Requirements (Market Data API)
-    - [x] Create `v0.6.0_implementation_plan.md`
-    - [x] Distribute Backend Tasks (`to_backend_dev.md`)
-    - [x] Distribute Frontend Tasks (`to_frontend_dev.md`)
-    - [x] Archive `handovers/to_architect.md`
+- [x] **v1.2.0 Position & Transaction Refactoring**
+    - [x] **Backend**: Refactor `Position` to be calculated from `Transactions`
+    - [x] **Frontend**: New Transaction UI (Add/Edit/Delete)
+    - [x] **API**: Restore `positions` endpoint (Fix 404)
+    - [x] **Database**: Migration checks
 
-- [x] **Resume v0.6.0 Hotfix & QA**
-    - [x] Resolve 500 Errors (Timeout/Deadlock)
-    - [x] Verify Market Data API
-    - [x] Verify Frontend Dashboard Loading
+- [/] **v1.2.1 Hotfix & QA Cleanup**
+    - [x] **QA**: Resolve Critical Bugs (Auth 401, Routing 404)
+    - [x] **Frontend**: Fix Authentication State Persistence
+    - [ ] **Verification**: Final QA Sign-off
 
-- [x] **Plan v0.7.0 (Multi-tenancy & Notifications)**
-    - [x] **Architect**: Design v0.7.0 Specs
-        - [x] DB Schema (Multi-tenancy)
-        - [x] Email Notification Architecture
-        - [x] Write `.artifacts/docs/v0.7.0_specs.md`
-    - [x] **Backend**: Plan Implementation
-    - [x] **Frontend**: Plan UI Changes
+- [/] **v1.1.0 Social Features (Phase 1)**
+    - [x] **Planning**: Architecture & Mockups
+    - [/] **Frontend**: Share Modal & Leaderboard UI
+    - [/] **Backend**: Social API Endpoints
+    - [ ] **Integration**: Connect UI with Backend
 
-- [x] **Implement v0.7.0**
-    - [x] **Backend**: DB Schema Migration (trans/pos owner_id)
-    - [x] **Backend**: Email Service & Celery Setup
-    - [x] **Backend**: Implement Notification Logic
-    - [x] **Frontend**: User Portfolio View
-
-- [/] **Plan v0.8.0 (Authentication)**
-    - [x] **Architect**: Design v0.8.0 Auth Specs (`v0.8.0_implementation_plan.md`)
-    - [x] **Backend**: Research FastAPI Users & JWT
-    - [ ] **Frontend**: Research SvelteKit Auth & UI wireframes
-    - [ ] **QA**: Create v0.8.0 Test Plan
-    - [ ] **DevOps**: Verify Email/Auth Infrastructure
-
-- [/] **Implement v0.8.0 (Authentication)**
-    - [x] **Backend**: Fix `/users/me` 405 Error (Router Missing)
-    - [x] **Frontend**: Fix related login form issues
-    - [x] **QA**: Re-verify v0.8.0 Fixes
-
-- [x] **Release v0.9.0 (Data Migration)**
-    - [x] **Architect**: Plan Migration & Legacy Data Handling
-    - [x] **QA**: Create Migration Test Data & Checklist
-    - [x] **Backend**: Optimize Portfolio (N+1) & Migration Script
-    - [x] **DevOps**: Merge & Deploy to Production
-    - [x] **QA**: Post-deployment Verification (Smoke Test) - *Partial (DB Checked, API Pending)*
-
-- [/] **Plan v1.0.0 (Official Launch: Analytics)**
-    - [x] **Architect**: Write `v1.0.0_implementation_plan.md` (Analytics & Stability)
-    - [/] **Backend**: Analytics API Design (PnL Calculation) - *Designed `v1.0.0_backend_design.md`*
-    - [x] **Frontend**: Chart Library Selection & Dashboard Design - *Selected Chart.js, Designed `v1.0.0_frontend_design.md`*
-    - [ ] **DevOps**: Production Hardening (HTTPS, Health Checks)
+- [ ] **Future Planning (v1.3.0+)**
+    - [ ] Automation Features
+    - [ ] Enhanced Analytics

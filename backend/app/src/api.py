@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.src.routes import assets, prices, positions, auth, users, portfolios, market, user_settings, social
+from app.src.routes import assets, prices, auth, users, portfolios, market, user_settings, social
 
 api_router = APIRouter()
 
@@ -40,7 +40,7 @@ api_router.include_router(
 # Manual Routers
 api_router.include_router(assets.router, prefix="/assets", tags=["assets"])
 api_router.include_router(prices.router, prefix="/prices", tags=["prices"])
-api_router.include_router(positions.router, prefix="/positions", tags=["positions"])
+
 # users router is likely handled by distinct settings route or combined above, checking conflicts.
 # The previous line 48 had: api_router.include_router(user_settings.router, prefix="/users", tags=["users"])
 # This conflicts with fastapi_users prefix. We need to decide. 

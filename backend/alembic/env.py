@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from sqlmodel import SQLModel
 from app.src.models.asset import Asset
 from app.src.models.price import Price
-from app.src.models.position import Position
+
 from app.src.models.user import User
 
 # this is the Alembic Config object, which provides

@@ -6,3 +6,10 @@
 - [2026-01-01 17:30:00] v1.0.0 대비 Backend Refactoring 완료. `main.py`/`api.py` 라우터 정리, `AssetService` 분리(비즈니스 로직 캡슐화), `security.py` JWT 로직 중앙화, `deps.py` 환경 분리 적용. 테스트(`test_assets_autofill` 등) 수정 및 통과 확인.
 
 - [2026-01-04 22:35:00] Hotfix: Frontend 연동 검증 중 `AssetService.get_assets_with_metrics`에서 `crud_asset.get_assets` 호출 시 `session` 인자가 Positional로 전달되어 TypeError 발생하는 문제 확인. Keyword Argument (`session=session`)로 수정하여 해결함. Style Guide 준수 확인.
+
+- [2026-01-12 00:10:00] **Position 모델 제거 및 Transaction 기반 계산 리팩토링 완료**. `Position` 모델과 테이블을 완전히 제거하고, Transaction을 집계하여 실시간으로 Position을 계산하는 방식으로 변경함. 주요 변경:
+  - `calculate_positions_from_transactions` 함수 구현 (Asset별 Transaction 집계 및 이동평균법으로 평단가 계산)
+  - CRUD/Service Layer 전면 리팩토링 (Position DB 저장 로직 제거)
+  - Alembic Migration `7e1faf4ea7e5_remove_position_table` 실행 완료
+  - 단위 테스트 작성 (`test_position_calculation.py`)
+  - 데이터 일관성 향상: Transaction이 단일 진실 공급원(Single Source of Truth)이 됨

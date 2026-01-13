@@ -1,5 +1,6 @@
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from fastapi import HTTPException, status
 
 from app.src.crud import crud_asset
@@ -17,23 +18,42 @@ class AssetService:
     ) -> List[AssetRead]:
         """
         자산 목록 조회 및 메트릭(평가액, 손익 등) 계산
+        Position은 Transaction을 집계하여 동적으로 계산됨
         """
+        # 1. Asset 목록 조회 (latest_price 포함)
         assets_data = await crud_asset.get_assets(session=session, owner_id=user_id, skip=skip, limit=limit)
         
+        # 2. 사용자의 Portfolio 조회 (Position 계산을 위해)
+        from app.src.models.portfolio import Portfolio
+        from app.src.engine.portfolio_service import calculate_positions_from_transactions
+        
+        stmt_portfolio = select(Portfolio).where(Portfolio.owner_id == user_id).limit(1)
+        result_portfolio = await session.execute(stmt_portfolio)
+        portfolio = result_portfolio.scalar_one_or_none()
+        
+        # 3. Transaction 기반으로 모든 Position 계산
+        position_map = {}  # asset_id -> PositionWithAsset
+        if portfolio:
+            positions = await calculate_positions_from_transactions(session, portfolio.id)
+            position_map = {pos.asset_id: pos for pos in positions}
+        
+        # 4. AssetRead 생성 (Position 정보와 결합)
         asset_reads = []
-        for asset, latest_price, latest_timestamp, position_obj in assets_data:
+        for asset, latest_price, latest_timestamp in assets_data:
             asset_read = AssetRead.model_validate(asset)
             
+            # Latest Price 설정
             if latest_price is not None:
-                asset_read.latest_price = latest_price
+                asset_read.latest_price = float(latest_price) if hasattr(latest_price, '__float__') else latest_price
                 asset_read.latest_price_updated_at = latest_timestamp
             
             # Position이 있으면 계산된 메트릭 포함
+            position_obj = position_map.get(asset.id)
             if position_obj:
                 metrics = calculate_position_metrics(
                     quantity=position_obj.quantity,
-                    buy_price=position_obj.buy_price,
-                    current_price=latest_price
+                    buy_price=position_obj.avg_price,
+                    current_price=float(latest_price) if latest_price is not None else None
                 )
                 asset_read.valuation = metrics["valuation"]
                 asset_read.profit_loss = metrics["profit_loss"]
@@ -41,7 +61,7 @@ class AssetService:
                 
                 # Position 정보도 응답에 포함
                 asset_read.quantity = position_obj.quantity
-                asset_read.buy_price = position_obj.buy_price
+                asset_read.avg_price = position_obj.avg_price
             else:
                 asset_read.valuation = None
                 asset_read.profit_loss = None

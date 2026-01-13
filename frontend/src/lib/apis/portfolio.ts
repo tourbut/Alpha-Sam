@@ -61,6 +61,6 @@ export const createTransaction = async (portfolioId: number, data: TransactionCr
     return await _createTransaction({ id: portfolioId, ...data });
 }
 
-export const get_portfolio_history = api_router('portfolio', 'get', 'history');
-export const create_portfolio_snapshot = api_router('portfolio', 'post', 'snapshot');
-export const get_portfolio_summary = api_router('portfolio', 'get', 'summary');
+export const get_portfolio_history = api_router('portfolios', 'get', 'history');
+export const create_portfolio_snapshot = api_router('portfolios', 'post', 'snapshot');
+export const get_portfolio_summary = api_router('portfolios', 'get', 'summary');

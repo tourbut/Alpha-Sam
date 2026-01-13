@@ -1,37 +1,19 @@
 # Frontend Developer Work Log - 2026-01-11
 
-## Tasks Completed
+## v1.2.0 Release Support
+- Resolved merge conflicts in `frontend/src/routes` and documentation.
+- Prioritized v1.2.0 logic (new transaction UI, multi-portfolio).
 
-1.  **Dashboard Loading Fix**:
-    - Confirmed correct behavior with `portfolioStore.loadPositions`. When an auth token exists, portfolios are loaded, and the first one is selected, triggering position loading.
-    - Verified `AppNavbar` and `PortfolioSelector` interaction. The selector correctly calls `loadPortfolios` on mount if authenticated.
-
-2.  **Portfolio Management UI**:
-    - Implemented `PortfolioSelector` dropdown in `AppNavbar`.
-    - Implemented `CreatePortfolioModal` for adding new portfolios.
-    - Added state management in `portfolioStore` required for selection and loading logic.
-    - Verified functionality:
-        - Portfolio switching updates `selectedPortfolioId`.
-        - Selecting a new portfolio triggers `loadPositions`.
-        - Create modal successfully adds a new portfolio and selects it.
-
-3.  **Transaction Input UI**:
-    - Created `TransactionFormModal` (Svelte 5 Runes).
-    - Integrated "Add Transaction" button in `/positions` page.
-    - Added logic to refresh positions after successful transaction creation.
-    - Verified `Buy`/`Sell` types and input validation.
-
-4.  **Charts**:
-    - `PortfolioDistributionChart` verified.
-    - `PortfolioHistoryChart` code exists (but currently disabled in Dashboard until backend history API is ready/updated for v1.2.0).
-
-## Incident Response (Git Merge Conflict)
-- **Action**: Resolved frontend conflicts in `release/v1.2.0` merge from `main`.
-- **Strategy**: 
-    - Forced adoption of `HEAD` (v1.2.0) for `src/routes/` and components to ensure new UI features (Portfolio/Transactions) persist.
-    - Removed `DevUserSwitcher.test.ts` which was deleted in v1.2.0 but modified in main.
-    - Resolved Docs/Contexts conflicts by keeping latest v1.2.0 status.
-- **Status**: All conflicts resolved, merged, and committed.
-
-## Handovers
-- Pass control back to DevOps for deployment retry.
+## Hotfix: v1.2.1 (Critical Import Error)
+- **Incident**: QA Smoke Test failed with 500 Internal Error (Module not found).
+- **Cause**: Refactor of `auth` store to Svelte 5 Runes (`auth.svelte.ts`) broke imports in `fastapi.js` and other files which were still looking for `$lib/stores/auth`.
+- **Fix**:
+    - Updated imports to `$lib/stores/auth.svelte` in:
+        - `fastapi.js`
+        - `routes/login`, `routes/signup`, `routes/transactions`, `routes/+page.svelte`
+        - `Settings.test.ts`
+        - `apis/auth.js`
+    - Removed `$auth` store syntax (dollar sign) in Svelte components as `auth` is now a reactive class instance.
+    - Updated `portfolio.ts` to include missing exports (`get_portfolio_history`, etc.) and deleted conflicting `portfolio.js`.
+    - Fixed API usage in `transactions/+page.svelte` (object params for `getTransactions`).
+- **Result**: Login page loads successfully. `v1.2.1` released.

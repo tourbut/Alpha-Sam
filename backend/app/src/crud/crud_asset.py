@@ -5,15 +5,18 @@ from sqlalchemy import select, desc, or_
 
 from app.src.models.asset import Asset
 from app.src.models.price import Price
-from app.src.models.position import Position
+
 from app.src.schemas.asset import AssetCreate
 
 async def get_assets(
     *, session: AsyncSession, owner_id: int, skip: int = 0, limit: int = 100
-) -> List[Tuple[Asset, Optional[float], Optional[datetime], Optional[Position]]]:
+) -> List[Tuple[Asset, Optional[float], Optional[datetime]]]:
     """
-    Get assets with their latest price and associated first position for the specific user.
+    Get assets with their latest price for the specific user.
     Returns assets where owner_id is None (Global) OR matches owner_id (Private).
+    
+    참고: Position 정보는 더 이상 여기서 반환하지 않음.
+    Position은 Transaction을 집계하여 동적으로 계산됨.
     """
     try:
         statement = select(Asset).where(
@@ -35,19 +38,11 @@ async def get_assets(
             price_stmt = select(Price).where(Price.asset_id == asset.id).order_by(desc(Price.timestamp)).limit(1)
             price_res = await session.execute(price_stmt)
             latest_price_obj = price_res.scalar_one_or_none()
-            
-            # Position for the specific user
-            position_stmt = select(Position).where(
-                Position.asset_id == asset.id,
-                Position.owner_id == owner_id
-            ).limit(1)
-            position_res = await session.execute(position_stmt)
-            position_obj = position_res.scalar_one_or_none()
 
             latest_price = latest_price_obj.value if latest_price_obj else None
             latest_timestamp = latest_price_obj.timestamp if latest_price_obj else None
             
-            asset_data.append((asset, latest_price, latest_timestamp, position_obj))
+            asset_data.append((asset, latest_price, latest_timestamp))
             
         return asset_data
     except Exception as e:

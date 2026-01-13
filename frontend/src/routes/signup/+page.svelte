@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Card, Button, Label, Input, Checkbox } from "flowbite-svelte";
-    import { signup, login } from "$lib/apis/auth";
+    import { signup, login, get_me } from "$lib/apis/auth";
     import { auth } from "$lib/stores/auth.svelte";
     import { goto } from "$app/navigation";
 
@@ -22,7 +22,9 @@
 
             // Auto login after signup
             const data = await login({ username: email, password });
-            auth.login(data.access_token, { email });
+            auth.token = data.access_token;
+            const user = await get_me();
+            auth.login(data.access_token, user);
             goto("/");
         } catch (e: any) {
             error = "Signup failed. " + (e.message || "");

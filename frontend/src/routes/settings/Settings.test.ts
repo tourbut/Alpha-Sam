@@ -16,8 +16,8 @@ vi.mock('$lib/apis/users', async () => {
     };
 });
 
-// Mock $lib/stores/auth
-vi.mock('$lib/stores/auth', () => {
+// Mock $lib/stores/auth.svelte
+vi.mock('$lib/stores/auth.svelte', () => {
     const { writable } = require('svelte/store');
     return {
         auth: {

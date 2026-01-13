@@ -86,6 +86,7 @@
             <NavLi href="/">Dashboard</NavLi>
             <NavLi href="/assets">Assets</NavLi>
             <NavLi href="/positions">Positions</NavLi>
+            <NavLi href="/social/leaderboard">Leaderboard</NavLi>
             <NavLi href="/settings">Settings</NavLi>
             <NavLi
                 href="#"

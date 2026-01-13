@@ -15,8 +15,10 @@
     } from "$lib/types";
     import PortfolioDistributionChart from "$lib/components/PortfolioDistributionChart.svelte";
     import PortfolioHistoryChart from "$lib/components/PortfolioHistoryChart.svelte";
+    import ShareModal from "$lib/components/ShareModal.svelte";
     import { auth } from "$lib/stores/auth.svelte";
     import { goto } from "$app/navigation";
+    import { ShareNodesOutline } from "flowbite-svelte-icons";
 
     let assets: Asset[] = [];
     let positions: Position[] = [];
@@ -30,6 +32,7 @@
     let error: string | null = null;
     let loading = true;
     let refreshing = false;
+    let shareModal = false;
 
     async function handleRefresh() {
         refreshing = true;
@@ -99,18 +102,28 @@
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
             Portfolio Dashboard
         </h1>
-        <Button
-            color="light"
-            size="sm"
-            on:click={handleRefresh}
-            disabled={refreshing}
-        >
-            {#if refreshing}
-                Refreshing...
-            {:else}
-                Refresh Prices
-            {/if}
-        </Button>
+        <div class="flex gap-2">
+            <Button
+                color="alternative"
+                size="sm"
+                onclick={() => (shareModal = true)}
+            >
+                <ShareNodesOutline class="w-4 h-4 mr-2" />
+                Share
+            </Button>
+            <Button
+                color="light"
+                size="sm"
+                onclick={handleRefresh}
+                disabled={refreshing}
+            >
+                {#if refreshing}
+                    Refreshing...
+                {:else}
+                    Refresh Prices
+                {/if}
+            </Button>
+        </div>
     </div>
 
     {#if loading}
@@ -120,7 +133,7 @@
     {:else if error}
         <div class="text-center py-8">
             <p class="text-red-600 dark:text-red-400 mb-4">{error}</p>
-            <Button on:click={loadData}>Retry</Button>
+            <Button onclick={loadData}>Retry</Button>
         </div>
     {:else}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -228,4 +241,5 @@
             </Card>
         </div>
     {/if}
+    <ShareModal bind:open={shareModal} />
 </div>

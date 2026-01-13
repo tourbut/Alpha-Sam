@@ -29,33 +29,10 @@ class PositionBase(SQLModel):
         return v
 
 
-class PositionCreate(PositionBase):
-    pass
-
-
-class PositionUpdate(SQLModel):
-    quantity: Optional[float] = Field(default=None, ge=0.0)
-    avg_price: Optional[float] = Field(default=None, ge=0.0)
-
-    @field_validator("quantity")
-    @classmethod
-    def validate_quantity(cls, v: Optional[float]) -> Optional[float]:
-        if v is not None and v < 0:
-            raise ValueError("quantity must be >= 0")
-        return v
-
-    @field_validator("avg_price")
-    @classmethod
-    def validate_avg_price(cls, v: Optional[float]) -> Optional[float]:
-        if v is not None and v < 0:
-            raise ValueError("avg_price must be >= 0")
-        return v
-
-
 class PositionRead(PositionBase):
-    id: int
-    created_at: datetime
-    updated_at: datetime
+    id: Optional[int] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     # 계산된 필드
     valuation: Optional[float] = None
     profit_loss: Optional[float] = None

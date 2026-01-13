@@ -10,7 +10,7 @@ from app.src.deps import SessionDep_async, CurrentUser
 
 router = APIRouter()
 
-@router.get("/", response_model=List[AssetRead])
+@router.get("", response_model=List[AssetRead])
 async def read_assets(
     skip: int = 0,
     limit: int = 100,
@@ -27,7 +27,7 @@ async def read_assets(
         limit=limit
     )
 
-@router.post("/", response_model=AssetRead, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=AssetRead, status_code=status.HTTP_201_CREATED)
 async def create_asset(
     asset_in: AssetCreate,
     session: SessionDep_async,

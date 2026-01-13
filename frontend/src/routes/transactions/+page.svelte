@@ -113,7 +113,7 @@
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
             Transactions
         </h1>
-        <Button on:click={() => (formModal = true)}>Add Transaction</Button>
+        <Button onclick={() => (formModal = true)}>Add Transaction</Button>
     </div>
 
     {#if loading}

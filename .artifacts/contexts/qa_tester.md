@@ -14,3 +14,4 @@
 - [2026-01-09 17:05:00] QA Start: `feature/enhanced-mock-chat`. Verifying Dynamic Message History & Auto-scroll.
 - [2026-01-09 16:21:00] v1.1.0 Social & Automation 기능 테스트 계획 수립 완료. `.artifacts/projects/qa_reports/test_plan_v1.1.0.md` 생성됨.
 - [2026-01-11 21:55:00] v1.2.1 Smoke Test: **FAILED**. Backend `PortfolioCreate` Import 누락으로 인한 가동 중단 문제 발견. QA가 긴급 수정하여 서버 기동했으나, 이후 Login Integration(422 Error) 및 Frontend Route(404) 이슈로 대시보드 진입 불가. 리포트(`test_report_v1.2.0_smoke.md`) 업데이트 완료.
+- [2026-01-13 21:47:00] Dashboard Redesign v1.3.0 QA Verification: **PASSED**. Page Title (svelte:head) 누락 발견 후 즉시 수정. 모든 접근성 및 UX 개선 항목 정상 동작 확인. 리포트(`test_report_dashboard_redesign_v1.3.0.md`) 작성 완료.

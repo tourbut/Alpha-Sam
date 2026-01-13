@@ -102,7 +102,7 @@
         <Button
             color="light"
             size="sm"
-            on:click={handleRefresh}
+            onclick={handleRefresh}
             disabled={refreshing}
         >
             {#if refreshing}
@@ -120,7 +120,7 @@
     {:else if error}
         <div class="text-center py-8">
             <p class="text-red-600 dark:text-red-400 mb-4">{error}</p>
-            <Button on:click={loadData}>Retry</Button>
+            <Button onclick={loadData}>Retry</Button>
         </div>
     {:else}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

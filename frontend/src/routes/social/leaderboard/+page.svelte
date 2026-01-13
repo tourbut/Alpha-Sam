@@ -13,7 +13,6 @@
     } from "flowbite-svelte";
     import { socialStore } from "$lib/stores/social.svelte";
     import {
-        TrophyOutline,
         UserCircleOutline,
         ChartMixedDollarOutline,
     } from "flowbite-svelte-icons";
@@ -32,7 +31,7 @@
 
 <div class="container mx-auto p-4 max-w-4xl">
     <div class="flex flex-col items-center mb-10 text-center">
-        <TrophyOutline class="w-16 h-16 text-primary-500 mb-4" />
+        <ChartMixedDollarOutline class="w-16 h-16 text-primary-500 mb-4" />
         <h1 class="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">
             Weekly Leaderboard
         </h1>

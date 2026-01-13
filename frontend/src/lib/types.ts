@@ -76,7 +76,7 @@ export interface SymbolSearchResult {
 }
 
 // Position: 읽기 전용 (Transaction 집계 결과)
-export interface Position {
+export interface IPosition {
     id?: number; // Optional: DB ID 없음 (동적 계산)
     asset_id: number;
     quantity: number;
@@ -91,6 +91,8 @@ export interface Position {
     asset_name?: string;
     asset_category?: string;
 }
+
+export type Position = IPosition;
 
 // Position Create/Update는 더 이상 사용하지 않음 (Transaction으로 대체)
 // export interface PositionCreate {

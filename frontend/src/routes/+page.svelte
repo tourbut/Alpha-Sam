@@ -18,7 +18,18 @@
     import ShareModal from "$lib/components/ShareModal.svelte";
     import { auth } from "$lib/stores/auth.svelte";
     import { goto } from "$app/navigation";
-    import { ShareNodesOutline } from "flowbite-svelte-icons";
+    import {
+        ShareNodesOutline,
+        RefreshOutline,
+        ChartPieOutline,
+        DollarOutline,
+        ArrowUpOutline,
+        ArrowDownOutline,
+        PlusOutline,
+        FileExportOutline,
+        ClipboardListOutline,
+        BriefcaseOutline,
+    } from "flowbite-svelte-icons";
 
     let assets: Asset[] = [];
     let positions: Position[] = [];
@@ -107,6 +118,8 @@
                 color="alternative"
                 size="sm"
                 onclick={() => (shareModal = true)}
+                aria-label="Share portfolio"
+                class="focus:ring-2 focus:ring-primary-500 focus:outline-none"
             >
                 <ShareNodesOutline class="w-4 h-4 mr-2" />
                 Share
@@ -116,7 +129,12 @@
                 size="sm"
                 onclick={handleRefresh}
                 disabled={refreshing}
+                aria-label="Refresh prices and data"
+                class="focus:ring-2 focus:ring-primary-500 focus:outline-none"
             >
+                <RefreshOutline
+                    class="w-4 h-4 mr-2 {refreshing ? 'animate-spin' : ''}"
+                />
                 {#if refreshing}
                     Refreshing...
                 {:else}
@@ -136,40 +154,70 @@
             <Button onclick={loadData}>Retry</Button>
         </div>
     {:else}
+        <!-- Stat Cards Section -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <Card class="p-6">
-                <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            <!-- Total Assets Card -->
+            <Card class="p-6 hover:shadow-lg transition-shadow duration-200">
+                <div
+                    class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2"
+                >
+                    <BriefcaseOutline class="w-4 h-4" />
                     Total Assets
                 </div>
                 <div class="text-3xl font-bold text-gray-900 dark:text-white">
                     {assets.length}
                 </div>
             </Card>
-            <Card class="p-6">
-                <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            <!-- Active Positions Card -->
+            <Card class="p-6 hover:shadow-lg transition-shadow duration-200">
+                <div
+                    class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2"
+                >
+                    <ChartPieOutline class="w-4 h-4" />
                     Active Positions
                 </div>
                 <div class="text-3xl font-bold text-gray-900 dark:text-white">
                     {positions.length}
                 </div>
             </Card>
-            <Card class="p-6">
-                <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            <!-- Total Valuation Card (주요 지표: 강조 스타일) -->
+            <Card
+                class="p-6 bg-gradient-to-br from-primary-50 to-white dark:from-primary-900/20 dark:to-gray-800 hover:shadow-lg transition-shadow duration-200 border-primary-200 dark:border-primary-700"
+            >
+                <div
+                    class="flex items-center gap-2 text-sm text-primary-700 dark:text-primary-300 mb-2"
+                >
+                    <DollarOutline class="w-4 h-4" />
                     Total Valuation
                 </div>
-                <div class="text-3xl font-bold text-gray-900 dark:text-white">
+                <div
+                    class="text-3xl font-bold text-primary-900 dark:text-primary-100"
+                >
                     {formatCurrency(portfolioSummary.total_value)}
                 </div>
             </Card>
-            <Card class="p-6">
-                <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            <!-- Portfolio Return Card (주요 지표: 색상 + 화살표) -->
+            <Card class="p-6 hover:shadow-lg transition-shadow duration-200">
+                <div
+                    class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2"
+                >
+                    {#if portfolioSummary.total_pl_stats.percent >= 0}
+                        <ArrowUpOutline class="w-4 h-4 text-green-500" />
+                    {:else}
+                        <ArrowDownOutline class="w-4 h-4 text-red-500" />
+                    {/if}
                     Portfolio Return
                 </div>
                 <div
-                    class="text-3xl font-bold {getColorClass(
+                    class="flex items-center gap-2 text-3xl font-bold {getColorClass(
                         portfolioSummary.total_pl_stats.percent,
                     )}"
                 >
+                    {#if portfolioSummary.total_pl_stats.percent >= 0}
+                        <span class="text-green-500">▲</span>
+                    {:else}
+                        <span class="text-red-500">▼</span>
+                    {/if}
                     {formatPercent(portfolioSummary.total_pl_stats.percent)}
                 </div>
             </Card>
@@ -195,19 +243,53 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Quick Actions (Expanded) -->
             <Card class="p-6">
                 <h2
                     class="text-xl font-bold text-gray-900 dark:text-white mb-4"
                 >
                     Quick Actions
                 </h2>
-                <div class="flex flex-col gap-2">
-                    <Button href="/assets" class="w-full text-white"
-                        >Manage Assets</Button
+                <div class="grid grid-cols-2 gap-2">
+                    <Button
+                        href="/assets"
+                        class="w-full text-white focus:ring-2 focus:ring-primary-500"
                     >
-                    <Button href="/positions" color="alternative" class="w-full"
-                        >Manage Positions</Button
+                        <BriefcaseOutline class="w-4 h-4 mr-2" />
+                        Manage Assets
+                    </Button>
+                    <Button
+                        href="/positions"
+                        color="alternative"
+                        class="w-full focus:ring-2 focus:ring-primary-500"
                     >
+                        <ChartPieOutline class="w-4 h-4 mr-2" />
+                        Positions
+                    </Button>
+                    <Button
+                        href="/transactions"
+                        color="light"
+                        class="w-full focus:ring-2 focus:ring-primary-500"
+                    >
+                        <PlusOutline class="w-4 h-4 mr-2" />
+                        Transactions
+                    </Button>
+                    <Button
+                        color="light"
+                        class="w-full focus:ring-2 focus:ring-primary-500"
+                        disabled
+                    >
+                        <FileExportOutline class="w-4 h-4 mr-2" />
+                        Export (Soon)
+                    </Button>
+                    <Button
+                        href="/social/leaderboard"
+                        color="light"
+                        class="w-full col-span-2 focus:ring-2 focus:ring-primary-500"
+                    >
+                        <ClipboardListOutline class="w-4 h-4 mr-2" />
+                        Weekly Leaderboard
+                    </Button>
                 </div>
             </Card>
             <Card class="p-6">
@@ -237,6 +319,56 @@
                             {formatCurrency(portfolioSummary.total_pl)}
                         </span>
                     </div>
+                </div>
+            </Card>
+        </div>
+
+        <!-- Recent Activity & Insights Section (Mock/Placeholder) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
+            <!-- Recent Activity Panel -->
+            <Card class="p-6">
+                <h2
+                    class="text-xl font-bold text-gray-900 dark:text-white mb-4"
+                >
+                    Recent Activity
+                </h2>
+                <div class="space-y-3">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 italic">
+                        No recent transactions to display. Add your first
+                        transaction!
+                    </p>
+                    <!-- Placeholder for future transaction list -->
+                    <!--
+                    <div class="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-500">BUY</span>
+                            <span class="font-medium">AAPL</span>
+                        </div>
+                        <span class="text-sm text-gray-500">10 shares @ $150</span>
+                    </div>
+                    -->
+                </div>
+            </Card>
+
+            <!-- AI Insights Panel -->
+            <Card
+                class="p-6 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/20 dark:to-gray-800 border-blue-200 dark:border-blue-700"
+            >
+                <h2
+                    class="text-xl font-bold text-blue-900 dark:text-blue-100 mb-4"
+                >
+                    AI Insights
+                </h2>
+                <div class="space-y-3">
+                    <p class="text-sm text-blue-700 dark:text-blue-300">
+                        💡 <strong>Coming Soon:</strong> AI-powered recommendations
+                        for portfolio rebalancing, risk warnings, and investment
+                        opportunities.
+                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                        Stay tuned for personalized insights based on your
+                        portfolio performance.
+                    </p>
                 </div>
             </Card>
         </div>

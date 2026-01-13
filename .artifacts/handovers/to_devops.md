@@ -4,7 +4,7 @@
 - 2026-01-13
 
 ## 현재 상황 (Context)
-- Dashboard Redesign v1.3.0이 `develop`에 병합됨.
+- v1.3.0 릴리즈 완료 (Dashboard Redesign + Accessibility/UX 개선).
 - 모든 stale 브랜치가 삭제되어 `main`, `develop`만 유지.
 
 ## 해야 할 일 (Tasks)

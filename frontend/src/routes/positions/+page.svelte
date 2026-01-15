@@ -6,7 +6,6 @@
         TableBodyRow,
         TableHead,
         TableHeadCell,
-        Card,
     } from "flowbite-svelte";
     import { onMount } from "svelte";
     import { get_portfolio_summary as getPortfolioSummary } from "$lib/apis/portfolio";
@@ -49,19 +48,30 @@
     }
 </script>
 
-<div class="container mx-auto p-4">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-            Positions
-        </h1>
-        <p class="text-sm text-gray-600 dark:text-gray-400">
-            읽기 전용 - Transaction을 추가하여 Position을 변경하세요
-        </p>
+<svelte:head>
+    <title>Positions - Alpha-Sam</title>
+</svelte:head>
+
+<div class="max-w-[1400px] mx-auto p-5">
+    <!-- 헤더 영역 -->
+    <div
+        class="flex justify-between items-center mb-8 pb-5 border-b border-neutral-200 dark:border-neutral-700"
+    >
+        <div>
+            <h1 class="text-2xl font-bold text-neutral-900 dark:text-white">
+                Positions
+            </h1>
+            <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                읽기 전용 - Transaction을 추가하여 Position을 변경하세요
+            </p>
+        </div>
     </div>
 
     {#if loading}
         <div class="text-center py-8">
-            <p class="text-gray-600 dark:text-gray-400">Loading positions...</p>
+            <p class="text-neutral-500 dark:text-neutral-400">
+                Loading positions...
+            </p>
         </div>
     {:else if error}
         <div class="text-center py-8">
@@ -69,142 +79,135 @@
         </div>
     {:else if positions.length === 0}
         <div class="text-center py-8">
-            <p class="text-gray-600 dark:text-gray-400">
+            <p class="text-neutral-500 dark:text-neutral-400">
                 No positions found. Add transactions to create positions.
             </p>
         </div>
     {:else}
-        <div class="overflow-x-auto">
-            <Table shadow>
-                <TableHead>
-                    <TableHeadCell>Asset</TableHeadCell>
-                    <TableHeadCell>Symbol</TableHeadCell>
-                    <TableHeadCell>Category</TableHeadCell>
-                    <TableHeadCell>Quantity</TableHeadCell>
-                    <TableHeadCell>Avg Price</TableHeadCell>
-                    <TableHeadCell>Current Price</TableHeadCell>
-                    <TableHeadCell>Valuation</TableHeadCell>
-                    <TableHeadCell>Profit/Loss</TableHeadCell>
-                    <TableHeadCell>Return Rate</TableHeadCell>
-                </TableHead>
-                <TableBody>
+        <!-- 테이블 컨테이너 - theme-preview 스타일 적용 -->
+        <div class="table-container overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr>
+                        <th class="table-header">Asset</th>
+                        <th class="table-header">Symbol</th>
+                        <th class="table-header">Category</th>
+                        <th class="table-header text-right">Quantity</th>
+                        <th class="table-header text-right">Avg Price</th>
+                        <th class="table-header text-right">Current Price</th>
+                        <th class="table-header text-right">Valuation</th>
+                        <th class="table-header text-right">Profit/Loss</th>
+                        <th class="table-header text-right">Return</th>
+                    </tr>
+                </thead>
+                <tbody>
                     {#each positions as position (position.asset_id)}
-                        <TableBodyRow>
-                            <TableBodyCell
-                                class="font-medium text-gray-900 dark:text-white"
+                        <tr class="table-row-hover">
+                            <td
+                                class="table-cell font-semibold text-neutral-900 dark:text-white"
                             >
                                 {position.asset_name || "-"}
-                            </TableBodyCell>
-                            <TableBodyCell
-                                class="font-medium text-gray-900 dark:text-white"
-                            >
+                            </td>
+                            <td class="table-cell font-medium">
                                 {position.asset_symbol || "-"}
-                            </TableBodyCell>
-                            <TableBodyCell
-                                >{position.asset_category || "-"}</TableBodyCell
-                            >
-                            <TableBodyCell>
+                            </td>
+                            <td class="table-cell">
+                                {position.asset_category || "-"}
+                            </td>
+                            <td class="table-cell text-right">
                                 {position.quantity.toLocaleString(undefined, {
                                     maximumFractionDigits: 8,
                                 })}
-                            </TableBodyCell>
-                            <TableBodyCell>
+                            </td>
+                            <td class="table-cell text-right">
                                 {formatCurrency(position.avg_price)}
-                            </TableBodyCell>
-                            <TableBodyCell>
+                            </td>
+                            <td class="table-cell text-right">
                                 {position.current_price
                                     ? formatCurrency(position.current_price)
                                     : "-"}
-                            </TableBodyCell>
-                            <TableBodyCell>
+                            </td>
+                            <td class="table-cell text-right font-medium">
                                 {position.valuation !== undefined
                                     ? formatCurrency(position.valuation)
                                     : "-"}
-                            </TableBodyCell>
-                            <TableBodyCell
-                                class={position.profit_loss !== undefined &&
-                                position.profit_loss < 0
-                                    ? "text-red-600 dark:text-red-400"
-                                    : position.profit_loss !== undefined &&
-                                        position.profit_loss > 0
-                                      ? "text-green-600 dark:text-green-400"
-                                      : ""}
-                            >
-                                {position.profit_loss !== undefined
-                                    ? `${position.profit_loss >= 0 ? "+" : ""}${formatCurrency(position.profit_loss)}`
-                                    : "-"}
-                            </TableBodyCell>
-                            <TableBodyCell
-                                class={position.return_rate !== undefined &&
-                                position.return_rate < 0
-                                    ? "text-red-600 dark:text-red-400"
-                                    : position.return_rate !== undefined &&
-                                        position.return_rate > 0
-                                      ? "text-green-600 dark:text-green-400"
-                                      : ""}
-                            >
-                                {position.return_rate !== undefined
-                                    ? formatPercent(position.return_rate)
-                                    : "-"}
-                            </TableBodyCell>
-                        </TableBodyRow>
+                            </td>
+                            <td class="table-cell text-right">
+                                {#if position.profit_loss !== undefined}
+                                    <span
+                                        class="badge {position.profit_loss >= 0
+                                            ? 'badge-success'
+                                            : 'badge-error'}"
+                                    >
+                                        {position.profit_loss >= 0
+                                            ? "+"
+                                            : ""}{formatCurrency(
+                                            position.profit_loss,
+                                        )}
+                                    </span>
+                                {:else}
+                                    -
+                                {/if}
+                            </td>
+                            <td class="table-cell text-right">
+                                {#if position.return_rate !== undefined}
+                                    <span
+                                        class="badge {position.return_rate >= 0
+                                            ? 'badge-success'
+                                            : 'badge-error'}"
+                                    >
+                                        {formatPercent(position.return_rate)}
+                                    </span>
+                                {:else}
+                                    -
+                                {/if}
+                            </td>
+                        </tr>
                     {/each}
-                </TableBody>
-            </Table>
+                </tbody>
+            </table>
         </div>
 
+        <!-- Summary Cards -->
         {#if positions.length > 0}
-            <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card class="p-4">
-                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        Total Valuation
-                    </div>
-                    <div
-                        class="text-xl font-bold text-gray-900 dark:text-white"
-                    >
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="card">
+                    <div class="card-title">Total Valuation</div>
+                    <div class="card-value text-2xl">
                         {formatCurrency(portfolioSummary.totalValuation)}
                     </div>
-                </Card>
-                <Card class="p-4">
-                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        Total Invested
-                    </div>
-                    <div
-                        class="text-xl font-bold text-gray-900 dark:text-white"
-                    >
+                </div>
+                <div class="card">
+                    <div class="card-title">Total Invested</div>
+                    <div class="card-value text-2xl">
                         {formatCurrency(portfolioSummary.totalInvested)}
                     </div>
-                </Card>
-                <Card class="p-4">
-                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        Total Profit/Loss
-                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Total P/L</div>
                     <div
-                        class="text-xl font-bold {portfolioSummary.totalProfitLoss <
+                        class="text-2xl font-bold mb-3 {portfolioSummary.totalProfitLoss <
                         0
                             ? 'text-red-600 dark:text-red-400'
                             : portfolioSummary.totalProfitLoss > 0
-                              ? 'text-green-600 dark:text-green-400'
-                              : 'text-gray-900 dark:text-white'}"
+                              ? 'text-accent-600 dark:text-accent-400'
+                              : 'text-neutral-900 dark:text-white'}"
                     >
                         {formatCurrency(portfolioSummary.totalProfitLoss)}
                     </div>
-                </Card>
-                <Card class="p-4">
-                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        Portfolio Return
+                </div>
+                <div class="card">
+                    <div class="card-title">Portfolio Return</div>
+                    <div>
+                        <span
+                            class="badge {portfolioSummary.totalReturnRate >= 0
+                                ? 'badge-success'
+                                : 'badge-error'} text-base"
+                        >
+                            {formatPercent(portfolioSummary.totalReturnRate)}
+                        </span>
                     </div>
-                    <div
-                        class="text-xl font-bold {portfolioSummary.totalReturnRate <
-                        0
-                            ? 'text-red-600 dark:text-red-400'
-                            : portfolioSummary.totalReturnRate > 0
-                              ? 'text-green-600 dark:text-green-400'
-                              : 'text-gray-900 dark:text-white'}"
-                    >
-                        {formatPercent(portfolioSummary.totalReturnRate)}
-                    </div>
-                </Card>
+                </div>
             </div>
         {/if}
     {/if}

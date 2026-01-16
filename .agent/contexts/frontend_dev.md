@@ -27,3 +27,7 @@
   - `+page.svelte`: 중복 사이드바 코드 제거
   - `AppNavbar.svelte`: 미종료 블록 오류 수정
   - 모든 페이지(Dashboard, Positions, Transactions)에서 사이드바 정상 표시 검증 완료
+- [2026-01-16 21:50:00] **Frontend UI Minor Bugfix 완료**.
+  - `transactions/+page.svelte`: `formatDate` 함수에 유효성 검사 추가 (Invalid Date 방지).
+  - `+page.svelte`: `formatPercent`, `getColorClass` 함수에 `isNaN` 가드 추가 ($NaN 표시 방지).
+  - `feature/bugfix-ui-minor` 작업을 `develop` 브랜치에 병합함.

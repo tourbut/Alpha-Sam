@@ -17,3 +17,7 @@
 - [2026-01-13 21:47:00] Dashboard Redesign v1.3.0 QA Verification: **PASSED**. Page Title (svelte:head) 누락 발견 후 즉시 수정. 모든 접근성 및 UX 개선 항목 정상 동작 확인. 리포트(`test_report_dashboard_redesign_v1.3.0.md`) 작성 완료.
 - [2026-01-15 17:15:00] Theme Refinement v1.4.0 QA: **PARTIAL PASS**. Trusted Professional 테마 스타일은 우수하게 구현되었으나, 사이드바가 대시보드에서만 나타나는 레이아웃 결함 발견. `test_report_theme_refinement_v1.4.0.md` 작성 완료.
 - [2026-01-16 11:30:00] Theme Refinement v1.4.0 Re-verification: **PASSED**. Sidebar Layout Issue(Fixed) & Transactions Auth Redirect(Fixed by removing trailing slash in backend). Minor formatting issues noted.
+- [2026-01-16 22:05:00] **v1.4.0 Bugfix 검증 완료 (PASS)**.
+  - Backend Trailing Slash 이슈 해결 및 Frontend UI(날짜, NaN) 오류 수정 확인.
+  - 회귀 테스트 결과 핵심 기능 및 스타일 레이아웃 이상 없음.
+  - 리포트: `test_report_v1.4.0_bugfix.md` 작성.

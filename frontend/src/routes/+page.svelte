@@ -95,12 +95,13 @@
     }
 
     function formatPercent(value: number | undefined): string {
-        if (value === undefined || value === null) return "0.00%";
+        if (value === undefined || value === null || isNaN(value))
+            return "0.00%";
         return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
     }
 
     function getColorClass(value: number | undefined): string {
-        if (value === undefined || value === null)
+        if (value === undefined || value === null || isNaN(value))
             return "text-gray-900 dark:text-white";
         if (value < 0) return "text-red-600 dark:text-red-400";
         if (value > 0) return "text-green-600 dark:text-green-400";

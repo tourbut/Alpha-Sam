@@ -28,7 +28,7 @@
 
 <Navbar
     fluid={true}
-    class="fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600 px-4 py-2.5 bg-white dark:bg-gray-800"
+    class="fixed w-screen z-20 top-0 left-0 border-b border-neutral-200 dark:border-neutral-700 px-4 py-2.5 bg-white dark:bg-neutral-800"
 >
     <NavBrand href="/">
         <span

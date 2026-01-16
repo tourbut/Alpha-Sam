@@ -1,14 +1,16 @@
 # Handovers: To Frontend Developer
 
 ## 날짜
-- 2026-01-13
+- 2026-01-16
 
 ## 현재 상황 (Context)
-- 대시보드 리디자인 Phase 1 & 2 완료.
-- PR #9 생성됨: `feature/dashboard-redesign-v1.3.0` -> `develop`.
+- v1.4.0 테마 및 레이아웃 수정 검증 통과(Pass).
+- 대시보드 및 모든 서브 페이지에서 사이드바 정상 표시됨.
 
 ## 해야 할 일 (Tasks)
-- (없음) 대기 상태. QA 검증 및 코드 리뷰 대기 중.
+- **Minor UI BugFix**:
+  1. `Transactions` 테이블: 'Date' 컬럼이 "Invalid Date"로 표시됨. 날짜 포맷팅 함수 확인 필요.
+  2. `Positions` 요약 카드: 데이터 없을 시(또는 초기 로드 시) `$NaN`으로 표시됨. 0 또는 '-' 처리 필요.
 
 ## 기대 산출물 (Expected Outputs)
-- N/A
+- Bugfix Commit

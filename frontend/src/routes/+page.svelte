@@ -112,29 +112,32 @@
     <title>Portfolio Dashboard - Alpha-Sam</title>
 </svelte:head>
 
-<div class="container mx-auto p-4">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+<!-- 대시보드 콘텐츠 (사이드바는 +layout.svelte에서 처리) -->
+<div class="space-y-5">
+    <!-- 헤더 영역 -->
+    <div
+        class="flex justify-between items-center pb-5 border-b border-neutral-200 dark:border-neutral-700"
+    >
+        <h1 class="text-2xl font-bold text-primary-600 dark:text-primary-400">
             Portfolio Dashboard
         </h1>
-        <div class="flex gap-2">
+        <div class="flex gap-3">
             <Button
                 color="alternative"
                 size="sm"
                 onclick={() => (shareModal = true)}
                 aria-label="Share portfolio"
-                class="focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                class="btn-outline"
             >
                 <ShareNodesOutline class="w-4 h-4 mr-2" />
                 Share
             </Button>
             <Button
-                color="light"
                 size="sm"
                 onclick={handleRefresh}
                 disabled={refreshing}
                 aria-label="Refresh prices and data"
-                class="focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                class="btn-primary"
             >
                 <RefreshOutline
                     class="w-4 h-4 mr-2 {refreshing ? 'animate-spin' : ''}"
@@ -142,7 +145,7 @@
                 {#if refreshing}
                     Refreshing...
                 {:else}
-                    Refresh Prices
+                    Refresh
                 {/if}
             </Button>
         </div>
@@ -150,173 +153,178 @@
 
     {#if loading}
         <div class="text-center py-8">
-            <p class="text-gray-600 dark:text-gray-400">Loading...</p>
+            <p class="text-neutral-500 dark:text-neutral-400">Loading...</p>
         </div>
     {:else if error}
         <div class="text-center py-8">
             <p class="text-red-600 dark:text-red-400 mb-4">{error}</p>
-            <Button onclick={loadData}>Retry</Button>
+            <Button onclick={loadData} class="btn-primary">Retry</Button>
         </div>
     {:else}
-        <!-- Stat Cards Section -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <!-- Stat Cards 섹션 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             <!-- Total Assets Card -->
-            <Card class="p-6 hover:shadow-lg transition-shadow duration-200">
-                <div
-                    class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2"
-                >
+            <div class="card">
+                <div class="card-title flex items-center gap-2">
                     <BriefcaseOutline class="w-4 h-4" />
                     Total Assets
                 </div>
-                <div class="text-3xl font-bold text-gray-900 dark:text-white">
-                    {assets.length}
-                </div>
-            </Card>
+                <div class="card-value">{assets.length}</div>
+                <div class="card-change">✓ Registered assets</div>
+            </div>
+
             <!-- Active Positions Card -->
-            <Card class="p-6 hover:shadow-lg transition-shadow duration-200">
-                <div
-                    class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2"
-                >
+            <div class="card">
+                <div class="card-title flex items-center gap-2">
                     <ChartPieOutline class="w-4 h-4" />
                     Active Positions
                 </div>
-                <div class="text-3xl font-bold text-gray-900 dark:text-white">
-                    {positions.length}
-                </div>
-            </Card>
-            <!-- Total Valuation Card (주요 지표: 강조 스타일) -->
-            <Card
-                class="p-6 bg-gradient-to-br from-primary-50 to-white dark:from-primary-900/20 dark:to-gray-800 hover:shadow-lg transition-shadow duration-200 border-primary-200 dark:border-primary-700"
+                <div class="card-value">{positions.length}</div>
+                <div class="card-change">✓ Diversified holdings</div>
+            </div>
+
+            <!-- Total Valuation Card -->
+            <div
+                class="card bg-gradient-to-br from-primary-50 to-white dark:from-primary-900/20 dark:to-neutral-800 border-primary-200 dark:border-primary-700"
             >
                 <div
-                    class="flex items-center gap-2 text-sm text-primary-700 dark:text-primary-300 mb-2"
+                    class="card-title flex items-center gap-2 text-primary-700 dark:text-primary-300"
                 >
                     <DollarOutline class="w-4 h-4" />
                     Total Valuation
                 </div>
                 <div
-                    class="text-3xl font-bold text-primary-900 dark:text-primary-100"
+                    class="text-3xl font-bold text-primary-900 dark:text-primary-100 mb-3"
                 >
                     {formatCurrency(portfolioSummary.total_value)}
                 </div>
-            </Card>
-            <!-- Portfolio Return Card (주요 지표: 색상 + 화살표) -->
-            <Card class="p-6 hover:shadow-lg transition-shadow duration-200">
-                <div
-                    class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2"
-                >
+            </div>
+
+            <!-- Portfolio Return Card -->
+            <div class="card">
+                <div class="card-title flex items-center gap-2">
                     {#if portfolioSummary.total_pl_stats.percent >= 0}
-                        <ArrowUpOutline class="w-4 h-4 text-green-500" />
+                        <ArrowUpOutline class="w-4 h-4 text-accent-500" />
                     {:else}
                         <ArrowDownOutline class="w-4 h-4 text-red-500" />
                     {/if}
                     Portfolio Return
                 </div>
                 <div
-                    class="flex items-center gap-2 text-3xl font-bold {getColorClass(
+                    class="flex items-center gap-2 text-3xl font-bold mb-3 {getColorClass(
                         portfolioSummary.total_pl_stats.percent,
                     )}"
                 >
                     {#if portfolioSummary.total_pl_stats.percent >= 0}
-                        <span class="text-green-500">▲</span>
+                        <span class="badge badge-success"
+                            >▲ {formatPercent(
+                                portfolioSummary.total_pl_stats.percent,
+                            )}</span
+                        >
                     {:else}
-                        <span class="text-red-500">▼</span>
+                        <span class="badge badge-error"
+                            >▼ {formatPercent(
+                                portfolioSummary.total_pl_stats.percent,
+                            )}</span
+                        >
                     {/if}
-                    {formatPercent(portfolioSummary.total_pl_stats.percent)}
                 </div>
-            </Card>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-            <Card class="p-6">
-                <h2
-                    class="text-xl font-bold text-gray-900 dark:text-white mb-4"
-                >
-                    Allocation
-                </h2>
+        <!-- 차트 섹션 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card class="card p-6">
+                <h2 class="card-title text-lg normal-case">Allocation</h2>
                 <PortfolioDistributionChart {positions} />
             </Card>
-            <Card class="p-6">
-                <h2
-                    class="text-xl font-bold text-gray-900 dark:text-white mb-4"
-                >
+            <Card class="card p-6">
+                <h2 class="card-title text-lg normal-case">
                     Performance (Value)
                 </h2>
                 <PortfolioHistoryChart {history} />
             </Card>
         </div>
 
+        <!-- Quick Actions & Summary 섹션 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Quick Actions (Expanded) -->
-            <Card class="p-6">
-                <h2
-                    class="text-xl font-bold text-gray-900 dark:text-white mb-4"
-                >
+            <!-- Quick Actions -->
+            <Card class="card p-6">
+                <h2 class="card-title text-lg normal-case mb-4">
                     Quick Actions
                 </h2>
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-2 gap-3">
                     <Button
                         href="/assets"
-                        class="w-full text-white focus:ring-2 focus:ring-primary-500"
+                        class="btn-primary w-full justify-center"
                     >
                         <BriefcaseOutline class="w-4 h-4 mr-2" />
-                        Manage Assets
+                        Assets
                     </Button>
                     <Button
                         href="/positions"
-                        color="alternative"
-                        class="w-full focus:ring-2 focus:ring-primary-500"
+                        class="btn-outline w-full justify-center"
                     >
                         <ChartPieOutline class="w-4 h-4 mr-2" />
                         Positions
                     </Button>
                     <Button
                         href="/transactions"
-                        color="light"
-                        class="w-full focus:ring-2 focus:ring-primary-500"
+                        class="btn-outline w-full justify-center"
                     >
                         <PlusOutline class="w-4 h-4 mr-2" />
                         Transactions
                     </Button>
-                    <Button
-                        color="light"
-                        class="w-full focus:ring-2 focus:ring-primary-500"
-                        disabled
-                    >
+                    <Button class="btn-outline w-full justify-center" disabled>
                         <FileExportOutline class="w-4 h-4 mr-2" />
                         Export (Soon)
                     </Button>
                     <Button
                         href="/social/leaderboard"
-                        color="light"
-                        class="w-full col-span-2 focus:ring-2 focus:ring-primary-500"
+                        class="btn-outline w-full justify-center col-span-2"
                     >
                         <ClipboardListOutline class="w-4 h-4 mr-2" />
                         Weekly Leaderboard
                     </Button>
                 </div>
             </Card>
-            <Card class="p-6">
-                <h2
-                    class="text-xl font-bold text-gray-900 dark:text-white mb-4"
-                >
+
+            <!-- Portfolio Summary -->
+            <Card class="card p-6">
+                <h2 class="card-title text-lg normal-case mb-4">
                     Portfolio Summary
                 </h2>
-                <div class="space-y-2">
-                    <div class="flex justify-between">
-                        <span class="text-gray-600 dark:text-gray-400"
-                            >Total Invested:</span
+                <div class="space-y-3">
+                    <div
+                        class="flex justify-between items-center py-2 border-b border-neutral-200 dark:border-neutral-700"
+                    >
+                        <span class="text-neutral-500 dark:text-neutral-400"
+                            >Total Invested</span
                         >
-                        <span class="font-medium text-gray-900 dark:text-white">
+                        <span
+                            class="font-semibold text-neutral-900 dark:text-white"
+                        >
                             {formatCurrency(portfolioSummary.total_cost)}
                         </span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600 dark:text-gray-400"
-                            >Total Profit/Loss:</span
+                    <div
+                        class="flex justify-between items-center py-2 border-b border-neutral-200 dark:border-neutral-700"
+                    >
+                        <span class="text-neutral-500 dark:text-neutral-400"
+                            >Current Value</span
                         >
                         <span
-                            class="font-medium {getColorClass(
+                            class="font-semibold text-neutral-900 dark:text-white"
+                        >
+                            {formatCurrency(portfolioSummary.total_value)}
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center py-2">
+                        <span class="text-neutral-500 dark:text-neutral-400"
+                            >Total P/L</span
+                        >
+                        <span
+                            class="font-semibold {getColorClass(
                                 portfolioSummary.total_pl,
                             )}"
                         >
@@ -327,39 +335,29 @@
             </Card>
         </div>
 
-        <!-- Recent Activity & Insights Section (Mock/Placeholder) -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
+        <!-- Recent Activity & Insights 섹션 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <!-- Recent Activity Panel -->
-            <Card class="p-6">
-                <h2
-                    class="text-xl font-bold text-gray-900 dark:text-white mb-4"
-                >
+            <Card class="card p-6">
+                <h2 class="card-title text-lg normal-case mb-4">
                     Recent Activity
                 </h2>
                 <div class="space-y-3">
-                    <p class="text-sm text-gray-500 dark:text-gray-400 italic">
+                    <p
+                        class="text-sm text-neutral-500 dark:text-neutral-400 italic"
+                    >
                         No recent transactions to display. Add your first
                         transaction!
                     </p>
-                    <!-- Placeholder for future transaction list -->
-                    <!--
-                    <div class="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                        <div class="flex items-center gap-2">
-                            <span class="text-green-500">BUY</span>
-                            <span class="font-medium">AAPL</span>
-                        </div>
-                        <span class="text-sm text-gray-500">10 shares @ $150</span>
-                    </div>
-                    -->
                 </div>
             </Card>
 
             <!-- AI Insights Panel -->
             <Card
-                class="p-6 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/20 dark:to-gray-800 border-blue-200 dark:border-blue-700"
+                class="card p-6 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/20 dark:to-neutral-800 border-blue-200 dark:border-blue-700"
             >
                 <h2
-                    class="text-xl font-bold text-blue-900 dark:text-blue-100 mb-4"
+                    class="card-title text-lg normal-case text-blue-700 dark:text-blue-300 mb-4"
                 >
                     AI Insights
                 </h2>
@@ -369,7 +367,7 @@
                         for portfolio rebalancing, risk warnings, and investment
                         opportunities.
                     </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <p class="text-xs text-neutral-500 dark:text-neutral-400">
                         Stay tuned for personalized insights based on your
                         portfolio performance.
                     </p>
@@ -377,5 +375,6 @@
             </Card>
         </div>
     {/if}
+
     <ShareModal bind:open={shareModal} />
 </div>

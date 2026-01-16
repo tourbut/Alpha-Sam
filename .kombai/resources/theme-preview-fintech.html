@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Portfolio Theme Preview</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;600&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        /* Theme Variables */
+        :root[data-theme="option1"] {
+            --font-header: 'Montserrat', sans-serif;
+            --font-body: 'Montserrat', sans-serif;
+            --primary-600: #2774AE;
+            --primary-500: #3084C5;
+            --primary-400: #5BA3D8;
+            --secondary-600: #00416A;
+            --accent-500: #2E8B57;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F5F7FA;
+            --bg-tertiary: #EBF0F8;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --border-color: #E5E7EB;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        :root[data-theme="option1"][data-mode="dark"] {
+            --bg-primary: #0F172A;
+            --bg-secondary: #1E293B;
+            --bg-tertiary: #334155;
+            --text-primary: #F1F5F9;
+            --text-secondary: #CBD5E1;
+            --border-color: #475569;
+        }
+
+        :root[data-theme="option2"] {
+            --font-header: 'Gelasio', serif;
+            --font-body: 'Source Sans 3', sans-serif;
+            --primary-600: #008B8B;
+            --primary-500: #20B2AA;
+            --primary-400: #48D1CC;
+            --secondary-600: #006B4D;
+            --accent-500: #D4A373;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F5FFFE;
+            --bg-tertiary: #E8F7F5;
+            --text-primary: #1A1A1A;
+            --text-secondary: #5C5C5C;
+            --border-color: #D4E5E3;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        :root[data-theme="option2"][data-mode="dark"] {
+            --bg-primary: #0A1614;
+            --bg-secondary: #0F2924;
+            --bg-tertiary: #1A4D47;
+            --text-primary: #E8FFFD;
+            --text-secondary: #A8D4D0;
+            --border-color: #2D6B63;
+        }
+
+        :root[data-theme="option3"] {
+            --font-header: 'Manrope', sans-serif;
+            --font-body: 'Source Sans 3', sans-serif;
+            --primary-600: #011F5B;
+            --primary-500: #024EE5;
+            --primary-400: #3074FD;
+            --secondary-600: #5F006B;
+            --accent-500: #FF6B6B;
+            --bg-primary: #0D1117;
+            --bg-secondary: #161B22;
+            --bg-tertiary: #21262D;
+            --text-primary: #C9D1D9;
+            --text-secondary: #8B949E;
+            --border-color: #30363D;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        :root[data-theme="option3"][data-mode="dark"] {
+            --bg-primary: #010409;
+            --bg-secondary: #0d1117;
+            --bg-tertiary: #161b22;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --border-color: #21262d;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            font-family: var(--font-header);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-600);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        button {
+            padding: 10px 16px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--primary-500);
+        }
+
+        button.active {
+            background: var(--primary-600);
+            color: white;
+            border-color: var(--primary-600);
+        }
+
+        .toggle-btn {
+            background: var(--primary-600);
+            color: white;
+            border-color: var(--primary-600);
+        }
+
+        .toggle-btn:hover {
+            background: var(--primary-500);
+            border-color: var(--primary-500);
+        }
+
+        /* Theme Description */
+        .theme-info {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .theme-title {
+            font-family: var(--font-header);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-600);
+            margin-bottom: 10px;
+        }
+
+        .theme-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .theme-specs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .spec {
+            font-size: 13px;
+        }
+
+        .spec-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .spec-value {
+            color: var(--text-primary);
+            margin-top: 4px;
+        }
+
+        /* Dashboard Preview */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 20px;
+        }
+
+        .sidebar {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--primary-600);
+            color: white;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-500);
+        }
+
+        .card-title {
+            font-family: var(--font-header);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-family: var(--font-header);
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary-600);
+            margin-bottom: 12px;
+        }
+
+        .card-change {
+            font-size: 13px;
+            color: var(--accent-500);
+            font-weight: 500;
+        }
+
+        .table-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--bg-tertiary);
+            padding: 16px;
+            text-align: left;
+            font-family: var(--font-header);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(46, 139, 87, 0.1);
+            color: var(--accent-500);
+        }
+
+        .badge.negative {
+            background: rgba(255, 107, 107, 0.1);
+            color: var(--accent-500);
+        }
+
+        /* Hidden content */
+        [hidden] {
+            display: none !important;
+        }
+    </style>
+</head>
+<body data-theme="option1" data-mode="light">
+    <div class="container">
+        <!-- Header Controls -->
+        <div class="header">
+            <div class="logo">Portfolio</div>
+            <div class="controls">
+                <div class="control-group">
+                    <button class="theme-btn active" data-theme="option1">Trusted Professional</button>
+                    <button class="theme-btn" data-theme="option2">Growth & Balance</button>
+                    <button class="theme-btn" data-theme="option3">Modern Tech</button>
+                </div>
+                <div class="control-group">
+                    <button class="toggle-btn" id="modeToggle">🌙 Dark Mode</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme Information -->
+        <div class="theme-info">
+            <div class="theme-title" id="themeTitle">Trusted Professional</div>
+            <div class="theme-description" id="themeDesc">
+                A sophisticated blue theme inspired by financial institutions, conveying trust and credibility. Rich Cerulean blue paired with Yale Blue accents creates a professional, corporate aesthetic perfect for serious investors.
+            </div>
+            <div class="theme-specs">
+                <div class="spec">
+                    <div class="spec-label">Primary Color</div>
+                    <div class="spec-value">Rich Cerulean (#2774AE)</div>
+                </div>
+                <div class="spec">
+                    <div class="spec-label">Typography</div>
+                    <div class="spec-value">Montserrat (Geometric precision)</div>
+                </div>
+                <div class="spec">
+                    <div class="spec-label">Aesthetic</div>
+                    <div class="spec-value">Corporate, Trustworthy, Clean</div>
+                </div>
+                <div class="spec">
+                    <div class="spec-label">Best For</div>
+                    <div class="spec-value">Financial institutions, corporate clients</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Preview -->
+        <div class="dashboard">
+            <div class="sidebar">
+                <div class="nav-item active">📊 Dashboard</div>
+                <div class="nav-item">📈 Positions</div>
+                <div class="nav-item">💳 Transactions</div>
+                <div class="nav-item">🏆 Leaderboard</div>
+                <div class="nav-item">⚙️ Settings</div>
+            </div>
+
+            <div class="main-content">
+                <!-- Stat Cards -->
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-title">Total Portfolio</div>
+                        <div class="card-value">$125,430</div>
+                        <div class="card-change">↑ +12.5% this month</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Current Assets</div>
+                        <div class="card-value">8</div>
+                        <div class="card-change">✓ Diversified holdings</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">YTD Return</div>
+                        <div class="card-value">+24.8%</div>
+                        <div class="card-change">↑ Above market average</div>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Asset</th>
+                                <th>Quantity</th>
+                                <th>Current Price</th>
+                                <th>Total Value</th>
+                                <th>Performance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Apple Inc.</strong></td>
+                                <td>25</td>
+                                <td>$185.50</td>
+                                <td>$4,637.50</td>
+                                <td><span class="badge">+8.3%</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Microsoft Corp</strong></td>
+                                <td>15</td>
+                                <td>$380.25</td>
+                                <td>$5,703.75</td>
+                                <td><span class="badge">+15.2%</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tesla Inc.</strong></td>
+                                <td>10</td>
+                                <td>$245.80</td>
+                                <td>$2,458.00</td>
+                                <td><span class="badge negative">-3.5%</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Nvidia Corp</strong></td>
+                                <td>8</td>
+                                <td>$920.50</td>
+                                <td>$7,364.00</td>
+                                <td><span class="badge">+22.1%</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const themeDescriptions = {
+            option1: {
+                title: "Trusted Professional",
+                desc: "A sophisticated blue theme inspired by financial institutions, conveying trust and credibility. Rich Cerulean blue paired with Yale Blue accents creates a professional, corporate aesthetic perfect for serious investors.",
+                specs: {
+                    color: "Rich Cerulean (#2774AE)",
+                    typography: "Montserrat (Geometric precision)",
+                    aesthetic: "Corporate, Trustworthy, Clean",
+                    bestFor: "Financial institutions, corporate clients"
+                }
+            },
+            option2: {
+                title: "Growth & Balance",
+                desc: "A serene teal theme emphasizing growth and natural balance. Dark Cyan represents stability and resilience, while green accents symbolize financial growth. This elegant pairing bridges tradition (Gelasio serif) with modern reliability (Source Sans 3).",
+                specs: {
+                    color: "Dark Cyan (#008B8B)",
+                    typography: "Gelasio + Source Sans 3",
+                    aesthetic: "Elegant, Nature-inspired, Serene",
+                    bestFor: "Growth-focused investors, green finance"
+                }
+            },
+            option3: {
+                title: "Modern Tech",
+                desc: "A cutting-edge dark-first theme for power users and tech-savvy investors. Deep Navy with vibrant accent colors creates a premium, high-contrast interface. Manrope + Source Sans 3 delivers modern tech credibility ideal for active traders.",
+                specs: {
+                    color: "Deep Navy (#011F5B)",
+                    typography: "Manrope + Source Sans 3",
+                    aesthetic: "Modern, Tech-forward, High-contrast",
+                    bestFor: "Active traders, tech investors, modern platforms"
+                }
+            }
+        };
+
+        // Theme switcher
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const theme = btn.getAttribute('data-theme');
+                document.documentElement.setAttribute('data-theme', theme);
+                
+                // Update active button
+                document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Update description
+                const info = themeDescriptions[theme];
+                document.getElementById('themeTitle').textContent = info.title;
+                document.getElementById('themeDesc').textContent = info.desc;
+                
+                // Update specs
+                const specsHtml = `
+                    <div class="spec">
+                        <div class="spec-label">Primary Color</div>
+                        <div class="spec-value">${info.specs.color}</div>
+                    </div>
+                    <div class="spec">
+                        <div class="spec-label">Typography</div>
+                        <div class="spec-value">${info.specs.typography}</div>
+                    </div>
+                    <div class="spec">
+                        <div class="spec-label">Aesthetic</div>
+                        <div class="spec-value">${info.specs.aesthetic}</div>
+                    </div>
+                    <div class="spec">
+                        <div class="spec-label">Best For</div>
+                        <div class="spec-value">${info.specs.bestFor}</div>
+                    </div>
+                `;
+                document.querySelector('.theme-specs').innerHTML = specsHtml;
+            });
+        });
+
+        // Dark mode toggle
+        const modeToggle = document.getElementById('modeToggle');
+        modeToggle.addEventListener('click', () => {
+            const currentMode = document.documentElement.getAttribute('data-mode');
+            const newMode = currentMode === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-mode', newMode);
+            modeToggle.textContent = newMode === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
+        });
+    </script>
+</body>
+</html>

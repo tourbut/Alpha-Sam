@@ -7,7 +7,7 @@ from app.src.deps import SessionDep_async, CurrentUser
 
 router = APIRouter()
 
-@router.post("/", response_model=TransactionRead)
+@router.post("", response_model=TransactionRead)
 async def create_transaction(
     transaction_in: TransactionCreate,
     session: SessionDep_async,
@@ -18,7 +18,7 @@ async def create_transaction(
     """
     return await crud_transaction.create_transaction(session=session, transaction_in=transaction_in, owner_id=current_user.id)
 
-@router.get("/", response_model=List[TransactionRead])
+@router.get("", response_model=List[TransactionRead])
 async def read_transactions(
     session: SessionDep_async,
     current_user: CurrentUser,

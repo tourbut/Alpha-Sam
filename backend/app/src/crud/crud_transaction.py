@@ -3,16 +3,19 @@ Transaction CRUD Module
 """
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, desc
+from sqlalchemy import select, desc
+from sqlalchemy.orm import selectinload
 from app.src.models.transaction import Transaction
+from app.src.models.portfolio import Portfolio
 from app.src.schemas.transaction import TransactionCreate
 from app.src.models.asset import Asset
-from fastapi import HTTPException, status
+from fastapi import HTTPException
+
 
 async def create_transaction(*, session: AsyncSession, transaction_in: TransactionCreate, owner_id: int) -> Transaction:
     """
     거래 생성 (단순화)
-    1. Transaction 레코드 생성
+    1. 사용자의 Portfolio를 찾아서 Transaction 레코드 생성
     참고: Position은 더 이상 DB에 저장하지 않고, 필요 시 Transaction을 집계하여 계산함
     """
     try:
@@ -20,32 +23,36 @@ async def create_transaction(*, session: AsyncSession, transaction_in: Transacti
         asset = await session.get(Asset, transaction_in.asset_id)
         if not asset:
             raise HTTPException(status_code=404, detail="Asset not found")
+        
+        # 2. 사용자의 Portfolio 조회 (첫 번째 포트폴리오 사용)
+        portfolio_stmt = select(Portfolio).where(Portfolio.owner_id == owner_id).limit(1)
+        portfolio_result = await session.execute(portfolio_stmt)
+        portfolio = portfolio_result.scalar_one_or_none()
+        
+        if not portfolio:
+            raise HTTPException(status_code=404, detail="Portfolio not found for user")
             
-        # 2. Transaction 생성
+        # 3. Transaction 생성
         db_transaction = Transaction(
+            portfolio_id=portfolio.id,
             asset_id=transaction_in.asset_id,
-            owner_id=owner_id,
             type=transaction_in.type,
             quantity=transaction_in.quantity,
             price=transaction_in.price,
-            timestamp=func.now()
         )
         session.add(db_transaction)
-        
-        # Position 업데이트 로직 제거됨
-        # (더 이상 필요 없음, Transaction 기반으로 실시간 계산)
         
         await session.commit()
         await session.refresh(db_transaction)
         return db_transaction
     except HTTPException as he:
-        # HTTP Exception은 그대로 전파 (이미 로직적 에러임)
         await session.rollback()
         raise he
     except Exception as e:
         print(e)
         await session.rollback()
         raise e
+
 
 async def get_transactions(
     *, 
@@ -56,15 +63,24 @@ async def get_transactions(
     asset_id: Optional[int] = None
 ) -> List[Transaction]:
     """
-    거래 내역 조회 (Owner 본인 것만)
+    거래 내역 조회 (Owner의 Portfolio에 속한 Transaction만)
     """
     try:
-        stmt = select(Transaction).where(Transaction.owner_id == owner_id)
+        # 사용자의 Portfolio ID 목록 조회
+        portfolio_stmt = select(Portfolio.id).where(Portfolio.owner_id == owner_id)
+        portfolio_result = await session.execute(portfolio_stmt)
+        portfolio_ids = portfolio_result.scalars().all()
+        
+        if not portfolio_ids:
+            return []
+        
+        # Transaction 조회 (Portfolio ID 기반)
+        stmt = select(Transaction).where(Transaction.portfolio_id.in_(portfolio_ids))
         
         if asset_id:
             stmt = stmt.where(Transaction.asset_id == asset_id)
             
-        stmt = stmt.order_by(desc(Transaction.timestamp)).offset(skip).limit(limit)
+        stmt = stmt.order_by(desc(Transaction.executed_at)).offset(skip).limit(limit)
         
         result = await session.execute(stmt)
         return result.scalars().all()

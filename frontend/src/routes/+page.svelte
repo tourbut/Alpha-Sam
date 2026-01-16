@@ -18,7 +18,6 @@
     import ShareModal from "$lib/components/ShareModal.svelte";
     import { auth } from "$lib/stores/auth.svelte";
     import { goto } from "$app/navigation";
-    import { page } from "$app/state";
     import {
         ShareNodesOutline,
         RefreshOutline,
@@ -30,9 +29,6 @@
         FileExportOutline,
         ClipboardListOutline,
         BriefcaseOutline,
-        HomeOutline,
-        CogOutline,
-        CashOutline,
     } from "flowbite-svelte-icons";
 
     let assets: Asset[] = [];
@@ -48,19 +44,6 @@
     let loading = true;
     let refreshing = false;
     let shareModal = false;
-
-    // 사이드바 네비게이션 아이템
-    const navItems = [
-        { href: "/", label: "Dashboard", icon: HomeOutline },
-        { href: "/positions", label: "Positions", icon: ChartPieOutline },
-        { href: "/transactions", label: "Transactions", icon: CashOutline },
-        {
-            href: "/social/leaderboard",
-            label: "Leaderboard",
-            icon: ClipboardListOutline,
-        },
-        { href: "/settings", label: "Settings", icon: CogOutline },
-    ];
 
     async function handleRefresh() {
         refreshing = true;
@@ -129,11 +112,11 @@
     <title>Portfolio Dashboard - Alpha-Sam</title>
 </svelte:head>
 
-<!-- 메인 대시보드 레이아웃: 사이드바 + 메인 콘텐츠 -->
-<div class="max-w-[1400px] mx-auto p-5">
+<!-- 대시보드 콘텐츠 (사이드바는 +layout.svelte에서 처리) -->
+<div class="space-y-5">
     <!-- 헤더 영역 -->
     <div
-        class="flex justify-between items-center mb-8 pb-5 border-b border-neutral-200 dark:border-neutral-700"
+        class="flex justify-between items-center pb-5 border-b border-neutral-200 dark:border-neutral-700"
     >
         <h1 class="text-2xl font-bold text-primary-600 dark:text-primary-400">
             Portfolio Dashboard
@@ -168,274 +151,230 @@
         </div>
     </div>
 
-    <!-- 2-Column 레이아웃: 사이드바 + 메인 -->
-    <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5">
-        <!-- 사이드바 네비게이션 -->
-        <aside class="sidebar hidden lg:block">
-            {#each navItems as item}
-                <a
-                    href={item.href}
-                    class="nav-item flex items-center gap-3 {page.url
-                        .pathname === item.href
-                        ? 'active'
-                        : ''}"
-                >
-                    <svelte:component this={item.icon} class="w-5 h-5" />
-                    {item.label}
-                </a>
-            {/each}
-        </aside>
+    {#if loading}
+        <div class="text-center py-8">
+            <p class="text-neutral-500 dark:text-neutral-400">Loading...</p>
+        </div>
+    {:else if error}
+        <div class="text-center py-8">
+            <p class="text-red-600 dark:text-red-400 mb-4">{error}</p>
+            <Button onclick={loadData} class="btn-primary">Retry</Button>
+        </div>
+    {:else}
+        <!-- Stat Cards 섹션 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <!-- Total Assets Card -->
+            <div class="card">
+                <div class="card-title flex items-center gap-2">
+                    <BriefcaseOutline class="w-4 h-4" />
+                    Total Assets
+                </div>
+                <div class="card-value">{assets.length}</div>
+                <div class="card-change">✓ Registered assets</div>
+            </div>
 
-        <!-- 메인 콘텐츠 영역 -->
-        <main class="space-y-5">
-            {#if loading}
-                <div class="text-center py-8">
-                    <p class="text-neutral-500 dark:text-neutral-400">
-                        Loading...
-                    </p>
+            <!-- Active Positions Card -->
+            <div class="card">
+                <div class="card-title flex items-center gap-2">
+                    <ChartPieOutline class="w-4 h-4" />
+                    Active Positions
                 </div>
-            {:else if error}
-                <div class="text-center py-8">
-                    <p class="text-red-600 dark:text-red-400 mb-4">{error}</p>
-                    <Button onclick={loadData} class="btn-primary">Retry</Button
-                    >
-                </div>
-            {:else}
-                <!-- Stat Cards 섹션 -->
+                <div class="card-value">{positions.length}</div>
+                <div class="card-change">✓ Diversified holdings</div>
+            </div>
+
+            <!-- Total Valuation Card -->
+            <div
+                class="card bg-gradient-to-br from-primary-50 to-white dark:from-primary-900/20 dark:to-neutral-800 border-primary-200 dark:border-primary-700"
+            >
                 <div
-                    class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4"
+                    class="card-title flex items-center gap-2 text-primary-700 dark:text-primary-300"
                 >
-                    <!-- Total Assets Card -->
-                    <div class="card">
-                        <div class="card-title flex items-center gap-2">
-                            <BriefcaseOutline class="w-4 h-4" />
-                            Total Assets
-                        </div>
-                        <div class="card-value">{assets.length}</div>
-                        <div class="card-change">✓ Registered assets</div>
-                    </div>
+                    <DollarOutline class="w-4 h-4" />
+                    Total Valuation
+                </div>
+                <div
+                    class="text-3xl font-bold text-primary-900 dark:text-primary-100 mb-3"
+                >
+                    {formatCurrency(portfolioSummary.total_value)}
+                </div>
+            </div>
 
-                    <!-- Active Positions Card -->
-                    <div class="card">
-                        <div class="card-title flex items-center gap-2">
-                            <ChartPieOutline class="w-4 h-4" />
-                            Active Positions
-                        </div>
-                        <div class="card-value">{positions.length}</div>
-                        <div class="card-change">✓ Diversified holdings</div>
-                    </div>
-
-                    <!-- Total Valuation Card (주요 지표: 강조 스타일) -->
-                    <div
-                        class="card bg-gradient-to-br from-primary-50 to-white dark:from-primary-900/20 dark:to-neutral-800 border-primary-200 dark:border-primary-700"
-                    >
-                        <div
-                            class="card-title flex items-center gap-2 text-primary-700 dark:text-primary-300"
+            <!-- Portfolio Return Card -->
+            <div class="card">
+                <div class="card-title flex items-center gap-2">
+                    {#if portfolioSummary.total_pl_stats.percent >= 0}
+                        <ArrowUpOutline class="w-4 h-4 text-accent-500" />
+                    {:else}
+                        <ArrowDownOutline class="w-4 h-4 text-red-500" />
+                    {/if}
+                    Portfolio Return
+                </div>
+                <div
+                    class="flex items-center gap-2 text-3xl font-bold mb-3 {getColorClass(
+                        portfolioSummary.total_pl_stats.percent,
+                    )}"
+                >
+                    {#if portfolioSummary.total_pl_stats.percent >= 0}
+                        <span class="badge badge-success"
+                            >▲ {formatPercent(
+                                portfolioSummary.total_pl_stats.percent,
+                            )}</span
                         >
-                            <DollarOutline class="w-4 h-4" />
-                            Total Valuation
-                        </div>
-                        <div
-                            class="text-3xl font-bold text-primary-900 dark:text-primary-100 mb-3"
+                    {:else}
+                        <span class="badge badge-error"
+                            >▼ {formatPercent(
+                                portfolioSummary.total_pl_stats.percent,
+                            )}</span
+                        >
+                    {/if}
+                </div>
+            </div>
+        </div>
+
+        <!-- 차트 섹션 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card class="card p-6">
+                <h2 class="card-title text-lg normal-case">Allocation</h2>
+                <PortfolioDistributionChart {positions} />
+            </Card>
+            <Card class="card p-6">
+                <h2 class="card-title text-lg normal-case">
+                    Performance (Value)
+                </h2>
+                <PortfolioHistoryChart {history} />
+            </Card>
+        </div>
+
+        <!-- Quick Actions & Summary 섹션 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Quick Actions -->
+            <Card class="card p-6">
+                <h2 class="card-title text-lg normal-case mb-4">
+                    Quick Actions
+                </h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <Button
+                        href="/assets"
+                        class="btn-primary w-full justify-center"
+                    >
+                        <BriefcaseOutline class="w-4 h-4 mr-2" />
+                        Assets
+                    </Button>
+                    <Button
+                        href="/positions"
+                        class="btn-outline w-full justify-center"
+                    >
+                        <ChartPieOutline class="w-4 h-4 mr-2" />
+                        Positions
+                    </Button>
+                    <Button
+                        href="/transactions"
+                        class="btn-outline w-full justify-center"
+                    >
+                        <PlusOutline class="w-4 h-4 mr-2" />
+                        Transactions
+                    </Button>
+                    <Button class="btn-outline w-full justify-center" disabled>
+                        <FileExportOutline class="w-4 h-4 mr-2" />
+                        Export (Soon)
+                    </Button>
+                    <Button
+                        href="/social/leaderboard"
+                        class="btn-outline w-full justify-center col-span-2"
+                    >
+                        <ClipboardListOutline class="w-4 h-4 mr-2" />
+                        Weekly Leaderboard
+                    </Button>
+                </div>
+            </Card>
+
+            <!-- Portfolio Summary -->
+            <Card class="card p-6">
+                <h2 class="card-title text-lg normal-case mb-4">
+                    Portfolio Summary
+                </h2>
+                <div class="space-y-3">
+                    <div
+                        class="flex justify-between items-center py-2 border-b border-neutral-200 dark:border-neutral-700"
+                    >
+                        <span class="text-neutral-500 dark:text-neutral-400"
+                            >Total Invested</span
+                        >
+                        <span
+                            class="font-semibold text-neutral-900 dark:text-white"
+                        >
+                            {formatCurrency(portfolioSummary.total_cost)}
+                        </span>
+                    </div>
+                    <div
+                        class="flex justify-between items-center py-2 border-b border-neutral-200 dark:border-neutral-700"
+                    >
+                        <span class="text-neutral-500 dark:text-neutral-400"
+                            >Current Value</span
+                        >
+                        <span
+                            class="font-semibold text-neutral-900 dark:text-white"
                         >
                             {formatCurrency(portfolioSummary.total_value)}
-                        </div>
+                        </span>
                     </div>
-
-                    <!-- Portfolio Return Card -->
-                    <div class="card">
-                        <div class="card-title flex items-center gap-2">
-                            {#if portfolioSummary.total_pl_stats.percent >= 0}
-                                <ArrowUpOutline
-                                    class="w-4 h-4 text-accent-500"
-                                />
-                            {:else}
-                                <ArrowDownOutline
-                                    class="w-4 h-4 text-red-500"
-                                />
-                            {/if}
-                            Portfolio Return
-                        </div>
-                        <div
-                            class="flex items-center gap-2 text-3xl font-bold mb-3 {getColorClass(
-                                portfolioSummary.total_pl_stats.percent,
+                    <div class="flex justify-between items-center py-2">
+                        <span class="text-neutral-500 dark:text-neutral-400"
+                            >Total P/L</span
+                        >
+                        <span
+                            class="font-semibold {getColorClass(
+                                portfolioSummary.total_pl,
                             )}"
                         >
-                            {#if portfolioSummary.total_pl_stats.percent >= 0}
-                                <span class="badge badge-success"
-                                    >▲ {formatPercent(
-                                        portfolioSummary.total_pl_stats.percent,
-                                    )}</span
-                                >
-                            {:else}
-                                <span class="badge badge-error"
-                                    >▼ {formatPercent(
-                                        portfolioSummary.total_pl_stats.percent,
-                                    )}</span
-                                >
-                            {/if}
-                        </div>
+                            {formatCurrency(portfolioSummary.total_pl)}
+                        </span>
                     </div>
                 </div>
+            </Card>
+        </div>
 
-                <!-- 차트 섹션 -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <Card class="card p-6">
-                        <h2 class="card-title text-lg normal-case">
-                            Allocation
-                        </h2>
-                        <PortfolioDistributionChart {positions} />
-                    </Card>
-                    <Card class="card p-6">
-                        <h2 class="card-title text-lg normal-case">
-                            Performance (Value)
-                        </h2>
-                        <PortfolioHistoryChart {history} />
-                    </Card>
-                </div>
-
-                <!-- Quick Actions & Summary 섹션 -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Quick Actions -->
-                    <Card class="card p-6">
-                        <h2 class="card-title text-lg normal-case mb-4">
-                            Quick Actions
-                        </h2>
-                        <div class="grid grid-cols-2 gap-3">
-                            <Button
-                                href="/assets"
-                                class="btn-primary w-full justify-center"
-                            >
-                                <BriefcaseOutline class="w-4 h-4 mr-2" />
-                                Assets
-                            </Button>
-                            <Button
-                                href="/positions"
-                                class="btn-outline w-full justify-center"
-                            >
-                                <ChartPieOutline class="w-4 h-4 mr-2" />
-                                Positions
-                            </Button>
-                            <Button
-                                href="/transactions"
-                                class="btn-outline w-full justify-center"
-                            >
-                                <PlusOutline class="w-4 h-4 mr-2" />
-                                Transactions
-                            </Button>
-                            <Button
-                                class="btn-outline w-full justify-center"
-                                disabled
-                            >
-                                <FileExportOutline class="w-4 h-4 mr-2" />
-                                Export (Soon)
-                            </Button>
-                            <Button
-                                href="/social/leaderboard"
-                                class="btn-outline w-full justify-center col-span-2"
-                            >
-                                <ClipboardListOutline class="w-4 h-4 mr-2" />
-                                Weekly Leaderboard
-                            </Button>
-                        </div>
-                    </Card>
-
-                    <!-- Portfolio Summary -->
-                    <Card class="card p-6">
-                        <h2 class="card-title text-lg normal-case mb-4">
-                            Portfolio Summary
-                        </h2>
-                        <div class="space-y-3">
-                            <div
-                                class="flex justify-between items-center py-2 border-b border-neutral-200 dark:border-neutral-700"
-                            >
-                                <span
-                                    class="text-neutral-500 dark:text-neutral-400"
-                                    >Total Invested</span
-                                >
-                                <span
-                                    class="font-semibold text-neutral-900 dark:text-white"
-                                >
-                                    {formatCurrency(
-                                        portfolioSummary.total_cost,
-                                    )}
-                                </span>
-                            </div>
-                            <div
-                                class="flex justify-between items-center py-2 border-b border-neutral-200 dark:border-neutral-700"
-                            >
-                                <span
-                                    class="text-neutral-500 dark:text-neutral-400"
-                                    >Current Value</span
-                                >
-                                <span
-                                    class="font-semibold text-neutral-900 dark:text-white"
-                                >
-                                    {formatCurrency(
-                                        portfolioSummary.total_value,
-                                    )}
-                                </span>
-                            </div>
-                            <div class="flex justify-between items-center py-2">
-                                <span
-                                    class="text-neutral-500 dark:text-neutral-400"
-                                    >Total P/L</span
-                                >
-                                <span
-                                    class="font-semibold {getColorClass(
-                                        portfolioSummary.total_pl,
-                                    )}"
-                                >
-                                    {formatCurrency(portfolioSummary.total_pl)}
-                                </span>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-
-                <!-- Recent Activity & Insights 섹션 -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <!-- Recent Activity Panel -->
-                    <Card class="card p-6">
-                        <h2 class="card-title text-lg normal-case mb-4">
-                            Recent Activity
-                        </h2>
-                        <div class="space-y-3">
-                            <p
-                                class="text-sm text-neutral-500 dark:text-neutral-400 italic"
-                            >
-                                No recent transactions to display. Add your
-                                first transaction!
-                            </p>
-                        </div>
-                    </Card>
-
-                    <!-- AI Insights Panel -->
-                    <Card
-                        class="card p-6 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/20 dark:to-neutral-800 border-blue-200 dark:border-blue-700"
+        <!-- Recent Activity & Insights 섹션 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Recent Activity Panel -->
+            <Card class="card p-6">
+                <h2 class="card-title text-lg normal-case mb-4">
+                    Recent Activity
+                </h2>
+                <div class="space-y-3">
+                    <p
+                        class="text-sm text-neutral-500 dark:text-neutral-400 italic"
                     >
-                        <h2
-                            class="card-title text-lg normal-case text-blue-700 dark:text-blue-300 mb-4"
-                        >
-                            AI Insights
-                        </h2>
-                        <div class="space-y-3">
-                            <p class="text-sm text-blue-700 dark:text-blue-300">
-                                💡 <strong>Coming Soon:</strong> AI-powered recommendations
-                                for portfolio rebalancing, risk warnings, and investment
-                                opportunities.
-                            </p>
-                            <p
-                                class="text-xs text-neutral-500 dark:text-neutral-400"
-                            >
-                                Stay tuned for personalized insights based on
-                                your portfolio performance.
-                            </p>
-                        </div>
-                    </Card>
+                        No recent transactions to display. Add your first
+                        transaction!
+                    </p>
                 </div>
-            {/if}
-        </main>
-    </div>
+            </Card>
+
+            <!-- AI Insights Panel -->
+            <Card
+                class="card p-6 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/20 dark:to-neutral-800 border-blue-200 dark:border-blue-700"
+            >
+                <h2
+                    class="card-title text-lg normal-case text-blue-700 dark:text-blue-300 mb-4"
+                >
+                    AI Insights
+                </h2>
+                <div class="space-y-3">
+                    <p class="text-sm text-blue-700 dark:text-blue-300">
+                        💡 <strong>Coming Soon:</strong> AI-powered recommendations
+                        for portfolio rebalancing, risk warnings, and investment
+                        opportunities.
+                    </p>
+                    <p class="text-xs text-neutral-500 dark:text-neutral-400">
+                        Stay tuned for personalized insights based on your
+                        portfolio performance.
+                    </p>
+                </div>
+            </Card>
+        </div>
+    {/if}
+
     <ShareModal bind:open={shareModal} />
 </div>

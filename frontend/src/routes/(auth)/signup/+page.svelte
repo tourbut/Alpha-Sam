@@ -33,17 +33,24 @@
 </script>
 
 <div
-    class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0"
+    class="min-h-screen w-full flex flex-col items-center justify-center px-4 py-8 bg-neutral-50 dark:bg-neutral-900"
 >
     <div
-        class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700"
+        class="w-full max-w-md bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden"
     >
-        <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-            <h1
-                class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white"
-            >
-                Create an account
-            </h1>
+        <div class="p-8 space-y-8">
+            <div class="space-y-2">
+                <h1
+                    class="text-3xl font-bold text-neutral-900 dark:text-neutral-100"
+                >
+                    Create account
+                </h1>
+                <p
+                    class="text-sm font-medium text-neutral-600 dark:text-neutral-400"
+                >
+                    Join Alpha-Sam to start managing your portfolio
+                </p>
+            </div>
             <form
                 class="space-y-4 md:space-y-6"
                 on:submit|preventDefault={handleSubmit}
@@ -95,17 +102,45 @@
                 </div>
 
                 {#if error}
-                    <div class="text-red-500 text-sm">{error}</div>
+                    <div
+                        role="alert"
+                        class="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50"
+                    >
+                        <p
+                            class="text-sm font-medium text-red-800 dark:text-red-300"
+                        >
+                            ✕ {error}
+                        </p>
+                    </div>
                 {/if}
 
-                <Button type="submit" class="w-full">Create an account</Button>
-                <p class="text-sm font-light text-gray-500 dark:text-gray-400">
-                    Already have an account? <a
-                        href="/login"
-                        class="font-medium text-primary-600 hover:underline dark:text-primary-500"
-                        >Login here</a
+                <button
+                    type="submit"
+                    class="w-full px-4 py-3 bg-primary-600 hover:bg-primary-500 active:bg-primary-700 text-white font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 dark:focus:ring-offset-neutral-900 border border-primary-600 hover:border-primary-500 min-h-12"
+                >
+                    Create account
+                </button>
+
+                <div class="relative flex items-center">
+                    <div
+                        class="flex-grow border-t border-neutral-300 dark:border-neutral-600"
+                    ></div>
+                    <span
+                        class="px-3 text-xs font-medium text-neutral-500 dark:text-neutral-400 bg-white dark:bg-neutral-800"
                     >
-                </p>
+                        Already have an account?
+                    </span>
+                    <div
+                        class="flex-grow border-t border-neutral-300 dark:border-neutral-600"
+                    ></div>
+                </div>
+
+                <a
+                    href="/login"
+                    class="block w-full px-4 py-3 text-center border-2 border-primary-600 text-primary-600 dark:text-primary-400 font-semibold rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 dark:focus:ring-offset-neutral-900 min-h-12 flex items-center justify-center"
+                >
+                    Sign in instead
+                </a>
             </form>
         </div>
     </div>

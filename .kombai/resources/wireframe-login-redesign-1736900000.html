@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpha-Sam Login - Redesigned Wireframe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            color: #333;
+            padding: 20px;
+        }
+
+        .wireframe-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border: 3px solid #999;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .wireframe-header {
+            padding: 20px;
+            border-bottom: 2px solid #ddd;
+            background: #f9f9f9;
+        }
+
+        .wireframe-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: #222;
+        }
+
+        .wireframe-header p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .wireframe-content {
+            padding: 40px;
+            min-height: 600px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .wireframe-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+
+        /* Left Section - Branding/Hero */
+        .hero-section {
+            padding: 40px;
+            border: 2px dashed #999;
+            background: #f0f4f8;
+            border-radius: 8px;
+        }
+
+        .hero-section h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #2774AE;
+        }
+
+        .hero-section p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            font-size: 13px;
+            color: #666;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #2E8B57;
+        }
+
+        /* Right Section - Login Form */
+        .form-section {
+            padding: 40px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-header h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: #222;
+        }
+
+        .form-header p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #999;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: 'Comic Sans MS', sans-serif;
+            background: white;
+            color: #333;
+        }
+
+        .form-group input:focus {
+            outline: 3px solid #2774AE;
+            outline-offset: 2px;
+        }
+
+        .error-message {
+            display: none;
+            padding: 10px;
+            margin-bottom: 15px;
+            background: #ffebee;
+            border: 2px solid #f44336;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #c62828;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .form-actions {
+            margin-top: 25px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #333;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: 'Comic Sans MS', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #2774AE;
+            color: white;
+            border-color: #2774AE;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary:hover {
+            background: #1a4d74;
+            border-color: #1a4d74;
+        }
+
+        .btn-primary:focus {
+            outline: 3px solid #66BB6A;
+            outline-offset: 2px;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #2774AE;
+            border-color: #2774AE;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f4f8;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            gap: 10px;
+        }
+
+        .divider-line {
+            flex: 1;
+            border-top: 1px solid #ddd;
+        }
+
+        .divider-text {
+            font-size: 12px;
+            color: #999;
+            padding: 0 5px;
+        }
+
+        .signup-hint {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .signup-hint a {
+            color: #2774AE;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        /* Component Badges */
+        .component-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-right: 5px;
+            font-family: Arial, sans-serif;
+            margin-top: 10px;
+        }
+
+        .badge-reuse {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .badge-new {
+            background: #FF9800;
+            color: white;
+        }
+
+        .responsive-note {
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #856404;
+            line-height: 1.5;
+        }
+
+        .key-improvements {
+            padding: 20px;
+            background: #e8f5e9;
+            border-left: 4px solid #2E8B57;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #1b5e20;
+            line-height: 1.6;
+        }
+
+        .key-improvements h3 {
+            font-size: 13px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .key-improvements ul {
+            list-style: none;
+            padding-left: 15px;
+        }
+
+        .key-improvements li {
+            margin-bottom: 5px;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .key-improvements li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="wireframe-container">
+        <div class="wireframe-header">
+            <h1>🔐 Alpha-Sam Login - Redesigned Wireframe</h1>
+            <p><strong>Approach:</strong> Separate auth layout with hero section on desktop and optimized mobile flow. Removes navbar conflict and improves UX.</p>
+        </div>
+
+        <div class="wireframe-content">
+            <!-- Left Section: Hero/Branding -->
+            <div class="hero-section">
+                <h2>Welcome Back</h2>
+                <p>Manage your investment portfolio with confidence. Track positions, monitor performance, and make data-driven decisions.</p>
+                
+                <ul class="feature-list">
+                    <li>Real-time portfolio tracking</li>
+                    <li>Advanced analytics & insights</li>
+                    <li>Enterprise-grade security</li>
+                    <li>Collaborative leaderboard</li>
+                </ul>
+
+                <div class="component-badge badge-reuse" title="src/routes/+layout.svelte (conditional)">
+                    [REUSE] Auth Layout
+                </div>
+            </div>
+
+            <!-- Right Section: Login Form -->
+            <div class="form-section">
+                <div class="form-header">
+                    <h2>Sign in</h2>
+                    <p>Enter your credentials to continue</p>
+                </div>
+
+                <div class="error-message" id="error-msg">
+                    ✗ Login failed. Please check your email and password.
+                </div>
+
+                <!-- Email Input -->
+                <div class="form-group">
+                    <label for="email">Email address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        placeholder="you@example.com" 
+                        aria-label="Email address"
+                        aria-describedby="email-error"
+                        required
+                    >
+                    <div id="email-error" role="alert" style="display:none; color: #c62828; font-size: 12px; margin-top: 4px;"></div>
+                </div>
+
+                <!-- Password Input -->
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        placeholder="••••••••" 
+                        aria-label="Password"
+                        aria-describedby="password-error"
+                        required
+                    >
+                    <div id="password-error" role="alert" style="display:none; color: #c62828; font-size: 12px; margin-top: 4px;"></div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button class="btn btn-primary" title="Sign in to your account">
+                        Sign in
+                    </button>
+                    <button class="btn btn-secondary" title="Create a new account">
+                        Create account
+                    </button>
+                </div>
+
+                <div class="divider">
+                    <div class="divider-line"></div>
+                    <span class="divider-text">or</span>
+                    <div class="divider-line"></div>
+                </div>
+
+                <div class="signup-hint">
+                    New to Alpha-Sam? <a href="/signup" tabindex="0">Create your account</a> to get started
+                </div>
+
+                <div class="component-badge badge-reuse" title="src/routes/login/+page.svelte">
+                    [REUSE] Form Inputs
+                </div>
+                <div class="component-badge badge-new" title="To be created: AuthLayout component">
+                    [NEW] AuthLayout
+                </div>
+            </div>
+        </div>
+
+        <div style="padding: 0 40px 40px 40px;">
+            <div class="responsive-note">
+                <strong>📱 Mobile Responsive:</strong> On tablets and phones, the hero section moves above the form (single column), maintaining readability. The navbar is hidden entirely to maximize form visibility. Form inputs scale to touch-friendly 44x48px minimum.
+            </div>
+
+            <div class="key-improvements">
+                <h3>✨ Key Improvements Over Current Implementation:</h3>
+                <ul>
+                    <li><strong>No navbar conflict:</strong> Separate auth layout hides navbar completely on login/signup pages</li>
+                    <li><strong>Hero branding:</strong> Builds trust and context for new users; not present on current implementation</li>
+                    <li><strong>Full viewport visibility:</strong> Login form occupies center of screen without navbar overlap</li>
+                    <li><strong>Improved mobile UX:</strong> Single-column responsive layout optimized for thumb navigation</li>
+                    <li><strong>Better accessibility:</strong> Added aria-label, aria-describedby for error handling and WCAG compliance</li>
+                    <li><strong>Clear signup flow:</strong> Secondary "Create account" action and helpful text at bottom guides new users</li>
+                    <li><strong>Enhanced focus states:</strong> Visible focus rings with 3px outline and outline-offset for keyboard navigation</li>
+                    <li><strong>Loading state ready:</strong> Structure prepared for spinner icon and loading feedback during authentication</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -15,3 +15,15 @@
   - Positions 페이지: 읽기 전용으로 변경 (수정/삭제 버튼 제거)
   - Portfolio Summary API로 Position 데이터 조회
   - Type Check 통과
+
+- [2026-01-15 17:10:00] **테마 프리뷰 기반 UI 스타일 개선 완료**. `.kombai/resources/theme-preview-fintech.html` 참고.
+  - `app.css`: 스타일 시스템 확장 (card-title, card-value, table-*, nav-item, badge-* 클래스)
+  - Dashboard: 좌측 사이드바 네비게이션 도입, max-width 1400px 적용
+  - Positions/Transactions: 테이블 스타일 개선, 뱃지 스타일 적용
+  - PR #10 생성: `feature/theme-style-refinement` -> `develop`
+
+- [2026-01-15 23:35:00] **사이드바 레이아웃 리팩토링 완료**. QA에서 발견된 Critical UX 결함 수정.
+  - `+layout.svelte`: 사이드바 및 Grid 레이아웃 추가 (전역 적용)
+  - `+page.svelte`: 중복 사이드바 코드 제거
+  - `AppNavbar.svelte`: 미종료 블록 오류 수정
+  - 모든 페이지(Dashboard, Positions, Transactions)에서 사이드바 정상 표시 검증 완료

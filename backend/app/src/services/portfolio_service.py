@@ -1,15 +1,120 @@
 from typing import List, Dict, Optional, Any
+import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from app.src.models.price import Price
+from app.src.models.portfolio import Portfolio, PortfolioVisibility
 from app.src.models.portfolio_history import PortfolioHistory
 from app.src.schemas.position import PositionWithAsset
-from app.src.schemas.portfolio import PortfolioResponse, PortfolioSummary, PortfolioStats
+from app.src.schemas.portfolio import PortfolioResponse, PortfolioSummary, PortfolioStats, PortfolioSharedRead
 from app.src.engine.portfolio_service import calculate_position_metrics, calculate_portfolio_summary, calculate_positions_from_transactions
 from app.src.crud import crud_portfolio_history
 from sqlalchemy.orm import selectinload
 
 class PortfolioService:
+    @staticmethod
+    async def update_visibility(session: AsyncSession, portfolio_id: int, visibility: PortfolioVisibility) -> Portfolio:
+        """
+        Update portfolio visibility and manage share_token.
+        """
+        stmt = select(Portfolio).where(Portfolio.id == portfolio_id)
+        result = await session.execute(stmt)
+        portfolio = result.scalar_one_or_none()
+        
+        if not portfolio:
+            return None
+            
+        portfolio.visibility = visibility
+        
+        if visibility == PortfolioVisibility.LINK_ONLY:
+            if not portfolio.share_token:
+                portfolio.share_token = uuid.uuid4()
+        elif visibility == PortfolioVisibility.PRIVATE:
+            portfolio.share_token = None
+            
+        session.add(portfolio)
+        await session.commit()
+        await session.refresh(portfolio)
+        return portfolio
+
+    @staticmethod
+    async def get_shared_portfolio(session: AsyncSession, token: uuid.UUID) -> Optional[PortfolioSharedRead]:
+        """
+        Get portfolio by share_token for public/link usage.
+        """
+        stmt = select(Portfolio).where(Portfolio.share_token == token)
+        result = await session.execute(stmt)
+        portfolio = result.scalar_one_or_none()
+        
+        if not portfolio:
+            return None
+        
+        # LINK_ONLY가 아니면 token으로 접근 불가? -> 설계상 LINK_ONLY일때 토큰 사용.
+        # PUBLIC이어도 토큰이 있으면 접근 허용 가능.
+        # 하지만 LINK_ONLY/PUBLIC 상태가 아니면 접근 불가 처리해야 함.
+        if portfolio.visibility == PortfolioVisibility.PRIVATE:
+            return None
+
+        # Calculate Summary logic reused
+        # 1. Transaction 기반으로 Positions 계산
+        positions = await calculate_positions_from_transactions(session, portfolio.id)
+        
+        total_value = 0.0
+        total_cost = 0.0
+        portfolio_return_rate = 0.0
+        
+        position_reads: List[PositionWithAsset] = []
+        
+        if positions:
+            # 2. Fetch Prices
+            asset_ids = [p.asset_id for p in positions]
+            price_map = await PortfolioService._get_latest_prices(session, asset_ids)
+            
+            summary_input_data = []
+
+            for position in positions:
+                current_price = price_map.get(position.asset_id)
+                metrics = calculate_position_metrics(
+                    quantity=position.quantity,
+                    buy_price=position.avg_price,
+                    current_price=current_price
+                )
+                position.valuation = metrics["valuation"]
+                position.profit_loss = metrics["profit_loss"]
+                position.return_rate = metrics["return_rate"]
+                position.current_price = current_price
+                position_reads.append(position)
+                
+                summary_input_data.append({
+                    "quantity": float(position.quantity),
+                    "buy_price": float(position.avg_price),
+                    "current_price": current_price
+                })
+            
+            # 3. Calculate Summary
+            summary_metrics = calculate_portfolio_summary(summary_input_data)
+            total_value = summary_metrics["total_valuation"] or 0.0
+            total_cost = summary_metrics["total_invested"] or 0.0
+            
+            if total_cost > 0:
+                portfolio_return_rate = ((total_value - total_cost) / total_cost) * 100
+            
+        # Owner nickname
+        from app.src.models.user import User
+        user = await session.get(User, portfolio.owner_id)
+        owner_nickname = user.nickname if user else "Unknown"
+
+        return PortfolioSharedRead(
+            id=portfolio.id,
+            name=portfolio.name,
+            owner_nickname=owner_nickname,
+            description=portfolio.description,
+            total_value=total_value,
+            return_rate=portfolio_return_rate,
+            positions=position_reads,
+            visibility=portfolio.visibility
+        )
+
     @staticmethod
     async def create_snapshot(session: AsyncSession, user_id: int) -> PortfolioHistory:
         """

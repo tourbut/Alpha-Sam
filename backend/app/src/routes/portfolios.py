@@ -1,7 +1,8 @@
 from typing import List
+import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.src.schemas.portfolio import PortfolioCreate, PortfolioRead, PortfolioResponse, PortfolioHistoryRead
+from app.src.schemas.portfolio import PortfolioCreate, PortfolioRead, PortfolioResponse, PortfolioHistoryRead, PortfolioVisibilityUpdate, PortfolioSharedRead
 from app.src.schemas.transaction import TransactionCreate, TransactionRead
 from app.src.engine.portfolio_service import portfolio_service_instance
 from app.src.services.portfolio_service import PortfolioService
@@ -105,6 +106,37 @@ async def read_portfolio_positions(
         raise HTTPException(status_code=404, detail="Portfolio not found")
         
     return await portfolio_service_instance.get_portfolio_positions(session=db, portfolio_id=portfolio_id)
+
+@router.patch("/{portfolio_id}/visibility", response_model=PortfolioRead)
+async def update_portfolio_visibility(
+    portfolio_id: int,
+    visibility_in: PortfolioVisibilityUpdate,
+    current_user: CurrentUser,
+    db: SessionDep_async
+):
+    """
+    포트폴리오 공개 범위 설정 변경
+    """
+    # Verify ownership
+    portfolio = await portfolio_service_instance.get_portfolio(db, portfolio_id, current_user.id)
+    if not portfolio:
+        raise HTTPException(status_code=404, detail="Portfolio not found")
+        
+    updated_portfolio = await PortfolioService.update_visibility(db, portfolio_id, visibility_in.visibility)
+    return updated_portfolio
+
+@router.get("/shared/{token}", response_model=PortfolioSharedRead)
+async def read_shared_portfolio(
+    token: uuid.UUID,
+    db: SessionDep_async
+):
+    """
+    공유 링크(Token)로 포트폴리오 조회 (로그인 불필요)
+    """
+    portfolio_shared = await PortfolioService.get_shared_portfolio(db, token)
+    if not portfolio_shared:
+        raise HTTPException(status_code=404, detail="Shared portfolio not found or not accessible")
+    return portfolio_shared
 
 @router.post("/{portfolio_id}/transactions", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
 async def create_transaction(

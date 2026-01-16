@@ -3,14 +3,22 @@ Portfolio (포트폴리오) 모델
 """
 from datetime import datetime
 from typing import Optional, List
+from enum import Enum
+import uuid
 from sqlmodel import SQLModel, Field, Relationship
-from sqlalchemy import Column, DateTime, String, func
+from sqlalchemy import Column, DateTime, String, func, Boolean, Enum as SAEnum
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 # Circular import avoidance
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.src.models.user import User
     from app.src.models.transaction import Transaction
+
+class PortfolioVisibility(str, Enum):
+    PRIVATE = "PRIVATE"
+    PUBLIC = "PUBLIC"
+    LINK_ONLY = "LINK_ONLY"
 
 class Portfolio(SQLModel, table=True):
     """
@@ -45,6 +53,21 @@ class Portfolio(SQLModel, table=True):
         default="USD",
         sa_column=Column(String(10)),
         description="기준 통화"
+    )
+    visibility: PortfolioVisibility = Field(
+        default=PortfolioVisibility.PRIVATE,
+        sa_column=Column(SAEnum(PortfolioVisibility), nullable=False, server_default="PRIVATE"),
+        description="공개 범위"
+    )
+    share_token: Optional[uuid.UUID] = Field(
+        default=None,
+        sa_column=Column(PG_UUID(as_uuid=True), unique=True, nullable=True, index=True),
+        description="공유 링크 토큰"
+    )
+    is_primary_for_leaderboard: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, nullable=False, server_default="false"),
+        description="리더보드 대표 포트폴리오 여부"
     )
     created_at: datetime = Field(
         default_factory=datetime.utcnow,

@@ -156,3 +156,52 @@ export interface PortfolioResponse {
     summary: ApiPortfolioSummary;
     positions: Position[];
 }
+
+export enum PortfolioVisibility {
+    PRIVATE = "PRIVATE",
+    PUBLIC = "PUBLIC",
+    LINK_ONLY = "LINK_ONLY"
+}
+
+export interface Portfolio {
+    id: number;
+    owner_id: number;
+    name: string;
+    description?: string;
+    currency: string;
+    created_at: string;
+    visibility: PortfolioVisibility;
+    share_token?: string;
+    is_primary_for_leaderboard: boolean;
+}
+
+export interface PortfolioShared {
+    id: number;
+    name: string;
+    owner_nickname: string;
+    description?: string;
+    total_value?: number;
+    return_rate?: number;
+    positions: Position[];
+    visibility: PortfolioVisibility;
+}
+
+export interface LeaderboardEntry {
+    user_id: number;
+    nickname: string;
+    return_rate: number;
+    total_value: number;
+    rank: number;
+}
+
+export interface UserProfile {
+    id: number;
+    nickname?: string;
+    email: string;
+}
+
+export interface FollowListResponse {
+    total: number;
+    users: UserProfile[];
+}
+

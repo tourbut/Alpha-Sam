@@ -5,6 +5,7 @@
     import {
         get_portfolio_summary as getPortfolioSummary,
         get_portfolio_history as getPortfolioHistory,
+        fetchPortfolios,
     } from "$lib/apis/portfolio";
     import { refresh_prices as refreshPrices } from "$lib/apis/prices";
     import type {
@@ -12,6 +13,7 @@
         Position,
         ApiPortfolioSummary,
         PortfolioHistory,
+        Portfolio, // Import Portfolio type
     } from "$lib/types";
     import PortfolioDistributionChart from "$lib/components/PortfolioDistributionChart.svelte";
     import PortfolioHistoryChart from "$lib/components/PortfolioHistoryChart.svelte";
@@ -40,6 +42,7 @@
         total_pl_stats: { percent: 0, direction: "flat" },
     };
     let history: PortfolioHistory[] = [];
+    let currentPortfolio: Portfolio | null = null; // State for current portfolio
     let error: string | null = null;
     let loading = true;
     let refreshing = false;
@@ -62,16 +65,21 @@
         loading = true;
         error = null;
         try {
-            const [assetsData, summaryResponse, historyData] =
+            const [assetsData, summaryResponse, historyData, portfoliosData] =
                 await Promise.all([
                     getAssets(),
                     getPortfolioSummary(),
                     getPortfolioHistory({ skip: 0, limit: 30 }),
+                    fetchPortfolios(), // Fetch portfolios
                 ]);
             assets = assetsData;
             positions = summaryResponse.positions;
             portfolioSummary = summaryResponse.summary;
             history = historyData;
+
+            if (portfoliosData.length > 0) {
+                currentPortfolio = portfoliosData[0];
+            }
         } catch (e) {
             console.error("Error loading data:", e);
             error = "Failed to load portfolio data. Please try again later.";
@@ -281,7 +289,7 @@
                         Export (Soon)
                     </Button>
                     <Button
-                        href="/social/leaderboard"
+                        href="/leaderboard"
                         class="btn-outline w-full justify-center col-span-2"
                     >
                         <ClipboardListOutline class="w-4 h-4 mr-2" />
@@ -377,5 +385,10 @@
         </div>
     {/if}
 
-    <ShareModal bind:open={shareModal} />
+    <ShareModal
+        bind:open={shareModal}
+        portfolioId={currentPortfolio?.id}
+        currentVisibility={currentPortfolio?.visibility}
+        shareToken={currentPortfolio?.share_token}
+    />
 </div>

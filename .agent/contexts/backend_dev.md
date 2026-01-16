@@ -7,6 +7,14 @@
 
 - [2026-01-04 22:35:00] Hotfix: Frontend 연동 검증 중 `AssetService.get_assets_with_metrics`에서 `crud_asset.get_assets` 호출 시 `session` 인자가 Positional로 전달되어 TypeError 발생하는 문제 확인. Keyword Argument (`session=session`)로 수정하여 해결함. Style Guide 준수 확인.
 
+- [2026-01-08] Refactored `Position` model to be transaction-based (Removed `asset_id` FK from Position, purely calculated). Created `calculate_positions_from_transactions` engine logic.
+- [2026-01-15] Fixed 404 error on `/api/v1/transactions` by adding missing router in `api.py`.
+- [2026-01-16] Implemented v1.1.0 Social Features Backend:
+  - Updates: Extended `Portfolio` with visibility/token, Created `UserFollow` & `LeaderboardRank` models.
+  - Migrations: Solved Enum type creation issues in Alembic.
+  - Services: Updated `PortfolioService` (sharing logic), Created `LeaderboardService` (Hybrid Redis+DB).
+  - API: Added Portfolio Visibility PATCH, Shared Portfolio GET, Leaderboard GET, Follow POST/DELETE APIs.
+  - Testing: Added `tests/test_portfolio_sharing.py` & `tests/test_social_integration.py` covering core logic.
 - [2026-01-12 00:10:00] **Position 모델 제거 및 Transaction 기반 계산 리팩토링 완료**. `Position` 모델과 테이블을 완전히 제거하고, Transaction을 집계하여 실시간으로 Position을 계산하는 방식으로 변경함. 주요 변경:
   - `calculate_positions_from_transactions` 함수 구현 (Asset별 Transaction 집계 및 이동평균법으로 평단가 계산)
   - CRUD/Service Layer 전면 리팩토링 (Position DB 저장 로직 제거)

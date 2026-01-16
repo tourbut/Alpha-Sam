@@ -1,36 +1,169 @@
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Any
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from app.src.core.cache import get_redis_client
+from app.src.models.social import LeaderboardRank, LeaderboardPeriod
+from app.src.models.portfolio import Portfolio
+from app.src.services.portfolio_service import PortfolioService
+from app.src.engine.portfolio_service import calculate_positions_from_transactions
+import logging
+
+logger = logging.getLogger(__name__)
 
 class LeaderboardService:
     """
-    Redis를 이용한 리더보드 관리 서비스
+    Redis + DB Hybrid Leaderboard Service
     """
-    def __init__(self, key: str = "leaderboard:weekly"):
-        self.key = key
+    def __init__(self, key_prefix: str = "leaderboard"):
+        self.key_prefix = key_prefix
 
-    async def update_score(self, user_id: int, pnl_percent: float):
-        """
-        사용자의 수익률 점수 업데이트 (ZADD)
-        """
-        client = await get_redis_client()
-        await client.zadd(self.key, {str(user_id): pnl_percent})
+    def _get_redis_key(self, period: LeaderboardPeriod) -> str:
+        return f"{self.key_prefix}:{period.value.lower()}"
 
-    async def get_top_n(self, n: int = 10) -> List[Tuple[int, float]]:
+    async def calculate_leaderboard(self, session: AsyncSession, period: LeaderboardPeriod = LeaderboardPeriod.ALL_TIME) -> int:
         """
-        상위 N명의 리더보드 조회 (ZRANGE)
+        리더보드 계산 및 갱신 (DB + Redis)
+        현재는 ALL_TIME 수익률만 계산
         """
-        client = await get_redis_client()
-        # ZRANGE key +inf -inf BYSCORE REV LIMIT 0 N
-        # 또는 단순 ZREVRANGE 사용
-        results = await client.zrevrange(self.key, 0, n - 1, withscores=True)
-        return [(int(user_id), float(score)) for user_id, score in results]
+        # 1. 대상 포트폴리오 조회: is_primary_for_leaderboard=True
+        stmt = select(Portfolio).where(Portfolio.is_primary_for_leaderboard == True)
+        result = await session.execute(stmt)
+        portfolios = result.scalars().all()
 
-    async def get_user_rank(self, user_id: int) -> Optional[int]:
+        ranking_data = [] # List[Dict]
+
+        for pf in portfolios:
+            try:
+                # Calculate return rate
+                positions = await calculate_positions_from_transactions(session, pf.id)
+                
+                total_current_value = 0.0
+                total_invested = 0.0
+                
+                if positions:
+                    asset_ids = [p.asset_id for p in positions]
+                    price_map = await PortfolioService._get_latest_prices(session, asset_ids)
+                    
+                    for pos in positions:
+                        price = price_map.get(pos.asset_id)
+                        if price:
+                            total_current_value += float(pos.quantity) * price
+                            total_invested += float(pos.quantity) * float(pos.avg_price)
+                
+                return_rate = 0.0
+                if total_invested > 0:
+                    return_rate = ((total_current_value - total_invested) / total_invested) * 100
+                
+                ranking_data.append({
+                    "user_id": pf.owner_id,
+                    "portfolio_id": pf.id,
+                    "return_rate": return_rate,
+                    "total_value": total_current_value
+                })
+            except Exception as e:
+                logger.error(f"Error calculating ranking for portfolio {pf.id}: {e}")
+                continue
+
+        # Sort by return_rate descending
+        ranking_data.sort(key=lambda x: x["return_rate"], reverse=True)
+
+        # 2. Update DB
+        try:
+            # Delete existing DB ranks for this period
+            stmt_del = select(LeaderboardRank).where(LeaderboardRank.period == period)
+            result_del = await session.execute(stmt_del)
+            existing_ranks = result_del.scalars().all()
+            for r in existing_ranks:
+                await session.delete(r)
+            
+            db_objects = []
+            redis_mapping = {}
+
+            for rank_idx, data in enumerate(ranking_data, 1):
+                db_objects.append(LeaderboardRank(
+                    user_id=data["user_id"],
+                    portfolio_id=data["portfolio_id"],
+                    period=period,
+                    return_rate=data["return_rate"],
+                    rank=rank_idx,
+                    total_value=data["total_value"]
+                ))
+                redis_mapping[str(data["user_id"])] = data["return_rate"]
+
+            if db_objects:
+                session.add_all(db_objects)
+                await session.commit()
+        except Exception as e:
+            await session.rollback()
+            raise e
+
+        # 3. Update Redis (Best Effort)
+        if redis_mapping:
+            try:
+                redis_client = await get_redis_client()
+                await redis_client.delete(redis_key)
+                await redis_client.zadd(redis_key, redis_mapping)
+            except Exception as e:
+                logger.warning(f"Failed to update Redis leaderboard: {e}")
+            
+        return len(db_objects)
+
+    async def get_top_n(self, n: int = 10, period: LeaderboardPeriod = LeaderboardPeriod.ALL_TIME, session: Optional[AsyncSession] = None) -> List[Tuple[int, float]]:
         """
-        특정 사용자의 순위 조회 (ZREVRANK)
+        상위 N명 조회 (Redis 우선, DB fallback)
         """
-        client = await get_redis_client()
-        rank = await client.zrevrank(self.key, str(user_id))
-        return rank + 1 if rank is not None else None
+        try:
+            redis_client = await get_redis_client()
+            redis_key = self._get_redis_key(period)
+            
+            # Check if key exists using exists() or just try range
+            # zrevrange returns list of (member, score)
+            results = await redis_client.zrevrange(redis_key, 0, n - 1, withscores=True)
+            
+            # If results empty, try DB fallback if session provided
+            if not results and session:
+                logger.info("Redis cache miss, fetching from DB")
+                stmt = (
+                    select(LeaderboardRank)
+                    .where(LeaderboardRank.period == period)
+                    .order_by(LeaderboardRank.rank)
+                    .limit(n)
+                )
+                db_results = await session.execute(stmt)
+                ranks = db_results.scalars().all()
+                return [(r.user_id, r.return_rate) for r in ranks]
+
+            return [(int(user_id), float(score)) for user_id, score in results]
+            
+        except Exception as e:
+            logger.warning(f"Error fetching leaderboard: {e}")
+            # Fallback to DB if session provided
+            if session:
+                stmt = (
+                    select(LeaderboardRank)
+                    .where(LeaderboardRank.period == period)
+                    .order_by(LeaderboardRank.rank)
+                    .limit(n)
+                )
+                try:
+                    db_results = await session.execute(stmt)
+                    ranks = db_results.scalars().all()
+                    return [(r.user_id, r.return_rate) for r in ranks]
+                except Exception as db_e:
+                    logger.error(f"DB Fallback failed: {db_e}")
+            return []
+
+    async def get_user_rank(self, user_id: int, period: LeaderboardPeriod = LeaderboardPeriod.ALL_TIME) -> Optional[int]:
+        """
+        특정 사용자의 순위 조회 (1-based)
+        """
+        try:
+            redis_client = await get_redis_client()
+            redis_key = self._get_redis_key(period)
+            rank = await redis_client.zrevrank(redis_key, str(user_id))
+            return rank + 1 if rank is not None else None
+        except Exception:
+            # DB Fallback not implemented for simple rank check yet
+            return None
 
 leaderboard_service = LeaderboardService()

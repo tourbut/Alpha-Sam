@@ -9,3 +9,6 @@
     - Status: Backend, Frontend, Celery(Worker/Beat), Nginx, DB, Redis 모두 정상 동작.
 - [2026-01-07 10:00:00] v1.0.3 배포 후 모니터링: Backend `/health` 및 Frontend `/login` 정상 응답 확인. 시스템 안정 상태 유지 중.
 - [2026-01-13 21:58:00] Dashboard Redesign v1.3.0 Merge: PR #9를 `develop`에 Squash Merge 완료. 원격 저장소에서 모든 stale 브랜치 삭제. 현재 `main`, `develop` 브랜치만 유지.
+- [2026-01-16 22:10:00] v1.4.0 정식 배포 완료.
+    - Git: `release/v1.4.0` 생성 -> Version Bump(1.4.0) -> `main` Merge -> Tag `v1.4.0` 생성.
+    - 현재 브랜치 상태: `main`, `develop` 모두 v1.4.0으로 최신화됨.

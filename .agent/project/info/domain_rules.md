@@ -107,10 +107,17 @@
   - `LINK_ONLY`의 경우 `access_token`이 일치해야 조회 허용.
 
 ### LeaderboardRank (리더보드 집계)
-- **Role**: 비동기로 계산된 랭킹 스냅샷.
+- **Role**: Celery 배치 작업을 통해 주기적으로 갱신되는 랭킹 스냅샷.
 - **Attributes**:
-  - `user_id`: FK.
-  - `ranking`: 등수.
-  - `yield_rate`: 수익률.
-  - `calculated_at`: 집계 시점.
+  - `user_id`: FK User. 인덱스 적용.
+  - `portfolio_id`: FK Portfolio. 대표 포트폴리오 (is_primary_for_leaderboard=True).
+  - `period`: ENUM(DAILY, WEEKLY, ALL_TIME). 집계 기간.
+  - `rank`: 순위 (1부터 시작).
+  - `return_rate`: 수익률 (소수점, 예: 0.15 = 15%).
+  - `total_value`: 총 평가금액 (선택).
+  - `updated_at`: 갱신 시점.
+- **Rules**:
+  - (user_id, period) 조합은 유일해야 함.
+  - Redis 캐싱 적용 (TTL 10분).
+  - 매시간 Celery Beat에 의해 재계산.
 

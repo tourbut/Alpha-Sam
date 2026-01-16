@@ -31,3 +31,13 @@
   - `transactions/+page.svelte`: `formatDate` 함수에 유효성 검사 추가 (Invalid Date 방지).
   - `+page.svelte`: `formatPercent`, `getColorClass` 함수에 `isNaN` 가드 추가 ($NaN 표시 방지).
   - `feature/bugfix-ui-minor` 작업을 `develop` 브랜치에 병합함.
+
+- [2026-01-16 23:30:00] **Social Features UI 구현 완료 (v1.1.0)**.
+  - `feature/social-v1.1.0-frontend` 브랜치에서 작업.
+  - **Shared Portfolio Page**: `/shared/[token]` 라우트 구현 (차트 및 테이블 포함).
+  - **Portfolio Share Modal**: `ShareModal.svelte` 구현, 포트폴리오 공개 설정(Private/Public/Link) 및 링크 복사 기능.
+  - **Leaderboard**: `/leaderboard` 라우트 구현, 주간 수익률 랭킹 표시.
+  - **API Integration**: `portfolio.ts` 업데이트 (Visibility Update, Shared View), `social.ts` 신규 생성.
+  - **Utils**: `formatCurrency`, `formatPercent` 등 공통 유틸리티 함수 추가.
+  - **Dependencies**: `types.ts`에 Social 관련 타입 추가.
+

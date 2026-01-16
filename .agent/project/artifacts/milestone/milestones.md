@@ -37,8 +37,10 @@
   - **Dashboard Fix**: Resolved API routing issue causing 404/Loading freeze.
 - **Status**: Deployed to Production.
 
-## 🔮 v1.1.0: Advanced Features (Planned)
+## 🔮 v1.1.0: Social Features (In Progress)
+- **Status**: Planning / Design
 - **Themes**: Social, Automation.
-- **Tasks**:
-  1. **Social**: Share Portfolio, Leaderboard.
-  2. **Automation**: Auto-rebalance alerts, Trading Bot integration (Paper Trading).
+- **Key Deliverables**:
+  1. **Portfolio Sharing**: Private/Public/Link-only visibility.
+  2. **Leaderboard**: Periodic ranking system.
+  3. **Social Graph**: Follow/Following.

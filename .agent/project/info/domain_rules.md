@@ -85,3 +85,32 @@
 
 ### Price Alert
 - 동일 사용자의 동일 자산에 대한 시세 알림은 24시간 내 1회로 제한한다 (Redis Key 활용).
+
+### Social Features (v1.1.0)
+
+### UserFollow (팔로우)
+- **Role**: 사용자 간의 구독 관계.
+- **Attributes**:
+  - `follower_id`: FK User.
+  - `following_id`: FK User.
+- **Rules**:
+  - Self-follow 불가능.
+  - 중복 Follow 불가능.
+
+### PortfolioVisibility (포트폴리오 공유)
+- **Role**: 포트폴리오의 공개 설정.
+- **Attributes**:
+  - `portfolio_id`: PK/FK.
+  - `visibility`: ENUM(PRIVATE, PUBLIC, LINK_ONLY).
+  - `access_token`: UUID (for LINK_ONLY).
+- **Rules**:
+  - `LINK_ONLY`의 경우 `access_token`이 일치해야 조회 허용.
+
+### LeaderboardRank (리더보드 집계)
+- **Role**: 비동기로 계산된 랭킹 스냅샷.
+- **Attributes**:
+  - `user_id`: FK.
+  - `ranking`: 등수.
+  - `yield_rate`: 수익률.
+  - `calculated_at`: 집계 시점.
+

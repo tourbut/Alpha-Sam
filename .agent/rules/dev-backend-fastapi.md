@@ -1,6 +1,6 @@
 ---
 trigger: model_decision
-description: backend로 fastapi개발 요청시 사용
+description: backend_dev 호출시 사용
 ---
 
 You are an expert in Python backend development with FastAPI.

@@ -3,22 +3,23 @@
 ## 날짜
 - 2026-01-16
 
+## 브랜치 (Version Control)
+- `develop` (v1.1.0 Integration)
+
 ## 현재 상황 (Context)
-- Frontend(v1.4.0) 및 Backend(Router Fix) 작업들이 진행/완료됨.
-- Frontend에서 `Transactions` 날짜 표시 오류 및 `Positions` NaN 표시 오류 수정 예정.
+- v1.4.0 배포 검증이 완료되었습니다.
+- v1.1.0 소셜 기능 개발이 시작되었습니다.
+- 아키텍처 설계 및 초기 구현 사항에 대한 검증 준비가 필요합니다.
 
 ## 해야 할 일 (Tasks)
-1. **Verify Backend Trailing Slash Fix**:
-   - `Transactions` API 및 기타 라우터들이 Trailing Slash 여부와 관계없이 정상 동작하는지 검증 (`test_slash.py` 활용 권장).
-2. **Verify Frontend v1.4.0 Bugfixes**:
-   - Frontend 작업 완료 시, `Transactions` 페이지 날짜 포맷 확인.
-   - `Positions` 요약 카드 데이터(NaN) 확인.
-3. **Regression Test**:
-   - v1.4.0 변경사항(테마, 레이아웃)이 기존 기능(로그인, 대시보드 그래프 등)에 사이드 이펙트를 주지 않았는지 확인.
+1. **Social Feature Test Plan Preparation**:
+   - `v1.1.0_design_draft.md`를 참고하여 소셜 기능(공유, 리더보드, 팔로우)에 대한 테스트 시나리오 작성.
+2. **Permission Check Cases**:
+   - PRIVATE/PUBLIC/LINK_ONLY 상태에 따른 접근 권한 매트릭스 작성 및 검증 계획 수립.
 
 ## 기대 산출물 (Expected Outputs)
-- `qa_reports/test_report_v1.4.0_bugfix.md`
+- `.agent/project/artifacts/qa_reports/test_plan_v1.1.0_social.md`
 
 ## 참고 자료 (References)
-- `.agent/handovers/to_frontend_dev.md`
-- `.agent/handovers/to_backend_dev.md`
+- `.agent/project/artifacts/architecture/v1.1.0_design_draft.md`
+- `.agent/project/artifacts/milestone/milestones.md`

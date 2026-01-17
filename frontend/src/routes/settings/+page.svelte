@@ -278,7 +278,7 @@
                                 notificationSettings.daily_report_enabled
                             }
                             disabled={updatingSettings}
-                            on:click={() => setTimeout(handleToggleChange, 0)}
+                            onclick={() => setTimeout(handleToggleChange, 0)}
                         />
                     </div>
 
@@ -300,7 +300,7 @@
                                 notificationSettings.price_alert_enabled
                             }
                             disabled={updatingSettings}
-                            on:click={() => setTimeout(handleToggleChange, 0)}
+                            onclick={() => setTimeout(handleToggleChange, 0)}
                         />
                     </div>
                 {:else}

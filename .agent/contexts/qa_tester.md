@@ -21,3 +21,9 @@
   - Backend Trailing Slash 이슈 해결 및 Frontend UI(날짜, NaN) 오류 수정 확인.
   - 회귀 테스트 결과 핵심 기능 및 스타일 레이아웃 이상 없음.
   - 리포트: `test_report_v1.4.0_bugfix.md` 작성.
+
+- [2026-01-17 11:35:00] **v1.1.0 Social Features QA 검증 완료 (PASS)**.
+  - `feature/social-v1.1.0-frontend` 브랜치 검증.
+  - Static Analysis (`npm run check`) 0 Errors 확인 (`settings`, `AssetModal` deprecated events 수정됨).
+  - Share Modal, Shared View, Leaderboard UI 로직 및 API 연동 적정성 확인.
+  - 리포트: `test_report_v1.1.0_social.md` 작성.

@@ -76,6 +76,8 @@ class LeaderboardService:
             for r in existing_ranks:
                 await session.delete(r)
             
+            await session.flush()
+            
             db_objects = []
             redis_mapping = {}
 

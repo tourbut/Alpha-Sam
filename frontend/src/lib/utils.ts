@@ -8,7 +8,7 @@ export function calculatePortfolioSummary(positions: Position[]): PortfolioSumma
         if (position.valuation !== undefined && position.valuation !== null) {
             totalValuation += position.valuation;
         }
-        totalInvested += position.buy_price * position.quantity;
+        totalInvested += position.avg_price * position.quantity;
     });
 
     const totalProfitLoss = totalValuation - totalInvested;
@@ -23,3 +23,22 @@ export function calculatePortfolioSummary(positions: Position[]): PortfolioSumma
         totalInvested,
     };
 }
+
+export const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(value);
+};
+
+export const formatPercent = (value: number) => {
+    if (isNaN(value)) return '0.00%';
+    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
+};
+
+export const getColorClass = (value: number) => {
+    if (isNaN(value) || value === 0) return 'text-gray-500';
+    return value > 0 ? 'text-red-500' : 'text-blue-500';
+};

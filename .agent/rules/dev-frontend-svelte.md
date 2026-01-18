@@ -1,6 +1,6 @@
 ---
 trigger: model_decision
-description: Frontend 개발시 사용
+description: frontend-dev 호출시 사용
 ---
 
 # Role: Senior Svelte & SvelteKit Architect

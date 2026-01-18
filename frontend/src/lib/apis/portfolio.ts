@@ -1,14 +1,8 @@
 import { api_router } from "$lib/fastapi"
+import { type Portfolio, type PortfolioShared, PortfolioVisibility } from "$lib/types";
 
-export interface Portfolio {
-    id: number
-    owner_id: number
-    name: string
-    description: string | null
-    currency: string
-    created_at: string
-    updated_at: string | null
-}
+export type { Portfolio, PortfolioShared };
+export { PortfolioVisibility };
 
 export interface PortfolioCreate {
     name: string
@@ -40,6 +34,8 @@ const _createPortfolio = api_router('portfolios', 'post', '');
 const _fetchPortfolio = api_router('portfolios', 'get', '{id}');
 const _fetchPortfolioPositions = api_router('portfolios', 'get', '{id}/positions');
 const _createTransaction = api_router('portfolios', 'post', '{id}/transactions');
+const _updateVisibility = api_router('portfolios', 'patch', '{id}/visibility');
+const _fetchSharedPortfolio = api_router('portfolios', 'get', 'shared/{token}');
 
 export const fetchPortfolios = async (): Promise<Portfolio[]> => {
     return await _fetchPortfolios();
@@ -64,3 +60,11 @@ export const createTransaction = async (portfolioId: number, data: TransactionCr
 export const get_portfolio_history = api_router('portfolios', 'get', 'history');
 export const create_portfolio_snapshot = api_router('portfolios', 'post', 'snapshot');
 export const get_portfolio_summary = api_router('portfolios', 'get', 'summary');
+
+export const updatePortfolioVisibility = async (id: number, visibility: PortfolioVisibility): Promise<Portfolio> => {
+    return await _updateVisibility({ id, visibility });
+}
+
+export const fetchSharedPortfolio = async (token: string): Promise<PortfolioShared> => {
+    return await _fetchSharedPortfolio({ token });
+}

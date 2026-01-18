@@ -102,7 +102,7 @@
         {/if}
 
         <div class="flex justify-end gap-2">
-            <Button color="alternative" on:click={() => (open = false)}
+            <Button color="alternative" onclick={() => (open = false)}
                 >Cancel</Button
             >
             <Button type="submit" disabled={loading}

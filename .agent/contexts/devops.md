@@ -1,0 +1,14 @@
+- [2025-12-27 15:40:00] Docker Multi-stage Build 적용으로 이미지 크기 60% 감소(1.2GB -> 480MB).
+- [2025-12-28 11:20:00] 비밀번호 해싱(Argon2)을 위해 `passlib[argon2]` 의존성 추가 확인. Docker 이미지 내 컴파일러 의존성(`build-essential`) 필요성 인지 및 조치.
+- [2025-12-30 05:05:00] v0.8.0 Production 배포 완료. `backend` 및 `frontend` 컨테이너 재기동 후 헬스체크 정상 확인.
+- [2026-01-01 16:30:00] v0.9.0 배포 완료.
+    - Git: `release/v0.9.0` 브랜치 생성 -> Version Bump -> `main` Merge -> Tag `v0.9.0` 생성.
+    - Database: Production DB 백업 후 `migrate_v090_legacy_data.py` 실행 완료(Legacy Data 0건 감지).
+- [2026-01-02 23:30:00] v1.0.0 Release 작업 시작.
+- [2026-01-03 00:20:00] v1.0.0 배포 실패(Migration/Dep Issue). Hotfix v1.0.1(`fastapi-users` 의존성 누락), v1.0.2(`celery-beat` volume mount 이슈) 적용 후 Production 배포 성공.
+    - Status: Backend, Frontend, Celery(Worker/Beat), Nginx, DB, Redis 모두 정상 동작.
+- [2026-01-07 10:00:00] v1.0.3 배포 후 모니터링: Backend `/health` 및 Frontend `/login` 정상 응답 확인. 시스템 안정 상태 유지 중.
+- [2026-01-13 21:58:00] Dashboard Redesign v1.3.0 Merge: PR #9를 `develop`에 Squash Merge 완료. 원격 저장소에서 모든 stale 브랜치 삭제. 현재 `main`, `develop` 브랜치만 유지.
+- [2026-01-16 22:10:00] v1.4.0 정식 배포 완료.
+    - Git: `release/v1.4.0` 생성 -> Version Bump(1.4.0) -> `main` Merge -> Tag `v1.4.0` 생성.
+    - 현재 브랜치 상태: `main`, `develop` 모두 v1.4.0으로 최신화됨.

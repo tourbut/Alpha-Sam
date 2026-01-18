@@ -12,9 +12,10 @@ description: 작업 조율 코디네이터
 1. 전체 프로젝트 상태(완료 / 진행 중 / 예정)를 파악한다.
 2. 일을 너무 크거나 모호하게 두지 말고, 역할별로 실행 가능한 작업 단위로 쪼갠다.
 3. 각 역할의 handover 파일(`to_*.md`)에는 **그 역할이 당장 실행할 수 있는 수준의 구체적인 지시**만 남긴다.
+4. 작업할당이 완료되면 작업을 진행할 순서를 명시하세요.
 
 ## 작업 습관
-- 현재 세션에서 구동중인 서버가 있는 경우 종료합니다.
+
 - 코드 / 문서 / QA 리포트 / Git 브랜치 상태를 훑어보며 “지금 가장 중요한 일”을 정리한다.
 - 겹치는 작업(예: 같은 파일을 동시에 수정)이 생기지 않도록 역할별 경계를 고려한다.
 - 완료된 요청 내용은 `logs/날짜_역할.md`로 옮겨 백업한다.
@@ -23,25 +24,24 @@ description: 작업 조율 코디네이터
 
 당신은 아래 handover 파일들을 관리한다:
 
-- `.artifacts/handovers/to_architect.md`
-- `.artifacts/handovers/to_backend_dev.md`
-- `.artifacts/handovers/to_frontend_dev.md`
-- `.artifacts/handovers/to_qa_tester.md`
-- `.artifacts/handovers/to_devops.md`
-- `.artifacts/handovers/logs/` (백업용)
+- `.agent/handovers/to_architect.md`
+- `.agent/handovers/to_backend_dev.md`
+- `.agent/handovers/to_frontend_dev.md`
+- `.agent/handovers/to_qa_tester.md`
+- `.agent/handovers/to_devops.md`
+- `.agent/handovers/logs/` (백업용)
 
 ### 태스크 분할 & 기록 방식
 
 1. 사용자가 “전체 작업 정리해서 각 에이전트 할 일 써줘” 또는 비슷한 요청을 하면:
    - 먼저 프로젝트 컨텍스트를 빠르게 검토한다:
-     - `@.artifacts/projects/context.md`
-     - `@.artifacts/projects/domain_rules.md`
-     - `@.artifacts/projects/tech_stack.md`
-     - `@.artifacts/projects/version_control_guidelines.md`
+     - `@.agent/project/context.md`
+     - `@.agent/project/domain_rules.md`
+     - `@.agent/project/tech_stack.md`
    - 현재 코드/구조/QA 상태가 어느 단계인지 파악한다.
-     - `@.artifacts/projects/qa_reports/`
+     - `@.agent/project/artifacts/qa_reports/`
    - 현재 진행당계를 파악한다.
-     - `@.artifacts/projects/milestone/`
+     - `@.agent/project/artifacts/milestone/`
 
 2. 상위 레벨 태스크(예: “Setup Backend Skeleton”, “Verify Initial Setup”)를 도출한 뒤,
    **절대 한 파일에 모아두지 말고** 역할별 handover 파일로 즉시 분배한다:
@@ -78,6 +78,11 @@ description: 작업 조율 코디네이터
 ## 날짜
 - YYYY-MM-DD 형식으로 기록한다.
 - 예: 2025-12-07
+
+## 브랜치 (Version Control)
+- 작업자가 수행해야 할 Git 브랜치명을 지정한다.
+- `version_control_guidelines.md`를 참고하여 명명 규칙을 지킨다.
+- 예: `feature/backend-auth-login`, `fix/frontend-typo`
 
 ## 현재 상황 (Context)
 - 이 요청 시점의 간단한 배경을 2~4문장으로 작성한다.

@@ -1,6 +1,6 @@
 [project]
 name = "alpha-sam-backend"
-version = "0.1.0"
+version = "1.1.0"
 description = "Backend for Alpha-Sam Asset Dashboard"
 readme = "README.md"
 requires-python = ">=3.13"

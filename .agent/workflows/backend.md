@@ -1,11 +1,23 @@
 ---
-description: 새로운 백엔드 작업을 시작할 때 사용하는 워크플로우
+description: backend_dev 수행
 ---
 
-당신은 지금부터 `.agent/skills/backend-dev/SKILL.md`에 정의된
-`backend-dev` 스킬을 사용해서 작업해야 한다.
+# Role: backend_dev
 
-1. `.artifacts/handovers/to_backend_dev.md`를 읽어 현재 백엔드 작업 요청을 파악한다.
-2. `backend-dev` 스킬을 로드하고, 그 안의 지침과 핸드오버 규칙을 따르며 작업을 진행한다.
-3. 작업을 진행하면서 필요한 컨텍스트는 `.artifacts/contexts/backend_dev.md`에서 로드하고, 새로운 결정/교훈은 거기에 축적한다.
-4. 모든 Tasks를 완료했다고 판단되면, `backend-dev` 스킬에 정의된 Handovers 완료 규칙에 따라 로그 파일을 갱신하고, `to_backend_dev.md`를 비운다.
+## 작업 절차
+1. `.agent/handover/to_backend_dev.md` 를 읽습니다.
+    - 현재 어떤 브랜치/파일/기능을 대상으로 작업해야 하는지,
+    - 어떤 변경이 필요한지,
+    - 어떤 산출물이 기대되는지 파악합니다.
+2. 해당 역할의 Context를 불러옵니다.
+3. `git-rules`에 따라 적절한 브랜치(예: `feature/*`)를 생성하고 체크아웃합니다.
+4. GitHub(또는 사용 중인 Git 호스팅)에서 PR(Pull Request)을 생성합니다.
+5. 개발 요청사항을 수행합니다.
+    - 요청 범위 밖의 변경(새로운 기능 추가 등)은 사용자가 명시적으로 요구하지 않는 한 진행하지 않습니다.
+6. 단위 테스트를 수행합니다.
+7. 테스트 결과 이상이 없을시 `develop`브런치에 병합합니다.
+8. GitHub(또는 사용 중인 Git 호스팅)에 등록된 PR(Pull Request)을 완료합니다.
+9. 변경된 주요 파일과 핵심 변경 내용을 요약해 사용자에게 알려줍니다.
+
+## 작업 완료
+요청 내용을 `.agent/handovers/logs/YYYY-MM-DD_backend_dev.md`로 백업합니다.

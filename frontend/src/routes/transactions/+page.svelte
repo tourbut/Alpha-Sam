@@ -87,7 +87,10 @@
     }
 
     function formatDate(isoString: string) {
-        return new Date(isoString).toLocaleString();
+        if (!isoString) return "-";
+        const date = new Date(isoString);
+        if (isNaN(date.getTime())) return isoString || "-";
+        return date.toLocaleString();
     }
 
     function getAssetSymbol(id: number) {

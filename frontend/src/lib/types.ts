@@ -156,3 +156,68 @@ export interface PortfolioResponse {
     summary: ApiPortfolioSummary;
     positions: Position[];
 }
+
+export enum PortfolioVisibility {
+    PRIVATE = "PRIVATE",
+    PUBLIC = "PUBLIC",
+    LINK_ONLY = "LINK_ONLY"
+}
+
+export interface Portfolio {
+    id: number;
+    owner_id: number;
+    name: string;
+    description?: string;
+    currency: string;
+    created_at: string;
+    visibility: PortfolioVisibility;
+    share_token?: string;
+    is_primary_for_leaderboard: boolean;
+}
+
+export interface PortfolioShared {
+    id: number;
+    name: string;
+    owner_nickname: string;
+    description?: string;
+    total_value?: number;
+    return_rate?: number;
+    positions: Position[];
+    visibility: PortfolioVisibility;
+}
+
+export interface LeaderboardEntry {
+    user_id: number;
+    nickname: string;
+    return_rate: number;
+    total_value: number;
+    rank: number;
+}
+
+export interface UserProfile {
+    id: number;
+    nickname?: string;
+    email: string;
+}
+
+export interface FollowListResponse {
+    total: number;
+    users: UserProfile[];
+}
+
+// 포트폴리오 카드용 확장 타입 (자산 정보 포함)
+export interface PortfolioAsset {
+    symbol: string;
+    name: string;
+    value: number;
+    percentage: number;
+}
+
+export interface PortfolioWithAssets {
+    id: number;
+    name: string;
+    description?: string;
+    created_at?: string;
+    totalValue: number;
+    assets: PortfolioAsset[];
+}

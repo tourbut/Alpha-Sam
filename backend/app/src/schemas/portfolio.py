@@ -1,8 +1,10 @@
 from typing import List, Optional, Literal
 from datetime import datetime
+import uuid
 from sqlmodel import SQLModel, Field
 from pydantic import ConfigDict
 from app.src.schemas.position import PositionWithAsset
+from app.src.models.portfolio import PortfolioVisibility
 
 class PortfolioBase(SQLModel):
     name: str = Field(index=True)
@@ -16,8 +18,24 @@ class PortfolioRead(PortfolioBase):
     id: int
     owner_id: int
     created_at: datetime
+    visibility: PortfolioVisibility
+    share_token: Optional[uuid.UUID] = None
     
     model_config = ConfigDict(from_attributes=True)
+
+class PortfolioVisibilityUpdate(SQLModel):
+    visibility: PortfolioVisibility
+
+# 공유된 포트폴리오 조회용
+class PortfolioSharedRead(SQLModel):
+    id: int
+    name: str
+    owner_nickname: Optional[str] = None # 닉네임 추가 예정
+    description: Optional[str] = None
+    total_value: Optional[float] = None
+    return_rate: Optional[float] = None
+    positions: List[PositionWithAsset] = []
+    visibility: PortfolioVisibility
 
 class PortfolioStats(SQLModel):
     percent: Optional[float] = Field(None, description="수익률 (%)")

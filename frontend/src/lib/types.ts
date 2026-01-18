@@ -205,3 +205,19 @@ export interface FollowListResponse {
     users: UserProfile[];
 }
 
+// 포트폴리오 카드용 확장 타입 (자산 정보 포함)
+export interface PortfolioAsset {
+    symbol: string;
+    name: string;
+    value: number;
+    percentage: number;
+}
+
+export interface PortfolioWithAssets {
+    id: number;
+    name: string;
+    description?: string;
+    created_at?: string;
+    totalValue: number;
+    assets: PortfolioAsset[];
+}

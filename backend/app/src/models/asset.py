@@ -3,10 +3,14 @@ Asset (자산) 모델
 사용자가 관리하는 개별 투자 대상을 나타냄
 """
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import Column, String, DateTime, func
 
+if TYPE_CHECKING:
+    from app.src.models.price import Price
+    from app.src.models.transaction import Transaction
+    from app.src.models.position import Position
 
 class Asset(SQLModel, table=True):
     """
@@ -48,7 +52,6 @@ class Asset(SQLModel, table=True):
     )
     
     # Relationships
-    prices: list["Price"] = Relationship(back_populates="asset")
-    transactions: list["Transaction"] = Relationship(back_populates="asset")
-
-
+    prices: List["Price"] = Relationship(back_populates="asset")
+    transactions: List["Transaction"] = Relationship(back_populates="asset")
+    positions: List["Position"] = Relationship(back_populates="asset")

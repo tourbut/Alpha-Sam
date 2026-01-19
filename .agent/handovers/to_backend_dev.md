@@ -1,15 +1,23 @@
 # Handovers: To Backend Developer
 
 ## 날짜
-- 2026-01-16
+- 2026-01-19
 
 ## 현재 상황 (Context)
-- QA 검증 중 `Transactions` API의 Trailing Slash 문제가 발견되어 긴급 수정(Fix) 적용함 (`@router.get("")`).
-- 기능 검증 완료(Pass).
+- v1.1.0 Architecture Design이 `develop` 브랜치에 병합됨 (`.agent/project/artifacts/architecture/v1.1.0_design_draft.md`).
+- Social Features (Follow, Share) 및 Data Integrity 강화가 핵심 목표.
 
 ## 해야 할 일 (Tasks)
-- (권장) 다른 라우터에도 Trailing Slash 정책 일관성 검토 필요.
-- (권장) `test_slash.py`와 같은 라우팅 테스트 케이스 추가 고려.
+1. **Schema Implementation**:
+   - `UserFollow` 모델 구현 (M:N).
+   - `PortfolioShare` 모델 또는 필드 확장 구현.
+   - DB Migration 스크립트 작성 (Alembic).
+2. **API Logic**:
+   - Social API Endpoints (`/follow`, `/share`) 구현.
+3. **Data Integrity Refactoring**:
+   - `create_transaction` 로직에서 `Position` 업데이트가 원자적(Atomic)으로 이루어지도록 수정.
+   - Design Draft의 "3.3 Implementation Guideline" 참조.
 
 ## 기대 산출물 (Expected Outputs)
-- 일관된 API 라우팅 정책
+- Updated Models & API Endpoints
+- Migration Scripts

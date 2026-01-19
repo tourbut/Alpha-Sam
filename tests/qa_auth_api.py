@@ -16,8 +16,8 @@ async def test_auth():
     async with httpx.AsyncClient(base_url=BASE_URL) as client:
         print("1. Registering User...")
         try:
-            # /api/v1/auth/register
-            resp = await client.post("/auth/register", json={
+            # /api/v1/auth/signup
+            resp = await client.post("/auth/signup", json={
                 "email": EMAIL,
                 "password": PASSWORD,
                 "is_active": True,
@@ -26,7 +26,7 @@ async def test_auth():
             })
             if resp.status_code == 201:
                 print(f"✅ Registration Success: {resp.json()}")
-            elif resp.status_code == 400 and "REGISTER_USER_ALREADY_EXISTS" in resp.text:
+            elif resp.status_code == 400 and "already exists" in resp.text:
                  print(f"⚠️ User already exists, proceeding to login.")
             else:
                 print(f"❌ Registration Failed: {resp.status_code} {resp.text}")
@@ -38,8 +38,10 @@ async def test_auth():
 
         print("\n2. Logging in...")
         try:
-            # /api/v1/auth/jwt/login
-            resp = await client.post("/auth/jwt/login", data={
+            # /api/v1/auth/login
+            # Note: Custom auth.py uses JSON for login or Form data depending on implementation.
+            # Base on code, it uses OAuth2PasswordRequestForm which expects form data.
+            resp = await client.post("/auth/login", data={
                 "username": EMAIL,
                 "password": PASSWORD
             })

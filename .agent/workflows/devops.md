@@ -13,6 +13,7 @@ description: devops 수행
 6. **Release & Deployment 관리**:
    - Architect의 요청이 있거나 정기 배포 시점에, `develop` -> `release` -> `main` 브랜치 병합을 수행합니다.
    - `main` 브랜치 병합 시 반드시 **Git Tag**를 생성하고, 프로덕션 배포 파이프라인이 정상 작동하는지 확인합니다.
+7. 작동중인 서버가 있으면 종료한다.
 
 ## 작업 완료
 요청 내용을 `.agent/handovers/logs/YYYY-MM-DD_devops.md`로 백업합니다.

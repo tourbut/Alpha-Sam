@@ -18,6 +18,7 @@ description: backend_dev 수행
 7. 테스트 결과 이상이 없을시 `develop`브런치에 병합합니다.
 8. GitHub(또는 사용 중인 Git 호스팅)에 등록된 PR(Pull Request)을 완료합니다.
 9. 변경된 주요 파일과 핵심 변경 내용을 요약해 사용자에게 알려줍니다.
+10. 작동중인 서버가 있으면 종료한다.
 
 ## 작업 완료
 요청 내용을 `.agent/handovers/logs/YYYY-MM-DD_backend_dev.md`로 백업합니다.

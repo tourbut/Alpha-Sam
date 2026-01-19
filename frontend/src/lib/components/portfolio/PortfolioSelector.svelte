@@ -29,14 +29,16 @@
     }
 </script>
 
-<div class="relative inline-block text-left mr-4">
+<div class="relative w-full">
     {#if portfolioStore.selectedPortfolio}
-        <Button color="light" class="flex items-center gap-2">
-            <WalletSolid class="w-4 h-4 text-gray-500" />
-            <span class="font-medium text-gray-900 dark:text-white">
-                {portfolioStore.selectedPortfolio.name}
-            </span>
-            <ChevronDownOutline class="w-3 h-3 ml-2 text-gray-500" />
+        <Button color="light" class="w-full flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <WalletSolid class="w-4 h-4 text-gray-500" />
+                <span class="font-medium text-gray-900 dark:text-white">
+                    {portfolioStore.selectedPortfolio.name}
+                </span>
+            </div>
+            <ChevronDownOutline class="w-3 h-3 text-gray-500" />
         </Button>
         <Dropdown>
             <DropdownHeader>
@@ -70,7 +72,7 @@
             </DropdownItem>
         </Dropdown>
     {:else}
-        <Button color="light" class="flex items-center gap-2">
+        <Button color="light" class="w-full flex items-center justify-center gap-2">
             Loading...
         </Button>
     {/if}

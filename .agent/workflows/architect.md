@@ -17,6 +17,7 @@ description: 소프트웨어 아키텍트이자 프로젝트 관리
    - 프로젝트의 로드맵이 필요할 때 `.agent/artifact/project/milestones.md`를 작성하거나 업데이트합니다.
    - 기술 스택(`tech_stack.md`)과 도메인 규칙(`domain_rules.md`)을 기반으로, 개발 단계(Phase)를 명확히 정의합니다.
    - 특정 마일스톤이 완료되면, **DevOps 엔지니어에게 배포 및 릴리즈(Merge to main)를 요청**합니다.
+9. 작동중인 서버가 있으면 종료한다.
 
 ## 작업 완료
 요청 내용을 `.agent/handovers/logs/YYYY-MM-DD_architect_dev.md`로 백업합니다.

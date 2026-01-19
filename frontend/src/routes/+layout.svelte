@@ -9,10 +9,9 @@
   import { page } from "$app/state";
   import {
     HomeOutline,
-    ChartPieOutline,
-    CashOutline,
     ClipboardListOutline,
     CogOutline,
+    WalletSolid,
   } from "flowbite-svelte-icons";
 
   let openAssetModal = $state(false);
@@ -20,8 +19,7 @@
   // 사이드바 네비게이션 아이템 (전역 적용)
   const navItems = [
     { href: "/", label: "Dashboard", icon: HomeOutline },
-    { href: "/positions", label: "Positions", icon: ChartPieOutline },
-    { href: "/transactions", label: "Transactions", icon: CashOutline },
+    { href: "/portfolios", label: "Portfolios", icon: WalletSolid },
     {
       href: "/social/leaderboard",
       label: "Leaderboard",
@@ -48,11 +46,11 @@
 <div
   class="flex flex-col min-h-screen w-full bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 transition-colors duration-200 overflow-x-hidden"
 >
-  <AppNavbar bind:openAssetModal />
+  <AppNavbar />
 
   <!-- 메인 영역: 사이드바 + 콘텐츠 (인증된 사용자에게만 사이드바 표시) -->
   {#if showSidebar}
-    <main class="flex-grow w-full overflow-visible">
+    <main class="flex-grow w-full overflow-visible pt-20">
       <div class="max-w-[1400px] mx-auto p-5">
         <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5">
           <!-- 사이드바 네비게이션 -->
@@ -80,7 +78,7 @@
     </main>
   {:else}
     <!-- 로그인/회원가입 페이지는 사이드바 없이 전체 너비 사용 -->
-    <main class="flex-grow w-full overflow-visible">
+    <main class="flex-grow w-full overflow-visible pt-20">
       <slot />
     </main>
   {/if}

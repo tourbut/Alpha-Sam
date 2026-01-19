@@ -41,3 +41,11 @@
   - **Utils**: `formatCurrency`, `formatPercent` 등 공통 유틸리티 함수 추가.
   - **Dependencies**: `types.ts`에 Social 관련 타입 추가.
 
+- [2026-01-18 20:45:00] **Portfolios 페이지 리디자인 완료**.
+  - `feature/portfolios-page-redesign` 브랜치에서 작업.
+  - 와이어프레임(`.kombai/resources/lofi-wireframe-portfolios-1768703900.html`) 기준 UI 개선.
+  - **AssetBreakdownList.svelte**: 자산 분배 리스트 컴포넌트 신규 생성.
+  - **PortfolioCard.svelte**: 포트폴리오 카드 컴포넌트 신규 생성.
+  - **+page.svelte**: 그리드 레이아웃 및 빈 상태 UI 개선.
+  - **types.ts**: `PortfolioWithAssets`, `PortfolioAsset` 타입 추가.
+  - PR #11 생성 및 `develop` 브랜치에 병합 완료.

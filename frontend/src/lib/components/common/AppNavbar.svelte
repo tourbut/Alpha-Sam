@@ -9,10 +9,7 @@
         DarkMode,
     } from "flowbite-svelte";
     import { auth } from "$lib/stores/auth.svelte";
-    import PortfolioSelector from "$lib/components/portfolio/PortfolioSelector.svelte";
     import { goto } from "$app/navigation";
-
-    let { openAssetModal = $bindable(false) } = $props();
 
     let hidden = $state(true); // 모바일 메뉴 기본 비활성화
 
@@ -45,14 +42,6 @@
         />
 
         {#if auth.isAuthenticated}
-            <PortfolioSelector />
-            <Button
-                size="sm"
-                class="bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800"
-                onclick={() => (openAssetModal = true)}
-            >
-                + Add Asset
-            </Button>
             {#if auth.user}
                 <div
                     class="hidden lg:flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full border border-gray-200 dark:border-gray-600"
@@ -85,8 +74,7 @@
     >
         {#if auth.isAuthenticated}
             <NavLi href="/">Dashboard</NavLi>
-            <NavLi href="/assets">Assets</NavLi>
-            <NavLi href="/positions">Positions</NavLi>
+            <NavLi href="/portfolios">Portfolios</NavLi>
             <NavLi href="/social/leaderboard">Leaderboard</NavLi>
             <NavLi href="/settings">Settings</NavLi>
             <NavLi

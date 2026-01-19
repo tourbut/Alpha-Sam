@@ -1,28 +1,25 @@
 # Handovers: To Architect
 
 ## 날짜
-- 2026-01-16
+- 2026-01-18
 
 ## 브랜치 (Version Control)
-- `feature/social-v1.1.0-design`
+- `develop`
 
 ## 현재 상황 (Context)
-- v1.4.0 배포가 성공적으로 완료되었습니다.
-- 이제 다음 주요 업데이트인 v1.1.0(Social Features)의 상세 설계가 필요합니다.
-- `v1.1.0_design_draft.md`를 바탕으로 실제 구현을 위한 명세서 작성이 요구됩니다.
+- v1.1.0 (Social Features) 및 v1.4.0 (UI Refinement) 배포/통합 상태입니다.
+- `milestones.md` 파일 내 v1.1.0 상태가 아직 "In Progress"로 남아있어 현행화가 필요합니다.
+- QA 팀에서 전체 기능 테스트(Full Function Test)를 진행 중입니다.
 
 ## 해야 할 일 (Tasks)
-1. **Database Schema Refinement**:
-   - `Portfolio` 테이블에 `visibility`, `share_token` 필드 추가를 위한 Alembic 마이그레이션 계획 수립.
-   - `UserFollow`, `LeaderboardRank` 테이블 상세 스펙 정의.
-2. **API Specification Completion**:
-   - `v1.1.0_design_draft.md`에 명시된 소셜 API들의 Request/Response 스키마 정의.
-3. **Leaderboard Algorithm Selection**:
-   - 주간 수익률 산정 방식 및 Celery 배치 작업 주기 확정.
+1. **문서 현행화**:
+   - `.agent/project/artifacts/milestone/milestones.md` 업데이트 (v1.1.0 -> Completed, v1.4.0 추가 등).
+2. **Post-Deployment Monitoring** (계속):
+   - 사용자 피드백 및 에러 로그 모니터링.
+   - Leaderboard 집계 정상 동작 확인.
+3. **Next Phase Planning**:
+   - v1.5.0 또는 v2.0.0 기획 구체화.
 
 ## 기대 산출물 (Expected Outputs)
-- `.agent/project/artifacts/architecture/v1.1.0_detailed_spec.md`
-
-## 참고 자료 (References)
-- `.agent/project/artifacts/architecture/v1.1.0_design_draft.md`
-- `.agent/project/artifacts/milestone/milestones.md`
+- `.agent/project/artifacts/milestone/milestones.md` (Updated)
+- `.agent/project/artifacts/milestone/milestones_v2.md` (Draft - Optional)

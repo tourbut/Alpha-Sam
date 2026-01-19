@@ -11,12 +11,12 @@ def log(msg, status="INFO"):
 def test_backend():
     session = requests.Session()
     
-    # 1. Register (Ignore if exists)
+    # 1. Signup (Ignore if exists)
     try:
-        r = session.post(f"{BASE_URL}/auth/register", json={"email": EMAIL, "password": PASSWORD})
+        r = session.post(f"{BASE_URL}/auth/signup", json={"email": EMAIL, "password": PASSWORD})
         if r.status_code == 201:
             log("User registered.", "PASS")
-        elif r.status_code == 400 and "REGISTER_USER_ALREADY_EXISTS" in r.text:
+        elif r.status_code == 400 and "already exists" in r.text:
             log("User already exists.", "SKIP")
         else:
             log(f"Register failed: {r.status_code} {r.text}", "FAIL")
@@ -25,7 +25,7 @@ def test_backend():
 
     # 2. Login
     try:
-        r = session.post(f"{BASE_URL}/auth/jwt/login", data={"username": EMAIL, "password": PASSWORD})
+        r = session.post(f"{BASE_URL}/auth/login", data={"username": EMAIL, "password": PASSWORD})
         if r.status_code in [200, 204]:
             token = r.json().get("access_token")
             session.headers.update({"Authorization": f"Bearer {token}"})
@@ -52,19 +52,32 @@ def test_backend():
         asset_id = r.json()["id"]
         log(f"POST /assets/ (Create): {r.status_code}", "PASS")
 
-        # 5.1 Create Position
-        position_data = {"asset_id": asset_id, "quantity": 10, "buy_price": 100.0}
-        r = session.post(f"{BASE_URL}/positions/", json=position_data)
-        if r.status_code == 201:
-            log(f"POST /positions/ (Create): {r.status_code}", "PASS")
-            pos_id = r.json()["id"]
-            
-            # 5.2 Delete Position
-            r = session.delete(f"{BASE_URL}/positions/{pos_id}")
-            log(f"DELETE /positions/{{id}}: {r.status_code}", "PASS" if r.status_code == 204 else "FAIL")
-            
+        # 5.1 Create Transaction (Multi-portfolio version)
+        # First, find a portfolio or use a default one. 
+        # For simplicity, we get the list and use the first one, or create one.
+        r_port = session.get(f"{BASE_URL}/portfolios")
+        if r_port.status_code == 200 and r_port.json():
+            portfolio_id = r_port.json()[0]["id"]
+            log(f"Using portfolio {portfolio_id} for transactions.", "INFO")
         else:
-            log(f"POST /positions/ (Create): {r.status_code} {r.text}", "FAIL")
+            # Create a default portfolio if none exists
+            r_port = session.post(f"{BASE_URL}/portfolios", json={"name": "QA Portfolio", "description": "Auto generated"})
+            portfolio_id = r_port.json()["id"]
+            log(f"Created new portfolio {portfolio_id}.", "PASS")
+
+        transaction_data = {
+            "asset_id": asset_id,
+            "type": "BUY",
+            "quantity": 10.0,
+            "price": 100.0,
+            "executed_at": "2026-01-18T10:00:00"
+        }
+        # Correct path: /portfolios/{id}/transactions
+        r = session.post(f"{BASE_URL}/portfolios/{portfolio_id}/transactions", json=transaction_data)
+        if r.status_code == 201:
+            log(f"POST /portfolios/{{id}}/transactions (Create): {r.status_code}", "PASS")
+        else:
+            log(f"POST /portfolios/{{id}}/transactions (Create): {r.status_code} {r.text}", "FAIL")
         
         # 6. Delete Asset
         r = session.delete(f"{BASE_URL}/assets/{asset_id}")
@@ -75,12 +88,12 @@ def test_backend():
         log(f"POST /assets/ (Create): {r.status_code}", "FAIL")
 
     # 7. Portfolio Summary
-    r = session.get(f"{BASE_URL}/portfolio/summary")
-    log(f"GET /portfolio/summary: {r.status_code}", "PASS" if r.status_code == 200 else "FAIL")
+    r = session.get(f"{BASE_URL}/portfolios/summary")
+    log(f"GET /portfolios/summary: {r.status_code}", "PASS" if r.status_code == 200 else "FAIL")
 
     # 8. Portfolio History
-    r = session.get(f"{BASE_URL}/portfolio/history")
-    log(f"GET /portfolio/history: {r.status_code}", "PASS" if r.status_code == 200 else "FAIL")
+    r = session.get(f"{BASE_URL}/portfolios/history")
+    log(f"GET /portfolios/history: {r.status_code}", "PASS" if r.status_code == 200 else "FAIL")
 
     # 9. Market Search
     r = session.get(f"{BASE_URL}/market/search?q=BTC")

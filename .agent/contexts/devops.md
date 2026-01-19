@@ -12,9 +12,3 @@
 - [2026-01-16 22:10:00] v1.4.0 정식 배포 완료.
     - Git: `release/v1.4.0` 생성 -> Version Bump(1.4.0) -> `main` Merge -> Tag `v1.4.0` 생성.
     - 현재 브랜치 상태: `main`, `develop` 모두 v1.4.0으로 최신화됨.
-
-- [2026-01-17 11:40:00] **v1.1.0 Social Features 배포 완료**.
-    - Git: `feature/social-v1.1.0-*` -> `develop` 병합 진행.
-    - Test: Backend Integration Test 중 `leaderboard_service` Flush 이슈 수정.
-    - Release: `release/v1.1.0` 생성 -> Version Bump(1.1.0) -> `main` & `develop` Merge -> Tag `v1.1.0` 생성.
-    - Status: 기능 브랜치 삭제 완료. `main`(v1.1.0) 정상 대기.

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
@@ -18,8 +19,8 @@ class TransactionService:
         portfolio_id = transaction_data.get("portfolio_id")
         asset_id = transaction_data.get("asset_id")
         tx_type = transaction_data.get("type") # 'BUY' or 'SELL'
-        quantity = float(transaction_data.get("quantity"))
-        price = float(transaction_data.get("price"))
+        quantity = Decimal(str(transaction_data.get("quantity")))
+        price = Decimal(str(transaction_data.get("price")))
         
         # 0. Validate Portfolio Ownership (Optional check if not done in dependency)
         # 여기서는 생략, API 레벨에서 체크한다고 가정
@@ -59,8 +60,11 @@ class TransactionService:
         # 1-3. Update Position Logic
         if tx_type == 'BUY':
             # Calculate New Avg Price (Moving Average)
-            total_value = (position.quantity * position.avg_price) + (quantity * price)
-            total_quantity = position.quantity + quantity
+            current_quantity = Decimal(str(position.quantity))
+            current_avg_price = Decimal(str(position.avg_price))
+            
+            total_value = (current_quantity * current_avg_price) + (quantity * price)
+            total_quantity = current_quantity + quantity
             
             if total_quantity > 0:
                 position.avg_price = total_value / total_quantity
@@ -70,11 +74,12 @@ class TransactionService:
             position.quantity = total_quantity
             
         elif tx_type == 'SELL':
-            if position.quantity < quantity:
+            current_quantity = Decimal(str(position.quantity))
+            if current_quantity < quantity:
                 raise HTTPException(status_code=400, detail="Insufficient quantity to sell.")
             
             # 매도 시 평단가는 변하지 않음 (이익 실현)
-            position.quantity -= quantity
+            position.quantity = current_quantity - quantity
             
             # 수량이 0이 되면 포지션을 남겨둘지 삭제할지 결정. 
             # 이력 관리를 위해 남겨두되(0), 조회 시 필터링하는 것이 일반적.

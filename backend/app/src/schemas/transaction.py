@@ -4,11 +4,12 @@ from datetime import datetime
 from typing import Literal, Optional
 
 class TransactionCreate(SQLModel):
+    portfolio_id: int
     asset_id: int
     type: Literal["BUY", "SELL"]
     quantity: float = Field(gt=0, description="거래 수량")
     price: float = Field(gt=0, description="거래 단가")
-    executed_at: Optional[str] = Field(None, description="거래 실행 일시 (ISO 8601)")
+    executed_at: Optional[datetime] = Field(None, description="거래 실행 일시")
 
 class TransactionRead(SQLModel):
     id: int

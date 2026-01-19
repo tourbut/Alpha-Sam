@@ -28,6 +28,13 @@ Rate limiting for price alerts.
 - **Value**: Counter or Timestamp
 - **TTL**: 24 hours (Expires at end of day or sliding window)
 
+### 3. LeaderboardRank
+Stores the leaderboard rank for a given user and portfolio.
+
+- **Key Format**: `leaderboard:{user_id}:{portfolio_id}`
+- **Value**: LeaderboardRank object
+- **TTL**: 1 hour (Expires at end of hour or sliding window)
+
 ## Data Flow
 
 ```mermaid

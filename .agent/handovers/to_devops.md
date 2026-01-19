@@ -1,22 +1,14 @@
 # Handovers: To DevOps
 
 ## 날짜
-- 2026-01-16
+- 2026-01-19
+
+## 브랜치 (Version Control)
+- `develop`
 
 ## 현재 상황 (Context)
-- v1.4.0 (Theme Refinement) frontend QA Passed.
-- Frontend/Backend Bugfix 작업 진행 중.
-- Bugfix 완료 후 v1.4.0 배포 준비 필요.
+- v1.1.0 데이터베이스 마이그레이션 적용 및 서버 가동 환경 복구 완료.
+- 백엔드 테스트 실행을 위한 Poetry 환경 및 의존성 설정 완료.
 
 ## 해야 할 일 (Tasks)
-1. **Monitor v1.4.0 Bugfix Status**:
-   - `feature/theme-style-refinement` (or similar) 브랜치 상태 확인.
-2. **Prepare v1.4.0 Release Pipeline**:
-   - Bugfix Merge 후 `develop` -> `release/v1.4.0` -> `main` 파이프라인 준비.
-   - Stage 환경 배포 테스트 준비.
-
-## 기대 산출물 (Expected Outputs)
-- v1.4.0 Deployment Plan
-
-## 참고 자료 (References)
-- `.agent/handovers/to_frontend_dev.md`
+- 현재 대기 중인 인프라/환경 설정 작업 없음.

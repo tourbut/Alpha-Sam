@@ -1,4 +1,5 @@
-from typing import List
+import uuid
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -44,7 +45,7 @@ async def create_asset(
 
 @router.delete("/{asset_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_asset(
-    asset_id: int,
+    asset_id: uuid.UUID,
     session: SessionDep_async,
     current_user: CurrentUser
 ):

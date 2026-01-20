@@ -1,10 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { Button, Modal, Label, Input, Select } from "flowbite-svelte";
-    import {
-        get_transactions as getTransactions,
-        create_transaction as createTransaction,
-    } from "$lib/apis/transactions";
+    import { get_transactions as getTransactions } from "$lib/apis/transactions";
+    import { createTransaction, fetchPortfolios } from "$lib/apis/portfolio";
     import { get_assets as getAssets } from "$lib/apis/assets";
     import type { Transaction, Asset, CreateTransaction } from "$lib/types";
     import { auth } from "$lib/stores/auth.svelte";
@@ -21,22 +19,27 @@
     let submitting = false;
 
     // Form state
-    let selectedAssetId: number | null = null;
+    let selectedAssetId: string | null = null;
+    let portfolioId: string | null = null;
     let type: "BUY" | "SELL" = "BUY";
     let quantity: number = 0;
     let price: number = 0;
 
-    let assetOptions: { value: number; name: string }[] = [];
+    let assetOptions: { value: string; name: string }[] = [];
 
     async function loadData() {
         loading = true;
         try {
-            const [txs, assetList] = await Promise.all([
+            const [txs, assetList, portfolios] = await Promise.all([
                 getTransactions({ skip: 0, limit: 50 }),
                 getAssets(),
+                fetchPortfolios(),
             ]);
             transactions = txs;
             assets = assetList;
+            if (portfolios.length > 0) {
+                portfolioId = portfolios[0].id;
+            }
             assetOptions = assets.map((a) => ({
                 value: a.id,
                 name: `${a.symbol} (${a.name})`,
@@ -65,7 +68,11 @@
 
         submitting = true;
         try {
-            await createTransaction({
+            if (!portfolioId) {
+                alert("No portfolio found.");
+                return;
+            }
+            await createTransaction(portfolioId, {
                 asset_id: selectedAssetId,
                 type: type,
                 quantity: Number(quantity),
@@ -93,7 +100,7 @@
         return date.toLocaleString();
     }
 
-    function getAssetSymbol(id: number) {
+    function getAssetSymbol(id: string) {
         const asset = assets.find((a) => a.id === id);
         return asset ? asset.symbol : `ID: ${id}`;
     }

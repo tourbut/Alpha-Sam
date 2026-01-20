@@ -14,10 +14,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 # SQLModel 메타데이터 가져오기
 from sqlmodel import SQLModel
-from app.src.models.asset import Asset
-from app.src.models.price import Price
-
-from app.src.models.user import User
+# SQLModel 메타데이터 가져오기
+from sqlmodel import SQLModel
+# Import all models to ensure they are registered in metadata
+from app.src.models import *
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

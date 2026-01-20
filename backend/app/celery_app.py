@@ -13,6 +13,7 @@ class CelerySettings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="ignore",
     )
     
     redis_url: str = "redis://localhost:6379/0"

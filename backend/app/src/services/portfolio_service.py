@@ -13,7 +13,7 @@ from sqlalchemy.orm import selectinload
 
 class PortfolioService:
     @staticmethod
-    async def update_visibility(session: AsyncSession, portfolio_id: int, visibility: PortfolioVisibility) -> Portfolio:
+    async def update_visibility(session: AsyncSession, portfolio_id: uuid.UUID, visibility: PortfolioVisibility) -> Portfolio:
         """
         Update portfolio visibility and manage share_token.
         """
@@ -116,16 +116,18 @@ class PortfolioService:
         )
 
     @staticmethod
-    async def create_snapshot(session: AsyncSession, user_id: int) -> PortfolioHistory:
+    async def create_snapshot(session: AsyncSession, user_id: uuid.UUID, portfolio_id: Optional[uuid.UUID] = None) -> PortfolioHistory:
         """
         Create a portfolio snapshot for the given user.
         """
-        # TODO: 여러 Portfolio를 지원하려면 모든 Portfolio의 Position을 합산해야 함
-        # 일단은 user의 첫 번째 Portfolio를 사용
+        # 특정 portfolio_id가 없으면 첫 번째 포트폴리오 사용
         from app.src.models.portfolio import Portfolio
-        stmt_portfolio = select(Portfolio).where(Portfolio.owner_id == user_id).limit(1)
-        result_portfolio = await session.execute(stmt_portfolio)
-        portfolio = result_portfolio.scalar_one_or_none()
+        if portfolio_id:
+            portfolio = await session.get(Portfolio, portfolio_id)
+        else:
+            stmt_portfolio = select(Portfolio).where(Portfolio.owner_id == user_id).limit(1)
+            result_portfolio = await session.execute(stmt_portfolio)
+            portfolio = result_portfolio.scalar_one_or_none()
         
         if not portfolio:
             # Portfolio가 없으면 빈 snapshot 생성
@@ -173,19 +175,21 @@ class PortfolioService:
         return history
 
     @staticmethod
-    async def get_summary(session: AsyncSession, user_id: int) -> PortfolioResponse:
+    async def get_summary(session: AsyncSession, user_id: uuid.UUID, portfolio_id: Optional[uuid.UUID] = None) -> PortfolioResponse:
         """
         Get portfolio summary and positions.
         """
         with open("/Users/shin/.gemini/antigravity/brain/fe135e23-aef4-4cc1-b5ab-914a5d85fdd6/debug_log.txt", "a") as f:
             f.write(f"[DEBUG] PortfolioService.get_summary called for user_id={user_id}\n")
         
-        # TODO: 여러 Portfolio를 지원하려면 모든 Portfolio의 Position을 합산해야 함
-        # 일단은 user의 첫 번째 Portfolio를 사용
+        # 특정 portfolio_id가 없으면 첫 번째 포트폴리오 사용
         from app.src.models.portfolio import Portfolio
-        stmt_portfolio = select(Portfolio).where(Portfolio.owner_id == user_id).limit(1)
-        result_portfolio = await session.execute(stmt_portfolio)
-        portfolio = result_portfolio.scalar_one_or_none()
+        if portfolio_id:
+            portfolio = await session.get(Portfolio, portfolio_id)
+        else:
+            stmt_portfolio = select(Portfolio).where(Portfolio.owner_id == user_id).limit(1)
+            result_portfolio = await session.execute(stmt_portfolio)
+            portfolio = result_portfolio.scalar_one_or_none()
         
         if not portfolio:
             return PortfolioResponse(
@@ -269,7 +273,7 @@ class PortfolioService:
         )
 
     @staticmethod
-    async def _get_latest_prices(session: AsyncSession, asset_ids: List[int]) -> Dict[int, float]:
+    async def _get_latest_prices(session: AsyncSession, asset_ids: List[uuid.UUID]) -> Dict[uuid.UUID, float]:
         """
         Helper to fetch latest prices for given assets efficiently.
         """

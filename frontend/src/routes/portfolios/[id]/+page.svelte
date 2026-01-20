@@ -2,15 +2,24 @@
   import { page } from "$app/state";
   import { portfolioStore } from "$lib/stores/portfolio.svelte";
   import { onMount } from "svelte";
-  import { Button, Card, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from "flowbite-svelte";
+  import {
+    Button,
+    Card,
+    Table,
+    TableBody,
+    TableBodyCell,
+    TableBodyRow,
+    TableHead,
+    TableHeadCell,
+  } from "flowbite-svelte";
   import { Plus, ArrowLeft, PieChart } from "lucide-svelte";
   import AssetModal from "$lib/components/AssetModal.svelte";
   import { goto } from "$app/navigation";
 
   let openAssetModal = $state(false);
-  let portfolioId = $derived(parseInt(page.params.id));
+  let portfolioId = $derived(page.params.id);
   let currentPortfolio = $derived(
-    portfolioStore.portfolios.find((p) => p.id === portfolioId)
+    portfolioStore.portfolios.find((p) => p.id === portfolioId),
   );
 
   // Mock assets data - replace with actual API call
@@ -53,8 +62,13 @@
 </script>
 
 <div class="space-y-6">
-  <div class="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
-    <button onclick={goBack} class="hover:text-primary-600 dark:hover:text-primary-400">
+  <div
+    class="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400"
+  >
+    <button
+      onclick={goBack}
+      class="hover:text-primary-600 dark:hover:text-primary-400"
+    >
       <ArrowLeft class="w-4 h-4 inline mr-1" />
       Back to Portfolios
     </button>
@@ -96,27 +110,42 @@
               <TableBodyRow>
                 <TableBodyCell>
                   <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
-                      <PieChart class="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                    <div
+                      class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center"
+                    >
+                      <PieChart
+                        class="w-4 h-4 text-primary-600 dark:text-primary-400"
+                      />
                     </div>
                     <div>
-                      <div class="font-semibold text-neutral-900 dark:text-neutral-100">
+                      <div
+                        class="font-semibold text-neutral-900 dark:text-neutral-100"
+                      >
                         {asset.symbol}
                       </div>
-                      <div class="text-xs text-neutral-500 dark:text-neutral-400">
+                      <div
+                        class="text-xs text-neutral-500 dark:text-neutral-400"
+                      >
                         {asset.name}
                       </div>
                     </div>
                   </div>
                 </TableBodyCell>
                 <TableBodyCell>{asset.quantity}</TableBodyCell>
-                <TableBodyCell>${asset.avgPrice.toLocaleString()}</TableBodyCell>
-                <TableBodyCell>${asset.currentPrice.toLocaleString()}</TableBodyCell>
+                <TableBodyCell>${asset.avgPrice.toLocaleString()}</TableBodyCell
+                >
+                <TableBodyCell
+                  >${asset.currentPrice.toLocaleString()}</TableBodyCell
+                >
                 <TableBodyCell class="font-semibold">
                   ${asset.totalValue.toLocaleString()}
                 </TableBodyCell>
                 <TableBodyCell>
-                  <span class={asset.change >= 0 ? "text-accent-600 dark:text-accent-400" : "text-red-600 dark:text-red-400"}>
+                  <span
+                    class={asset.change >= 0
+                      ? "text-accent-600 dark:text-accent-400"
+                      : "text-red-600 dark:text-red-400"}
+                  >
                     {asset.change >= 0 ? "+" : ""}{asset.change.toFixed(2)}%
                   </span>
                 </TableBodyCell>
@@ -137,8 +166,12 @@
     </Card>
   {:else}
     <Card class="text-center py-12">
-      <PieChart class="w-16 h-16 mx-auto mb-4 text-neutral-300 dark:text-neutral-600" />
-      <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+      <PieChart
+        class="w-16 h-16 mx-auto mb-4 text-neutral-300 dark:text-neutral-600"
+      />
+      <h3
+        class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2"
+      >
         No assets yet
       </h3>
       <p class="text-neutral-600 dark:text-neutral-400 mb-4">

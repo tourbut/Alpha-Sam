@@ -1,3 +1,4 @@
+import uuid
 from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +17,8 @@ async def create_transaction(
     """
     거래 내역 생성 (포지션 자동 업데이트)
     """
-    return await crud_transaction.create_transaction(session=session, transaction_in=transaction_in, owner_id=current_user.id)
+    from app.src.services.transaction_service import TransactionService
+    return await TransactionService.create_transaction(session, transaction_in.dict())
 
 @router.get("", response_model=List[TransactionRead])
 async def read_transactions(
@@ -24,7 +26,7 @@ async def read_transactions(
     current_user: CurrentUser,
     skip: int = 0,
     limit: int = 100,
-    asset_id: Optional[int] = Query(None, description="특정 자산 필터링")
+    asset_id: Optional[uuid.UUID] = Query(None, description="특정 자산 필터링")
 ):
     """
     거래 내역 목록 조회

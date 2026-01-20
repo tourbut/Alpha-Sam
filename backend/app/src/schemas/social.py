@@ -1,3 +1,4 @@
+import uuid
 from typing import List, Optional, Dict
 from pydantic import BaseModel, Field
 from datetime import datetime
@@ -15,7 +16,7 @@ class UserProfile(BaseModel):
     email: str # 팔로잉 목록에서 이메일 보여줄지 여부는 기획에 따름. 일단 포함.
 
 class FollowerResponse(BaseModel):
-    id: int
+    id: uuid.UUID
     follower_id: int
     following_id: int
     created_at: datetime

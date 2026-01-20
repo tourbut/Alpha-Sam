@@ -36,7 +36,7 @@
     class="min-h-screen w-full flex flex-col items-center justify-center px-4 py-8 bg-neutral-50 dark:bg-neutral-900"
 >
     <div
-        class="w-full max-w-md bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden"
+        class="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden"
     >
         <div class="p-8 space-y-8">
             <div class="space-y-2">

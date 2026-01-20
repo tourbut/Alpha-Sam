@@ -11,7 +11,7 @@ export interface PortfolioCreate {
 }
 
 export interface TransactionCreate {
-    asset_id: number
+    asset_id: string
     type: "BUY" | "SELL"
     quantity: number
     price: number
@@ -19,9 +19,9 @@ export interface TransactionCreate {
 }
 
 export interface Transaction {
-    id: number
-    portfolio_id: number
-    asset_id: number
+    id: string
+    portfolio_id: string
+    asset_id: string
     type: "BUY" | "SELL"
     quantity: number
     price: number
@@ -45,15 +45,15 @@ export const createPortfolio = async (data: PortfolioCreate): Promise<Portfolio>
     return await _createPortfolio(data);
 }
 
-export const fetchPortfolio = async (id: number): Promise<Portfolio> => {
+export const fetchPortfolio = async (id: string): Promise<Portfolio> => {
     return await _fetchPortfolio({ id });
 }
 
-export const fetchPortfolioPositions = async (id: number): Promise<any[]> => {
+export const fetchPortfolioPositions = async (id: string): Promise<any[]> => {
     return await _fetchPortfolioPositions({ id });
 }
 
-export const createTransaction = async (portfolioId: number, data: TransactionCreate): Promise<Transaction> => {
+export const createTransaction = async (portfolioId: string, data: TransactionCreate): Promise<Transaction> => {
     return await _createTransaction({ id: portfolioId, ...data });
 }
 
@@ -61,7 +61,7 @@ export const get_portfolio_history = api_router('portfolios', 'get', 'history');
 export const create_portfolio_snapshot = api_router('portfolios', 'post', 'snapshot');
 export const get_portfolio_summary = api_router('portfolios', 'get', 'summary');
 
-export const updatePortfolioVisibility = async (id: number, visibility: PortfolioVisibility): Promise<Portfolio> => {
+export const updatePortfolioVisibility = async (id: string, visibility: PortfolioVisibility): Promise<Portfolio> => {
     return await _updateVisibility({ id, visibility });
 }
 

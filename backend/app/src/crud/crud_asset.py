@@ -1,3 +1,4 @@
+import uuid
 from typing import List, Optional, Tuple
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,7 +10,7 @@ from app.src.models.price import Price
 from app.src.schemas.asset import AssetCreate
 
 async def get_assets(
-    *, session: AsyncSession, owner_id: int, skip: int = 0, limit: int = 100
+    *, session: AsyncSession, owner_id: uuid.UUID, portfolio_id: Optional[uuid.UUID] = None, skip: int = 0, limit: int = 100
 ) -> List[Tuple[Asset, Optional[float], Optional[datetime]]]:
     """
     Get assets with their latest price for the specific user.
@@ -20,8 +21,12 @@ async def get_assets(
     """
     try:
         statement = select(Asset).where(
-            or_(Asset.owner_id == None, Asset.owner_id == owner_id)
-        ).offset(skip).limit(limit)
+            Asset.owner_id == owner_id
+        )
+        if portfolio_id:
+            statement = statement.where(Asset.portfolio_id == portfolio_id)
+            
+        statement = statement.offset(skip).limit(limit)
         
         # Debug Logging for Data Leak Investigation
         with open("/Users/shin/.gemini/antigravity/brain/fe135e23-aef4-4cc1-b5ab-914a5d85fdd6/debug_log.txt", "a") as f:
@@ -49,13 +54,15 @@ async def get_assets(
         print(e)
         raise e
 
-async def get_asset_by_symbol(*, session: AsyncSession, symbol: str, owner_id: Optional[int] = None) -> Optional[Asset]:
+async def get_asset_by_symbol(*, session: AsyncSession, symbol: str, owner_id: Optional[uuid.UUID] = None, portfolio_id: Optional[uuid.UUID] = None) -> Optional[Asset]:
     try:
         if owner_id is not None:
              statement = select(Asset).where(
                  Asset.symbol == symbol,
-                 or_(Asset.owner_id == None, Asset.owner_id == owner_id)
+                 Asset.owner_id == owner_id
              )
+             if portfolio_id:
+                 statement = statement.where(Asset.portfolio_id == portfolio_id)
         else:
             statement = select(Asset).where(Asset.symbol == symbol)
             
@@ -66,7 +73,7 @@ async def get_asset_by_symbol(*, session: AsyncSession, symbol: str, owner_id: O
         print(e)
         raise e
 
-async def get_asset(*, session: AsyncSession, asset_id: int) -> Optional[Asset]:
+async def get_asset(*, session: AsyncSession, asset_id: uuid.UUID) -> Optional[Asset]:
     try:
         return await session.get(Asset, asset_id)
     except Exception as e:
@@ -85,7 +92,7 @@ async def create_asset(*, session: AsyncSession, obj_in: AssetCreate) -> Asset:
         await session.rollback()
         raise e
 
-async def remove_asset(*, session: AsyncSession, asset_id: int) -> Optional[Asset]:
+async def remove_asset(*, session: AsyncSession, asset_id: uuid.UUID) -> Optional[Asset]:
     try:
         obj = await session.get(Asset, asset_id)
         if obj:

@@ -31,9 +31,9 @@
 <Modal
     bind:open
     title="Create New Portfolio"
-    size="xs"
+    size="lg"
     autoclose={false}
-    class="w-full"
+    class="w-auto mx-auto"
 >
     <form
         class="flex flex-col space-y-6"
@@ -58,6 +58,7 @@
                 name="description"
                 bind:value={description}
                 placeholder="Investment goals..."
+                class="w-full"
             />
         </Label>
         <Label class="space-y-2">

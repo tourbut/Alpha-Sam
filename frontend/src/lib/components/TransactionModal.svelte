@@ -8,11 +8,11 @@
 	export let open = false;
 	export let asset: Asset | null = null;
 	export let assets: Asset[] = [];
-	export let portfolioId = 1; // TODO: 실제 Portfolio ID 사용
+	export let portfolioId: string = ""; // TODO: 실제 Portfolio ID 사용
 
 	const dispatch = createEventDispatcher();
 
-	let selectedAssetId: number | null = null;
+	let selectedAssetId: string | null = null;
 	let transactionType: "BUY" | "SELL" = "BUY";
 	let quantity = "";
 	let price = "";
@@ -100,12 +100,7 @@
 	}
 </script>
 
-<Modal
-	bind:open
-	title="거래 추가"
-	autoclose={false}
-	onclose={handleClose}
->
+<Modal bind:open title="거래 추가" autoclose={false} onclose={handleClose}>
 	<form
 		class="flex flex-col space-y-6"
 		on:submit|preventDefault={handleSubmit}
@@ -124,7 +119,7 @@
 				<Select
 					class="mt-2"
 					items={assets.map((a) => ({
-						value: a.id.toString(),
+						value: a.id,
 						name: `${a.symbol} - ${a.name}`,
 					}))}
 					bind:value={selectedAssetId}
@@ -147,11 +142,7 @@
 
 		<Label>
 			<span>거래 유형</span>
-			<Select
-				class="mt-2"
-				bind:value={transactionType}
-				required
-			>
+			<Select class="mt-2" bind:value={transactionType} required>
 				<option value="BUY">매수 (BUY)</option>
 				<option value="SELL">매도 (SELL)</option>
 			</Select>

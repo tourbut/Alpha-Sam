@@ -25,7 +25,8 @@
 | **Deployment Platform** | Docker + Docker Compose |
 | **Language (Backend)** | Python 3.13 |
 | **Language (Frontend)** | TypeScript 5 |
-| **Database** | PostgreSQL (asyncpg) |
+| **Database** | PostgreSQL (asyncpg) | UUID v4 ID 정책 적용 |
+| **ID Policy** | UUID v4 | 모든 주요 엔티티 적용 |
 | **Cache/Queue** | Redis + Celery |
 
 ---

@@ -1,9 +1,9 @@
 export interface Asset {
-    id: number;
+    id: string;
     symbol: string;
     name: string;
     category: string;
-    owner_id?: number | null;
+    owner_id?: string | null;
     latest_price?: number;
     latest_price_updated_at?: string;
     created_at?: string;
@@ -22,7 +22,7 @@ export interface AssetCreate {
 }
 
 export interface NotificationSettings {
-    user_id: number;
+    user_id: string;
     daily_report_enabled: boolean;
     price_alert_enabled: boolean;
 }
@@ -39,7 +39,7 @@ export interface UserCreate {
 }
 
 export interface UserRead {
-    id: number | string; // Supporting both for now
+    id: string;
     email: string;
     is_active: boolean;
     is_superuser: boolean;
@@ -77,8 +77,8 @@ export interface SymbolSearchResult {
 
 // Position: 읽기 전용 (Transaction 집계 결과)
 export interface IPosition {
-    id?: number; // Optional: DB ID 없음 (동적 계산)
-    asset_id: number;
+    id?: string; // Optional: DB ID 없음 (동적 계산)
+    asset_id: string;
     quantity: number;
     avg_price: number; // buy_price → avg_price
     created_at?: string; // Optional
@@ -96,7 +96,7 @@ export type Position = IPosition;
 
 // Position Create/Update는 더 이상 사용하지 않음 (Transaction으로 대체)
 // export interface PositionCreate {
-// 	asset_id: number;
+// 	asset_id: string;
 // 	quantity: number;
 // 	buy_price: number;
 // 	buy_date?: string;
@@ -116,8 +116,8 @@ export interface PortfolioSummary {
 }
 
 export interface Transaction {
-    id: number;
-    asset_id: number;
+    id: string;
+    asset_id: string;
     type: "BUY" | "SELL";
     quantity: number;
     price: number;
@@ -126,14 +126,14 @@ export interface Transaction {
 }
 
 export interface CreateTransaction {
-    asset_id: number;
+    asset_id: string;
     type: "BUY" | "SELL";
     quantity: number;
     price: number;
 }
 
 export interface PortfolioHistory {
-    id: number;
+    id: string;
     total_value: number;
     total_cost: number;
     total_pl: number;
@@ -164,8 +164,8 @@ export enum PortfolioVisibility {
 }
 
 export interface Portfolio {
-    id: number;
-    owner_id: number;
+    id: string;
+    owner_id: string;
     name: string;
     description?: string;
     currency: string;
@@ -176,7 +176,7 @@ export interface Portfolio {
 }
 
 export interface PortfolioShared {
-    id: number;
+    id: string;
     name: string;
     owner_nickname: string;
     description?: string;
@@ -187,7 +187,7 @@ export interface PortfolioShared {
 }
 
 export interface LeaderboardEntry {
-    user_id: number;
+    user_id: string;
     nickname: string;
     return_rate: number;
     total_value: number;
@@ -195,7 +195,7 @@ export interface LeaderboardEntry {
 }
 
 export interface UserProfile {
-    id: number;
+    id: string;
     nickname?: string;
     email: string;
 }
@@ -214,7 +214,7 @@ export interface PortfolioAsset {
 }
 
 export interface PortfolioWithAssets {
-    id: number;
+    id: string;
     name: string;
     description?: string;
     created_at?: string;

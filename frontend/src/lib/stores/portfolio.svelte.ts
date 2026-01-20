@@ -3,7 +3,7 @@ import { browser } from "$app/environment"
 
 class PortfolioStore {
     portfolios = $state<Portfolio[]>([])
-    selectedPortfolioId = $state<number | null>(null)
+    selectedPortfolioId = $state<string | null>(null)
     positions = $state<any[]>([])
     loading = $state(false)
 
@@ -16,7 +16,7 @@ class PortfolioStore {
         if (browser) {
             const storedId = localStorage.getItem("selectedPortfolioId")
             if (storedId) {
-                this.selectedPortfolioId = Number(storedId)
+                this.selectedPortfolioId = storedId
             }
         }
     }
@@ -42,7 +42,7 @@ class PortfolioStore {
         }
     }
 
-    async selectPortfolio(id: number) {
+    async selectPortfolio(id: string) {
         this.selectedPortfolioId = id
         if (browser) {
             localStorage.setItem("selectedPortfolioId", String(id))
@@ -50,7 +50,7 @@ class PortfolioStore {
         await this.loadPositions(id)
     }
 
-    async loadPositions(id: number) {
+    async loadPositions(id: string) {
         this.loading = true
         try {
             this.positions = await fetchPortfolioPositions(id)

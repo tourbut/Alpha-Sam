@@ -1,6 +1,4 @@
-"""
-Position (보유 내역) 스키마
-"""
+import uuid
 from datetime import date, datetime
 from typing import Optional
 from sqlmodel import SQLModel, Field
@@ -10,7 +8,7 @@ from decimal import Decimal
 
 
 class PositionBase(SQLModel):
-    asset_id: int
+    asset_id: uuid.UUID
     quantity: float = Field(ge=0.0, description="보유 수량 (0 이상)")
     avg_price: float = Field(ge=0.0, description="평단가 (0 이상)")
 
@@ -30,7 +28,7 @@ class PositionBase(SQLModel):
 
 
 class PositionRead(PositionBase):
-    id: Optional[int] = None
+    id: Optional[uuid.UUID] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     # 계산된 필드

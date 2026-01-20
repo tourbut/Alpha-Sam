@@ -1,14 +1,14 @@
 # Handovers: To Frontend Developer
 
 ## 날짜
-- 2026-01-19
+- 2026-01-20
 
 ## 현재 상황 (Context)
-- v1.1.0 UI 구현 및 Merge 완료.
-- QA 결과 대기 중.
+- 프론트엔드 타입 시스템 및 스토어의 UUID(string) 전환 작업이 완료되었습니다.
+- 모든 UI 컴포넌트가 새로운 ID 체계와 호환됩니다.
 
 ## 해야 할 일 (Tasks)
-- (없음 - 대기 상태)
+- (없음)
 
 ## 기대 산출물 (Expected Outputs)
 - (없음)

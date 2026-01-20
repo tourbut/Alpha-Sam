@@ -37,10 +37,18 @@
   - **Dashboard Fix**: Resolved API routing issue causing 404/Loading freeze.
 - **Status**: Deployed to Production.
 
-## 🔮 v1.1.0: Social Features (In Progress)
-- **Status**: Planning / Design
+## ✅ v1.1.0: Social Features (Completed)
+- **Date**: 2026-01-19
 - **Themes**: Social, Automation.
+- **Key Achievements**:
+  - **Portfolio Sharing**: Private/Public/Link-only visibility 구현 완료.
+  - **Leaderboard**: Redis 기반 실시간 랭킹 시스템 구축.
+  - **Social Graph**: 팔로우/팔로잉 기능 통합.
+
+## 🚀 v2.0.0: Architecture Redesign (In Progress)
+- **Status**: Planning
+- **Themes**: Scalability, Security, Data Integrity.
 - **Key Deliverables**:
-  1. **Portfolio Sharing**: Private/Public/Link-only visibility.
-  2. **Leaderboard**: Periodic ranking system.
-  3. **Social Graph**: Follow/Following.
+  1. **UUID Transition**: 모든 ID 체계를 Integer에서 UUID v4로 전환.
+  2. **Portfolio-Asset Relationship**: `Asset`이 `Portfolio`에 직접 귀속되도록 스키마 변경.
+  3. **Data Migration**: 기존 데이터의 무결성을 유지하며 UUID로 변환하는 마이그레이션 수행.

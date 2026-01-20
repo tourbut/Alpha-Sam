@@ -1,3 +1,4 @@
+import uuid
 from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,7 +26,7 @@ async def read_transactions(
     current_user: CurrentUser,
     skip: int = 0,
     limit: int = 100,
-    asset_id: Optional[int] = Query(None, description="특정 자산 필터링")
+    asset_id: Optional[uuid.UUID] = Query(None, description="특정 자산 필터링")
 ):
     """
     거래 내역 목록 조회

@@ -15,8 +15,8 @@ class PortfolioCreate(PortfolioBase):
     pass
 
 class PortfolioRead(PortfolioBase):
-    id: int
-    owner_id: int
+    id: uuid.UUID
+    owner_id: uuid.UUID
     created_at: datetime
     visibility: PortfolioVisibility
     share_token: Optional[uuid.UUID] = None
@@ -28,7 +28,7 @@ class PortfolioVisibilityUpdate(SQLModel):
 
 # 공유된 포트폴리오 조회용
 class PortfolioSharedRead(SQLModel):
-    id: int
+    id: uuid.UUID
     name: str
     owner_nickname: Optional[str] = None # 닉네임 추가 예정
     description: Optional[str] = None
@@ -52,7 +52,7 @@ class PortfolioResponse(SQLModel):
     positions: List[PositionWithAsset]
 
 class PortfolioHistoryRead(SQLModel):
-    id: int
+    id: uuid.UUID
     total_value: float
     total_cost: float
     total_pl: float

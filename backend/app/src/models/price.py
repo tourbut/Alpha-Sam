@@ -2,10 +2,12 @@
 Price (시세) 모델
 외부 데이터 소스에서 가져오는 현재 단가 정보
 """
+import uuid
 from datetime import datetime
 from typing import Optional
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import Column, DateTime, Numeric, func, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 
 class Price(SQLModel, table=True):
@@ -21,10 +23,12 @@ class Price(SQLModel, table=True):
     """
     __tablename__ = "prices"
     
-    id: Optional[int] = Field(default=None, primary_key=True)
-    asset_id: int = Field(
-        foreign_key="assets.id",
-        index=True,
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        sa_column=Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    )
+    asset_id: uuid.UUID = Field(
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("assets.id"), nullable=False, index=True),
         description="자산 ID"
     )
     value: float = Field(

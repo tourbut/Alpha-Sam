@@ -9,7 +9,7 @@
 
     // Message type definition
     type Message = {
-        id: number;
+        id: string;
         text: string;
         sender: "user" | "bot";
         timestamp: Date;
@@ -18,7 +18,7 @@
     // Initialize with a welcome message
     let messages = $state<Message[]>([
         {
-            id: 1,
+            id: "1",
             text: "안녕하세요! Alpha-Sam 도우미입니다 무엇을 도와드릴까요?",
             sender: "bot",
             timestamp: new Date(),
@@ -37,7 +37,7 @@
 
         // Add user message
         const userMsg: Message = {
-            id: Date.now(),
+            id: Date.now().toString(),
             text: message,
             sender: "user",
             timestamp: new Date(),
@@ -49,7 +49,7 @@
         // Simulate Bot typing/reply
         setTimeout(async () => {
             const botMsg: Message = {
-                id: Date.now() + 1,
+                id: (Date.now() + 1).toString(),
                 text: "이것은 Mock 봇의 자동 응답입니다. 현재 실제 AI 연결은 되어있지 않습니다.",
                 sender: "bot",
                 timestamp: new Date(),

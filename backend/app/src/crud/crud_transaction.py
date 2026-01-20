@@ -1,6 +1,4 @@
-"""
-Transaction CRUD Module
-"""
+import uuid
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
@@ -12,7 +10,7 @@ from app.src.models.asset import Asset
 from fastapi import HTTPException
 
 
-async def create_transaction(*, session: AsyncSession, transaction_in: TransactionCreate, owner_id: int) -> Transaction:
+async def create_transaction(*, session: AsyncSession, transaction_in: TransactionCreate, owner_id: uuid.UUID) -> Transaction:
     """
     거래 생성 (단순화)
     1. 사용자의 Portfolio를 찾아서 Transaction 레코드 생성
@@ -24,13 +22,11 @@ async def create_transaction(*, session: AsyncSession, transaction_in: Transacti
         if not asset:
             raise HTTPException(status_code=404, detail="Asset not found")
         
-        # 2. 사용자의 Portfolio 조회 (첫 번째 포트폴리오 사용)
-        portfolio_stmt = select(Portfolio).where(Portfolio.owner_id == owner_id).limit(1)
-        portfolio_result = await session.execute(portfolio_stmt)
-        portfolio = portfolio_result.scalar_one_or_none()
+        # 2. 사용자의 Portfolio 조회 (요청된 portfolio_id 검증)
+        portfolio = await session.get(Portfolio, transaction_in.portfolio_id)
         
-        if not portfolio:
-            raise HTTPException(status_code=404, detail="Portfolio not found for user")
+        if not portfolio or portfolio.owner_id != owner_id:
+            raise HTTPException(status_code=404, detail="Portfolio not found or unauthorized")
             
         # 3. Transaction 생성
         db_transaction = Transaction(
@@ -57,10 +53,11 @@ async def create_transaction(*, session: AsyncSession, transaction_in: Transacti
 async def get_transactions(
     *, 
     session: AsyncSession, 
-    owner_id: int,
+    owner_id: uuid.UUID,
     skip: int = 0, 
     limit: int = 100,
-    asset_id: Optional[int] = None
+    asset_id: Optional[uuid.UUID] = None,
+    portfolio_id: Optional[uuid.UUID] = None
 ) -> List[Transaction]:
     """
     거래 내역 조회 (Owner의 Portfolio에 속한 Transaction만)
@@ -74,8 +71,13 @@ async def get_transactions(
         if not portfolio_ids:
             return []
         
-        # Transaction 조회 (Portfolio ID 기반)
-        stmt = select(Transaction).where(Transaction.portfolio_id.in_(portfolio_ids))
+        # Transaction 조회 (명시적인 portfolio_id 또는 소유한 모든 Portfolio)
+        if portfolio_id:
+            if portfolio_id not in portfolio_ids:
+                raise HTTPException(status_code=403, detail="Unauthorized access to portfolio")
+            stmt = select(Transaction).where(Transaction.portfolio_id == portfolio_id)
+        else:
+            stmt = select(Transaction).where(Transaction.portfolio_id.in_(portfolio_ids))
         
         if asset_id:
             stmt = stmt.where(Transaction.asset_id == asset_id)

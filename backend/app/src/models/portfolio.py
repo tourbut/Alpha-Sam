@@ -6,7 +6,7 @@ from typing import Optional, List
 from enum import Enum
 import uuid
 from sqlmodel import SQLModel, Field, Relationship
-from sqlalchemy import Column, DateTime, String, func, Boolean, Enum as SAEnum
+from sqlalchemy import Column, DateTime, String, func, Boolean, Enum as SAEnum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 # Circular import avoidance
@@ -35,10 +35,12 @@ class Portfolio(SQLModel, table=True):
     """
     __tablename__ = "portfolios"
     
-    id: Optional[int] = Field(default=None, primary_key=True)
-    owner_id: int = Field(
-        foreign_key="users.id",
-        index=True,
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        sa_column=Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    )
+    owner_id: uuid.UUID = Field(
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True),
         description="소유자 User ID"
     )
     name: str = Field(
@@ -81,5 +83,6 @@ class Portfolio(SQLModel, table=True):
 
     # Relationships
     owner: "User" = Relationship(back_populates="portfolios")
+    assets: List["Asset"] = Relationship(back_populates="portfolio")
     transactions: List["Transaction"] = Relationship(back_populates="portfolio")
     positions: List["Position"] = Relationship(back_populates="portfolio")

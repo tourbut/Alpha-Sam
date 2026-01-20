@@ -1,11 +1,20 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { Button, Card, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from "flowbite-svelte";
+  import {
+    Button,
+    Card,
+    Table,
+    TableBody,
+    TableBodyCell,
+    TableBodyRow,
+    TableHead,
+    TableHeadCell,
+  } from "flowbite-svelte";
   import { Plus, ArrowLeft, DollarSign } from "lucide-svelte";
   import { goto } from "$app/navigation";
 
-  let portfolioId = $derived(parseInt(page.params.id));
-  let assetId = $derived(parseInt(page.params.assetId));
+  let portfolioId = $derived(page.params.id);
+  let assetId = $derived(page.params.assetId);
 
   // Mock data - replace with actual API call
   let asset = $state({
@@ -48,8 +57,13 @@
 </script>
 
 <div class="space-y-6">
-  <div class="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
-    <button onclick={goBack} class="hover:text-primary-600 dark:hover:text-primary-400">
+  <div
+    class="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400"
+  >
+    <button
+      onclick={goBack}
+      class="hover:text-primary-600 dark:hover:text-primary-400"
+    >
       <ArrowLeft class="w-4 h-4 inline mr-1" />
       Back to Assets
     </button>
@@ -98,7 +112,9 @@
   <!-- Transactions Table -->
   {#if transactions.length > 0}
     <Card>
-      <h2 class="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
+      <h2
+        class="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-4"
+      >
         Transactions
       </h2>
       <div class="overflow-x-auto">
@@ -118,7 +134,11 @@
                   {new Date(tx.date).toLocaleDateString()}
                 </TableBodyCell>
                 <TableBodyCell>
-                  <span class={tx.type === "buy" ? "badge badge-success" : "badge badge-error"}>
+                  <span
+                    class={tx.type === "buy"
+                      ? "badge badge-success"
+                      : "badge badge-error"}
+                  >
                     {tx.type.toUpperCase()}
                   </span>
                 </TableBodyCell>
@@ -136,8 +156,12 @@
     </Card>
   {:else}
     <Card class="text-center py-12">
-      <DollarSign class="w-16 h-16 mx-auto mb-4 text-neutral-300 dark:text-neutral-600" />
-      <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+      <DollarSign
+        class="w-16 h-16 mx-auto mb-4 text-neutral-300 dark:text-neutral-600"
+      />
+      <h3
+        class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2"
+      >
         No transactions yet
       </h3>
       <p class="text-neutral-600 dark:text-neutral-400 mb-4">

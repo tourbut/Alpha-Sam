@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -6,7 +7,7 @@ from app.src.models.user import User
 from app.src.schemas.user import UserCreate, UserUpdate
 from app.src.core import security
 
-async def get_user(*, session: AsyncSession, user_id: int) -> Optional[User]:
+async def get_user(*, session: AsyncSession, user_id: uuid.UUID) -> Optional[User]:
     try:
         return await session.get(User, user_id)
     except Exception as e:

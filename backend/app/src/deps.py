@@ -55,7 +55,7 @@ async def get_current_user(
             detail="Could not validate credentials",
         )
         
-    result = await session.execute(select(User).where(User.id == int(token_user_id)))
+    result = await session.execute(select(User).where(User.id == token_user_id))
     user = result.scalar_one_or_none()
     
     if not user:

@@ -1,9 +1,10 @@
-from typing import Optional
+import uuid
+from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.src.models.position import Position
 
-async def get_position_by_asset(*, session: AsyncSession, asset_id: int, owner_id: int) -> Optional[Position]:
+async def get_position_by_asset(*, session: AsyncSession, asset_id: uuid.UUID, owner_id: uuid.UUID) -> Optional[Position]:
     try:
         statement = select(Position).where(
             Position.asset_id == asset_id,
@@ -44,7 +45,7 @@ async def update_position_qty(*, session: AsyncSession, position: Position, new_
         await session.rollback()
         raise e
 
-async def get_positions(*, session: AsyncSession, owner_id: int) -> list[Position]:
+async def get_positions(*, session: AsyncSession, owner_id: uuid.UUID) -> List[Position]:
     try:
         stmt = select(Position).where(Position.owner_id == owner_id)
         result = await session.execute(stmt)
@@ -53,7 +54,7 @@ async def get_positions(*, session: AsyncSession, owner_id: int) -> list[Positio
         print(e)
         raise e
 
-async def get_position(*, session: AsyncSession, position_id: int, owner_id: int) -> Optional[Position]:
+async def get_position(*, session: AsyncSession, position_id: uuid.UUID, owner_id: uuid.UUID) -> Optional[Position]:
     try:
         stmt = select(Position).where(
             Position.id == position_id,

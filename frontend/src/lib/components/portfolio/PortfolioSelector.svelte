@@ -24,14 +24,17 @@
         }
     });
 
-    function handleSelect(id: number) {
+    function handleSelect(id: string) {
         portfolioStore.selectPortfolio(id);
     }
 </script>
 
 <div class="relative w-full">
     {#if portfolioStore.selectedPortfolio}
-        <Button color="light" class="w-full flex items-center justify-between gap-2">
+        <Button
+            color="light"
+            class="w-full flex items-center justify-between gap-2"
+        >
             <div class="flex items-center gap-2">
                 <WalletSolid class="w-4 h-4 text-gray-500" />
                 <span class="font-medium text-gray-900 dark:text-white">
@@ -72,7 +75,10 @@
             </DropdownItem>
         </Dropdown>
     {:else}
-        <Button color="light" class="w-full flex items-center justify-center gap-2">
+        <Button
+            color="light"
+            class="w-full flex items-center justify-center gap-2"
+        >
             Loading...
         </Button>
     {/if}

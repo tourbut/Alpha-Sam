@@ -1,4 +1,5 @@
-from typing import List, Optional
+import uuid
+from typing import List, Optional, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from fastapi import HTTPException, status
@@ -10,19 +11,16 @@ from app.src.engine.price_service import price_service
 
 class AssetService:
     async def get_assets_with_metrics(
-        self, 
-        session: AsyncSession, 
-        user_id: int, 
-        skip: int = 0, 
-        limit: int = 100
+        self, session: AsyncSession, user_id: uuid.UUID, portfolio_id: Optional[uuid.UUID] = None, skip: int = 0, limit: int = 100
     ) -> List[AssetRead]:
         """
         자산 목록 조회 및 메트릭(평가액, 손익 등) 계산
         Position은 Transaction을 집계하여 동적으로 계산됨
         """
         # 1. Asset 목록 조회 (latest_price 포함)
-        assets_data = await crud_asset.get_assets(session=session, owner_id=user_id, skip=skip, limit=limit)
-        
+        assets_data = await crud_asset.get_assets(
+            session=session, owner_id=user_id, portfolio_id=portfolio_id, skip=skip, limit=limit
+        )
         # 2. 사용자의 Portfolio 조회 (Position 계산을 위해)
         from app.src.models.portfolio import Portfolio
         from app.src.engine.portfolio_service import calculate_positions_from_transactions
@@ -72,10 +70,7 @@ class AssetService:
         return asset_reads
 
     async def create_asset_with_autofill(
-        self, 
-        session: AsyncSession, 
-        asset_in: AssetCreate, 
-        user_id: int
+        self, session: AsyncSession, asset_in: AssetCreate, user_id: uuid.UUID
     ) -> AssetRead:
         """
         자산 생성 (심볼 자동 검색 및 채우기 포함)

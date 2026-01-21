@@ -2,6 +2,7 @@
   import { page } from "$app/state";
   import { portfolioStore } from "$lib/stores/portfolio.svelte";
   import { onMount } from "svelte";
+  import { fetchPortfolioPositions } from "$lib/apis/portfolio";
   import {
     Button,
     Card,
@@ -11,8 +12,10 @@
     TableBodyRow,
     TableHead,
     TableHeadCell,
+    Spinner,
+    Alert,
   } from "flowbite-svelte";
-  import { Plus, ArrowLeft, PieChart } from "lucide-svelte";
+  import { Plus, ArrowLeft, PieChart, Info } from "lucide-svelte";
   import AssetModal from "$lib/components/AssetModal.svelte";
   import { goto } from "$app/navigation";
 
@@ -22,37 +25,45 @@
     portfolioStore.portfolios.find((p) => p.id === portfolioId),
   );
 
-  // Mock assets data - replace with actual API call
-  let assets = $state([
-    {
-      id: 1,
-      symbol: "BTC",
-      name: "Bitcoin",
-      quantity: 0.5,
-      avgPrice: 45000,
-      currentPrice: 48000,
-      totalValue: 24000,
-      change: 6.67,
-    },
-    {
-      id: 2,
-      symbol: "ETH",
-      name: "Ethereum",
-      quantity: 5,
-      avgPrice: 2800,
-      currentPrice: 3000,
-      totalValue: 15000,
-      change: 7.14,
-    },
-  ]);
+  let assets = $state([]);
+  let loading = $state(false);
+  let error = $state(null);
 
-  onMount(() => {
+  onMount(async () => {
     if (!currentPortfolio) {
-      portfolioStore.loadPortfolios();
+      // If direct navigation, load portfolios to find name, etc.
+      // (Ideally we should fetch specific portfolio details too if list is empty)
+      await portfolioStore.loadPortfolios();
     }
+    await loadAssets();
   });
 
-  function viewAssetTransactions(assetId: number) {
+  async function loadAssets() {
+    loading = true;
+    error = null;
+    try {
+      const positions = await fetchPortfolioPositions(portfolioId);
+      // Map API response (snake_case) to UI format (camelCase)
+      assets = positions.map((p) => ({
+        id: p.asset_id,
+        symbol: p.asset_symbol,
+        name: p.asset_name,
+        quantity: p.quantity,
+        avgPrice: p.avg_price,
+        currentPrice: p.current_price || p.avg_price, // fallback
+        totalValue:
+          p.valuation || p.quantity * (p.current_price || p.avg_price),
+        change: p.return_rate || 0,
+      }));
+    } catch (e: any) {
+      console.error("Failed to load assets:", e);
+      error = e.message || "Failed to load assets";
+    } finally {
+      loading = false;
+    }
+  }
+
+  function viewAssetTransactions(assetId: string) {
     goto(`/portfolios/${portfolioId}/assets/${assetId}`);
   }
 
@@ -92,7 +103,16 @@
     </Button>
   </div>
 
-  {#if assets.length > 0}
+  {#if loading}
+    <div class="flex justify-center py-12">
+      <Spinner size="lg" color="purple" />
+    </div>
+  {:else if error}
+    <Alert color="red" class="mb-4">
+      <span class="font-medium">Error!</span>
+      {error}
+    </Alert>
+  {:else if assets.length > 0}
     <Card>
       <div class="overflow-x-auto">
         <Table hoverable={true}>

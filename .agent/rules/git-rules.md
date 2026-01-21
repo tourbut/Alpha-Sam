@@ -85,6 +85,9 @@ Conventional Commits 규격을 따릅니다. 이는 커밋 메시지에 일관�
    - 코멘트에 대해 적극적으로 소통하고 수정합니다.
 3. **Merge**:
    - 리뷰가 완료되고 CI 테스트(있는 경우)가 통과하면 `develop` 브랜치로 병합(Squash and Merge 권장)합니다.
+4. **Finish**:
+   - 관련 브랜치를 원격에서 삭제합니다.
+   - Linked Issue가 자동으로 닫혔는지 확인하고, 필요 시 레이블/마일스톤을 정리합니다.
 
 ## 4. Versioning (버전 관리)
 Semantic Versioning (SemVer) 원칙을 준수합니다. 소프트웨어의 버전 변경이 API 호환성에 미치는 영향을 명확히 하기 위해 `MAJOR.MINOR.PATCH` 형식을 사용합니다.

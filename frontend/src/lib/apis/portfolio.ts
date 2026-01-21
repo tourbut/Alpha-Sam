@@ -1,7 +1,7 @@
 import { api_router } from "$lib/fastapi"
-import { type Portfolio, type PortfolioShared, PortfolioVisibility } from "$lib/types";
+import { type Portfolio, type PortfolioShared, type PortfolioWithAssets, PortfolioVisibility } from "$lib/types";
 
-export type { Portfolio, PortfolioShared };
+export type { Portfolio, PortfolioShared, PortfolioWithAssets };
 export { PortfolioVisibility };
 
 export interface PortfolioCreate {
@@ -68,3 +68,51 @@ export const updatePortfolioVisibility = async (id: string, visibility: Portfoli
 export const fetchSharedPortfolio = async (token: string): Promise<PortfolioShared> => {
     return await _fetchSharedPortfolio({ token });
 }
+
+// 포트폴리오 목록 + 자산 요약 정보 조회
+const _fetchPortfoliosWithAssets = api_router('portfolios', 'get', 'with-assets');
+
+// 백엔드 응답 타입 (snake_case)
+interface PortfolioWithAssetsResponse {
+    id: string;
+    name: string;
+    description?: string;
+    created_at: string;
+    total_value: number;
+    assets: Array<{
+        symbol: string;
+        name: string;
+        value: number;
+        percentage: number;
+    }>;
+}
+
+
+export const fetchPortfoliosWithAssets = async (): Promise<PortfolioWithAssets[]> => {
+    const response: PortfolioWithAssetsResponse[] = await _fetchPortfoliosWithAssets();
+
+    // snake_case → camelCase 변환
+    return response.map((item) => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        created_at: item.created_at,
+        totalValue: item.total_value,
+        assets: item.assets
+    }));
+}
+
+const _fetchPortfolioAsset = api_router('portfolios', 'get', '{id}/assets/{assetId}');
+const _fetchPortfolioAssetTransactions = api_router('portfolios', 'get', '{id}/assets/{assetId}/transactions');
+
+import type { AssetSummary, AssetTransaction } from "$lib/types";
+
+export const fetchPortfolioAsset = async (id: string, assetId: string): Promise<AssetSummary> => {
+    return await _fetchPortfolioAsset({ id, assetId });
+}
+
+export const fetchPortfolioAssetTransactions = async (id: string, assetId: string): Promise<AssetTransaction[]> => {
+    return await _fetchPortfolioAssetTransactions({ id, assetId });
+}
+
+

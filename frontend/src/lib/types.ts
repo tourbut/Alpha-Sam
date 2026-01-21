@@ -221,3 +221,25 @@ export interface PortfolioWithAssets {
     totalValue: number;
     assets: PortfolioAsset[];
 }
+
+export interface AssetSummary {
+    asset_id: string;
+    symbol: string;
+    name: string;
+    quantity: number;
+    avg_price: number;
+    current_price: number | null;
+    total_value: number;
+    profit_loss: number;
+    return_rate: number;
+}
+
+export interface AssetTransaction {
+    id: string;
+    type: "buy" | "sell";
+    date: string;
+    quantity: number;
+    price: number;
+    total: number;
+    fee: number | null;
+}

@@ -290,3 +290,85 @@ class PortfolioService:
         latest_prices = result.scalars().all()
         
         return {price.asset_id: float(price.value) for price in latest_prices}
+
+    @staticmethod
+    async def get_portfolios_with_assets(session: AsyncSession, user_id: uuid.UUID) -> List[Dict[str, Any]]:
+        """
+        사용자의 모든 포트폴리오 목록과 각 포트폴리오의 자산 요약 정보를 조회합니다.
+        
+        Args:
+            session: Database session
+            user_id: 사용자 ID
+        
+        Returns:
+            포트폴리오 목록 (각 포트폴리오에 자산 구성 정보 포함)
+        """
+        from app.src.schemas.portfolio import PortfolioAssetSummary, PortfolioWithAssetsSummary
+        
+        # 1. 사용자의 모든 포트폴리오 조회
+        stmt = select(Portfolio).where(Portfolio.owner_id == user_id)
+        result = await session.execute(stmt)
+        portfolios = result.scalars().all()
+        
+        if not portfolios:
+            return []
+        
+        portfolio_responses = []
+        
+        for portfolio in portfolios:
+            # 2. 각 포트폴리오의 positions 계산 (Transaction 기반)
+            positions = await calculate_positions_from_transactions(session, portfolio.id)
+            
+            total_value = 0.0
+            asset_summaries = []
+            
+            if positions:
+                # 3. 가격 정보 조회
+                asset_ids = [p.asset_id for p in positions]
+                price_map = await PortfolioService._get_latest_prices(session, asset_ids)
+                
+                # 4. 각 position의 평가금액 계산
+                position_values = []
+                for position in positions:
+                    current_price = price_map.get(position.asset_id)
+                    
+                    # 가격이 있으면 현재가 기준, 없으면 평균 매수가 기준으로 평가
+                    if current_price is not None:
+                        valuation = position.quantity * current_price
+                    else:
+                        # Fallback: 평균 매수가 기준으로 평가금액 계산
+                        valuation = position.quantity * position.avg_price
+                    
+                    # 가격 유무와 관계없이 자산 정보 추가
+                    position_values.append({
+                        "symbol": position.asset_symbol or "UNKNOWN",
+                        "name": position.asset_name or "Unknown Asset",
+                        "value": round(valuation, 2),
+                        "asset_id": position.asset_id
+                    })
+                    total_value += valuation
+                
+                # 5. 비중(percentage) 계산
+                if total_value > 0:
+                    for pv in position_values:
+                        percentage = (pv["value"] / total_value) * 100
+                        asset_summaries.append(PortfolioAssetSummary(
+                            symbol=pv["symbol"],
+                            name=pv["name"],
+                            value=pv["value"],
+                            percentage=round(percentage, 1)
+                        ))
+            
+            # 6. 응답 스키마 생성
+            portfolio_with_assets = PortfolioWithAssetsSummary(
+                id=portfolio.id,
+                name=portfolio.name,
+                description=portfolio.description,
+                created_at=portfolio.created_at,
+                total_value=round(total_value, 2),
+                assets=asset_summaries
+            )
+            portfolio_responses.append(portfolio_with_assets)
+        
+        return portfolio_responses
+

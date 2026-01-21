@@ -1,5 +1,3 @@
-# QA Context Log
-
 - [2025-12-27 10:48:46] 현재 v0.7.0 프론트엔드 기능(User Switcher, Settings, Asset Badges) 검증을 완료하고 대기 중임. Handovers 파일(to_qa_tester.md)은 비어 있음.
 - [2025-12-28 20:35:00] v0.8.0 인증 시스템 테스트 계획(Test Plan) 작성을 완료함(.artifacts/projects/qa_reports/test_plan_v0.8.0.md).
 - [2025-12-29 23:55:00] v0.8.0 Re-verification 완료. Backend(/users/me) PASS, Frontend(Login Form) PASS. Test Report(.artifacts/projects/qa_reports/test_report_v0.8.0.md) 업데이트 완료.
@@ -27,3 +25,8 @@
   - Static Analysis (`npm run check`) 0 Errors 확인 (`settings`, `AssetModal` deprecated events 수정됨).
   - Share Modal, Shared View, Leaderboard UI 로직 및 API 연동 적정성 확인.
   - 리포트: `test_report_v1.1.0_social.md` 작성.
+
+- [2026-01-21 13:40:00] **포트폴리오 자산 상세 기능 QA 검증 완료 (PASS)**.
+  - **Verified**: Backend API (`/assets/{id}`, `/transactions`) Unit Tests Passed. Frontend Integration (Mock removal, Type consistency) Checked.
+  - **Result**: Data flow from DB to UI confirmed correct. Fallback logic for missing prices verified.
+  - **Report**: `2026-01-21_qa_report_portfolio_assets.md`.

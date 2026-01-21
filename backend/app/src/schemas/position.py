@@ -46,3 +46,20 @@ class PositionWithAsset(PositionRead):
     asset_name: Optional[str] = None
     asset_category: Optional[str] = None
 
+
+class AssetSummaryRead(SQLModel):
+    """
+    개별 자산 요약 정보 (프론트엔드 자산 상세 페이지용)
+    """
+    asset_id: uuid.UUID
+    symbol: str
+    name: str
+    quantity: float
+    avg_price: float  # 평균 매수가
+    current_price: Optional[float] = None  # 현재가
+    total_value: Optional[float] = None  # 평가금액
+    profit_loss: Optional[float] = None  # 손익
+    return_rate: Optional[float] = None  # 수익률 %
+    
+    model_config = ConfigDict(from_attributes=True)
+

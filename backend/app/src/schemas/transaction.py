@@ -30,3 +30,18 @@ class TransactionRead(SQLModel):
 class TransactionList(SQLModel):
     items: list[TransactionRead]
     count: int
+
+
+class TransactionWithDetails(SQLModel):
+    """
+    거래 내역 상세 정보 (프론트엔드 자산 상세 페이지용)
+    """
+    id: uuid.UUID
+    type: str  # "buy" 또는 "sell" (소문자 변환)
+    date: datetime  # executed_at
+    quantity: float
+    price: float
+    total: float  # quantity * price
+    fee: Optional[float] = None  # 수수료 (현재 모델에 없음, 향후 확장용)
+    
+    model_config = ConfigDict(from_attributes=True)

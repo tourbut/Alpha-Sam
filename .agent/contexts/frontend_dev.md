@@ -49,3 +49,11 @@
   - **+page.svelte**: 그리드 레이아웃 및 빈 상태 UI 개선.
   - **types.ts**: `PortfolioWithAssets`, `PortfolioAsset` 타입 추가.
   - PR #11 생성 및 `develop` 브랜치에 병합 완료.
+
+- [2026-01-21 13:10:00] **포트폴리오 자산 상세 API 연동 완료**.
+  - **Types**: `AssetSummary`, `AssetTransaction` 추가.
+  - **API**: `fetchPortfolioAsset`, `fetchPortfolioAssetTransactions` 추가.
+  - **Pages**:
+    - `/portfolios/[id]`: Mock data 제거, 포지션 API 연동, 로딩/에러 UI 추가.
+    - `/portfolios/[id]/assets/[assetId]`: Mock data 제거, 자산/거래 API 연동, 로딩/에러 UI 추가.
+

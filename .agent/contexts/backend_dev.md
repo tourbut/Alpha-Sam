@@ -6,11 +6,6 @@
 - [2026-01-01 17:30:00] v1.0.0 대비 Backend Refactoring 완료. `main.py`/`api.py` 라우터 정리, `AssetService` 분리(비즈니스 로직 캡슐화), `security.py` JWT 로직 중앙화, `deps.py` 환경 분리 적용. 테스트(`test_assets_autofill` 등) 수정 및 통과 확인.
 
 - [2026-01-04 22:35:00] Hotfix: Frontend 연동 검증 중 `AssetService.get_assets_with_metrics`에서 `crud_asset.get_assets` 호출 시 `session` 인자가 Positional로 전달되어 TypeError 발생하는 문제 확인. Keyword Argument (`session=session`)로 수정하여 해결함. Style Guide 준수
-## 해야 할 일 (Tasks)
-- (없음 - 복구 완료)
-
-## 기대 산출물 (Expected Outputs)
-- (없음)
 - [2026-01-08] Refactored `Position` model to be transaction-based (Removed `asset_id` FK from Position, purely calculated). Created `calculate_positions_from_transactions` engine logic.
 - [2026-01-15] Fixed 404 error on `/api/v1/transactions` by adding missing router in `api.py`.
 - [2026-01-16] Implemented v1.1.0 Social Features Backend:
@@ -25,3 +20,10 @@
   - Alembic Migration `7e1faf4ea7e5_remove_position_table` 실행 완료
   - 단위 테스트 작성 (`test_position_calculation.py`)
   - 데이터 일관성 향상: Transaction이 단일 진실 공급원(Single Source of Truth)이 됨
+- [2026-01-21 11:50:00] **포트폴리오 상세 자산/거래 API 구현 완료**. 프론트엔드 자산 상세 페이지 지원을 위해 `GET /api/v1/portfolios/{id}/assets/{assetId}` 및 `../transactions` 엔드포인트를 `portfolios.py`에 추가함. `TransactionWithDetails`, `AssetSummaryRead` 스키마 추가. 단위 테스트 `test_portfolio_asset_details.py` 작성 및 통과.
+
+## 해야 할 일 (Tasks)
+- (없음 - 복구 완료)
+
+## 기대 산출물 (Expected Outputs)
+- (없음)

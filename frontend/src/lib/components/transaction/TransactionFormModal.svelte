@@ -5,7 +5,13 @@
     import { get_assets as getAssets } from "$lib/apis/assets";
     import { onMount } from "svelte";
 
-    let { open = $bindable(false), assetId = 0, assetSymbol = "" } = $props();
+    let {
+        open = $bindable(false),
+        assetId = "",
+        assetSymbol = "",
+        portfolioId = "",
+        oncreated = () => {},
+    } = $props();
 
     let type = $state("BUY");
     let quantity = $state(0);
@@ -13,7 +19,7 @@
     let date = $state("");
     let loading = $state(false);
     let assets = $state<any[]>([]);
-    let selectedAssetId = $state(0);
+    let selectedAssetId = $state("");
 
     const types = [
         { value: "BUY", name: "Buy" },
@@ -46,7 +52,10 @@
     }
 
     async function handleSubmit() {
-        if (!portfolioStore.selectedPortfolioId) {
+        const targetPortfolioId =
+            portfolioId || portfolioStore.selectedPortfolioId;
+
+        if (!targetPortfolioId) {
             alert("Please select a portfolio first.");
             return;
         }
@@ -63,7 +72,8 @@
 
         loading = true;
         try {
-            await createTransaction(portfolioStore.selectedPortfolioId, {
+            await createTransaction({
+                portfolio_id: targetPortfolioId,
                 asset_id: finalAssetId,
                 type: type as "BUY" | "SELL",
                 quantity,
@@ -71,12 +81,16 @@
                 executed_at: new Date(date).toISOString(),
             });
             open = false;
+            // Removed specific portfolioStore call to genericize, or keep it if needed.
+            // Better to rely on callback for page-specific refresh logic.
+            if (oncreated) oncreated();
+
             await portfolioStore.loadPositions(
-                portfolioStore.selectedPortfolioId,
+                portfolioStore.selectedPortfolioId || portfolioId,
             );
             quantity = 0;
             price = 0;
-            if (!assetId) selectedAssetId = 0;
+            if (!assetId) selectedAssetId = "";
         } catch (e: any) {
             alert(
                 "Failed to create transaction: " +

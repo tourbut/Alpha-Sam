@@ -11,6 +11,7 @@ export interface PortfolioCreate {
 }
 
 export interface TransactionCreate {
+    portfolio_id: string
     asset_id: string
     type: "BUY" | "SELL"
     quantity: number
@@ -33,7 +34,7 @@ const _fetchPortfolios = api_router('portfolios', 'get', '');
 const _createPortfolio = api_router('portfolios', 'post', '');
 const _fetchPortfolio = api_router('portfolios', 'get', '{id}');
 const _fetchPortfolioPositions = api_router('portfolios', 'get', '{id}/positions');
-const _createTransaction = api_router('portfolios', 'post', '{id}/transactions');
+const _createTransaction = api_router('transactions', 'post', '');
 const _updateVisibility = api_router('portfolios', 'patch', '{id}/visibility');
 const _fetchSharedPortfolio = api_router('portfolios', 'get', 'shared/{token}');
 
@@ -53,8 +54,8 @@ export const fetchPortfolioPositions = async (id: string): Promise<any[]> => {
     return await _fetchPortfolioPositions({ id });
 }
 
-export const createTransaction = async (portfolioId: string, data: TransactionCreate): Promise<Transaction> => {
-    return await _createTransaction({ id: portfolioId, ...data });
+export const createTransaction = async (data: TransactionCreate): Promise<Transaction> => {
+    return await _createTransaction(data);
 }
 
 export const get_portfolio_history = api_router('portfolios', 'get', 'history');

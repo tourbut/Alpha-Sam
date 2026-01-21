@@ -23,7 +23,7 @@
     import { calculatePortfolioSummary } from "$lib/utils";
     import type { Asset, Position } from "$lib/types";
     import AssetModal from "$lib/components/AssetModal.svelte";
-    import TransactionModal from "$lib/components/TransactionModal.svelte";
+    import TransactionFormModal from "$lib/components/transaction/TransactionFormModal.svelte";
 
     let assets: Asset[] = [];
     let positions: Position[] = [];
@@ -148,12 +148,12 @@
     portfolioId={portfolioId || ""}
     on:created={handleAssetCreated}
 />
-<TransactionModal
+<TransactionFormModal
     bind:open={transactionModalOpen}
-    {assets}
-    asset={selectedAsset}
+    assetId={selectedAsset?.id || ""}
+    assetSymbol={selectedAsset?.symbol || ""}
     portfolioId={portfolioId || ""}
-    on:created={handleTransactionCreated}
+    oncreated={handleTransactionCreated}
 />
 
 <div class="container mx-auto p-4">

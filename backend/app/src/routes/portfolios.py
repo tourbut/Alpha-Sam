@@ -200,3 +200,140 @@ async def create_transaction(
         return tx
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================
+# 개별 자산 관련 엔드포인트 (신규)
+# ============================================
+
+from app.src.schemas.position import AssetSummaryRead
+from app.src.schemas.transaction import TransactionWithDetails
+from app.src.models.transaction import Transaction
+from app.src.models.price import Price
+from sqlalchemy import select, desc
+
+
+@router.get("/{portfolio_id}/assets/{asset_id}", response_model=AssetSummaryRead)
+async def read_portfolio_asset_summary(
+    portfolio_id: uuid.UUID,
+    asset_id: uuid.UUID,
+    current_user: CurrentUser,
+    db: SessionDep_async
+):
+    """
+    특정 포트폴리오 내 개별 자산의 요약 정보 조회
+    
+    - symbol: 자산 심볼
+    - name: 자산 이름
+    - quantity: 총 보유량
+    - avgPrice: 평균 매수가
+    - currentPrice: 현재가 (가격 정보 있는 경우)
+    - totalValue: 평가금액
+    - profitLoss: 손익
+    - returnRate: 수익률 (%)
+    """
+    # 1. 포트폴리오 소유권 확인
+    portfolio = await portfolio_service_instance.get_portfolio(db, portfolio_id, current_user.id)
+    if not portfolio:
+        raise HTTPException(status_code=404, detail="Portfolio not found")
+    
+    # 2. 해당 포트폴리오의 positions 조회 (Transaction 기반 계산)
+    positions = await portfolio_service_instance.get_portfolio_positions(session=db, portfolio_id=portfolio_id)
+    
+    # 3. 특정 asset_id 필터링
+    target_position = None
+    for pos in positions:
+        if pos.asset_id == asset_id:
+            target_position = pos
+            break
+    
+    if not target_position:
+        raise HTTPException(status_code=404, detail="Asset not found in this portfolio")
+    
+    # 4. 현재 가격 조회
+    price_stmt = (
+        select(Price)
+        .where(Price.asset_id == asset_id)
+        .order_by(desc(Price.timestamp))
+        .limit(1)
+    )
+    price_result = await db.execute(price_stmt)
+    latest_price = price_result.scalar_one_or_none()
+    
+    current_price = float(latest_price.value) if latest_price else None
+    
+    # 5. 평가금액 및 손익 계산
+    if current_price is not None:
+        total_value = target_position.quantity * current_price
+        profit_loss = (current_price - target_position.avg_price) * target_position.quantity
+        return_rate = ((current_price - target_position.avg_price) / target_position.avg_price * 100) if target_position.avg_price > 0 else 0.0
+    else:
+        # 현재가 없으면 평균 매수가 기준
+        total_value = target_position.quantity * target_position.avg_price
+        profit_loss = 0.0
+        return_rate = 0.0
+    
+    return AssetSummaryRead(
+        asset_id=target_position.asset_id,
+        symbol=target_position.asset_symbol or "UNKNOWN",
+        name=target_position.asset_name or "Unknown Asset",
+        quantity=target_position.quantity,
+        avg_price=target_position.avg_price,
+        current_price=current_price,
+        total_value=round(total_value, 2),
+        profit_loss=round(profit_loss, 2),
+        return_rate=round(return_rate, 2)
+    )
+
+
+@router.get("/{portfolio_id}/assets/{asset_id}/transactions", response_model=List[TransactionWithDetails])
+async def read_asset_transactions(
+    portfolio_id: uuid.UUID,
+    asset_id: uuid.UUID,
+    current_user: CurrentUser,
+    db: SessionDep_async
+):
+    """
+    특정 포트폴리오 내 개별 자산의 거래 내역 조회
+    
+    - id: 거래 ID
+    - type: 거래 유형 ("buy" 또는 "sell")
+    - date: 거래 일시
+    - quantity: 거래 수량
+    - price: 거래 단가
+    - total: 총 거래금액 (quantity * price)
+    - fee: 수수료 (현재 null, 향후 확장)
+    """
+    # 1. 포트폴리오 소유권 확인
+    portfolio = await portfolio_service_instance.get_portfolio(db, portfolio_id, current_user.id)
+    if not portfolio:
+        raise HTTPException(status_code=404, detail="Portfolio not found")
+    
+    # 2. 해당 자산의 거래 내역 조회
+    stmt = (
+        select(Transaction)
+        .where(
+            Transaction.portfolio_id == portfolio_id,
+            Transaction.asset_id == asset_id
+        )
+        .order_by(desc(Transaction.executed_at))
+    )
+    result = await db.execute(stmt)
+    transactions = result.scalars().all()
+    
+    # 3. 응답 형식으로 변환
+    tx_list = []
+    for tx in transactions:
+        tx_detail = TransactionWithDetails(
+            id=tx.id,
+            type=tx.type.lower(),  # "BUY" -> "buy", "SELL" -> "sell"
+            date=tx.executed_at,
+            quantity=float(tx.quantity),
+            price=float(tx.price),
+            total=round(float(tx.quantity) * float(tx.price), 2),
+            fee=None  # 현재 모델에 fee 필드 없음
+        )
+        tx_list.append(tx_detail)
+    
+    return tx_list
+

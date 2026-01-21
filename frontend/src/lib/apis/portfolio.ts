@@ -87,6 +87,7 @@ interface PortfolioWithAssetsResponse {
     }>;
 }
 
+
 export const fetchPortfoliosWithAssets = async (): Promise<PortfolioWithAssets[]> => {
     const response: PortfolioWithAssetsResponse[] = await _fetchPortfoliosWithAssets();
 
@@ -99,6 +100,19 @@ export const fetchPortfoliosWithAssets = async (): Promise<PortfolioWithAssets[]
         totalValue: item.total_value,
         assets: item.assets
     }));
+}
+
+const _fetchPortfolioAsset = api_router('portfolios', 'get', '{id}/assets/{assetId}');
+const _fetchPortfolioAssetTransactions = api_router('portfolios', 'get', '{id}/assets/{assetId}/transactions');
+
+import type { AssetSummary, AssetTransaction } from "$lib/types";
+
+export const fetchPortfolioAsset = async (id: string, assetId: string): Promise<AssetSummary> => {
+    return await _fetchPortfolioAsset({ id, assetId });
+}
+
+export const fetchPortfolioAssetTransactions = async (id: string, assetId: string): Promise<AssetTransaction[]> => {
+    return await _fetchPortfolioAssetTransactions({ id, assetId });
 }
 
 

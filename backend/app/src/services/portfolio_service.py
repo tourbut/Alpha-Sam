@@ -331,15 +331,22 @@ class PortfolioService:
                 position_values = []
                 for position in positions:
                     current_price = price_map.get(position.asset_id)
+                    
+                    # 가격이 있으면 현재가 기준, 없으면 평균 매수가 기준으로 평가
                     if current_price is not None:
                         valuation = position.quantity * current_price
-                        position_values.append({
-                            "symbol": position.asset_symbol or "UNKNOWN",
-                            "name": position.asset_name or "Unknown Asset",
-                            "value": round(valuation, 2),
-                            "asset_id": position.asset_id
-                        })
-                        total_value += valuation
+                    else:
+                        # Fallback: 평균 매수가 기준으로 평가금액 계산
+                        valuation = position.quantity * position.avg_price
+                    
+                    # 가격 유무와 관계없이 자산 정보 추가
+                    position_values.append({
+                        "symbol": position.asset_symbol or "UNKNOWN",
+                        "name": position.asset_name or "Unknown Asset",
+                        "value": round(valuation, 2),
+                        "asset_id": position.asset_id
+                    })
+                    total_value += valuation
                 
                 # 5. 비중(percentage) 계산
                 if total_value > 0:

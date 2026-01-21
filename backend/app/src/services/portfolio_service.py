@@ -13,7 +13,7 @@ from sqlalchemy.orm import selectinload
 
 class PortfolioService:
     @staticmethod
-    async def update_visibility(session: AsyncSession, portfolio_id: int, visibility: PortfolioVisibility) -> Portfolio:
+    async def update_visibility(session: AsyncSession, portfolio_id: uuid.UUID, visibility: PortfolioVisibility) -> Portfolio:
         """
         Update portfolio visibility and manage share_token.
         """
@@ -116,16 +116,18 @@ class PortfolioService:
         )
 
     @staticmethod
-    async def create_snapshot(session: AsyncSession, user_id: int) -> PortfolioHistory:
+    async def create_snapshot(session: AsyncSession, user_id: uuid.UUID, portfolio_id: Optional[uuid.UUID] = None) -> PortfolioHistory:
         """
         Create a portfolio snapshot for the given user.
         """
-        # TODO: 여러 Portfolio를 지원하려면 모든 Portfolio의 Position을 합산해야 함
-        # 일단은 user의 첫 번째 Portfolio를 사용
+        # 특정 portfolio_id가 없으면 첫 번째 포트폴리오 사용
         from app.src.models.portfolio import Portfolio
-        stmt_portfolio = select(Portfolio).where(Portfolio.owner_id == user_id).limit(1)
-        result_portfolio = await session.execute(stmt_portfolio)
-        portfolio = result_portfolio.scalar_one_or_none()
+        if portfolio_id:
+            portfolio = await session.get(Portfolio, portfolio_id)
+        else:
+            stmt_portfolio = select(Portfolio).where(Portfolio.owner_id == user_id).limit(1)
+            result_portfolio = await session.execute(stmt_portfolio)
+            portfolio = result_portfolio.scalar_one_or_none()
         
         if not portfolio:
             # Portfolio가 없으면 빈 snapshot 생성
@@ -173,19 +175,21 @@ class PortfolioService:
         return history
 
     @staticmethod
-    async def get_summary(session: AsyncSession, user_id: int) -> PortfolioResponse:
+    async def get_summary(session: AsyncSession, user_id: uuid.UUID, portfolio_id: Optional[uuid.UUID] = None) -> PortfolioResponse:
         """
         Get portfolio summary and positions.
         """
         with open("/Users/shin/.gemini/antigravity/brain/fe135e23-aef4-4cc1-b5ab-914a5d85fdd6/debug_log.txt", "a") as f:
             f.write(f"[DEBUG] PortfolioService.get_summary called for user_id={user_id}\n")
         
-        # TODO: 여러 Portfolio를 지원하려면 모든 Portfolio의 Position을 합산해야 함
-        # 일단은 user의 첫 번째 Portfolio를 사용
+        # 특정 portfolio_id가 없으면 첫 번째 포트폴리오 사용
         from app.src.models.portfolio import Portfolio
-        stmt_portfolio = select(Portfolio).where(Portfolio.owner_id == user_id).limit(1)
-        result_portfolio = await session.execute(stmt_portfolio)
-        portfolio = result_portfolio.scalar_one_or_none()
+        if portfolio_id:
+            portfolio = await session.get(Portfolio, portfolio_id)
+        else:
+            stmt_portfolio = select(Portfolio).where(Portfolio.owner_id == user_id).limit(1)
+            result_portfolio = await session.execute(stmt_portfolio)
+            portfolio = result_portfolio.scalar_one_or_none()
         
         if not portfolio:
             return PortfolioResponse(
@@ -269,7 +273,7 @@ class PortfolioService:
         )
 
     @staticmethod
-    async def _get_latest_prices(session: AsyncSession, asset_ids: List[int]) -> Dict[int, float]:
+    async def _get_latest_prices(session: AsyncSession, asset_ids: List[uuid.UUID]) -> Dict[uuid.UUID, float]:
         """
         Helper to fetch latest prices for given assets efficiently.
         """
@@ -286,3 +290,78 @@ class PortfolioService:
         latest_prices = result.scalars().all()
         
         return {price.asset_id: float(price.value) for price in latest_prices}
+
+    @staticmethod
+    async def get_portfolios_with_assets(session: AsyncSession, user_id: uuid.UUID) -> List[Dict[str, Any]]:
+        """
+        사용자의 모든 포트폴리오 목록과 각 포트폴리오의 자산 요약 정보를 조회합니다.
+        
+        Args:
+            session: Database session
+            user_id: 사용자 ID
+        
+        Returns:
+            포트폴리오 목록 (각 포트폴리오에 자산 구성 정보 포함)
+        """
+        from app.src.schemas.portfolio import PortfolioAssetSummary, PortfolioWithAssetsSummary
+        
+        # 1. 사용자의 모든 포트폴리오 조회
+        stmt = select(Portfolio).where(Portfolio.owner_id == user_id)
+        result = await session.execute(stmt)
+        portfolios = result.scalars().all()
+        
+        if not portfolios:
+            return []
+        
+        portfolio_responses = []
+        
+        for portfolio in portfolios:
+            # 2. 각 포트폴리오의 positions 계산 (Transaction 기반)
+            positions = await calculate_positions_from_transactions(session, portfolio.id)
+            
+            total_value = 0.0
+            asset_summaries = []
+            
+            if positions:
+                # 3. 가격 정보 조회
+                asset_ids = [p.asset_id for p in positions]
+                price_map = await PortfolioService._get_latest_prices(session, asset_ids)
+                
+                # 4. 각 position의 평가금액 계산
+                position_values = []
+                for position in positions:
+                    current_price = price_map.get(position.asset_id)
+                    if current_price is not None:
+                        valuation = position.quantity * current_price
+                        position_values.append({
+                            "symbol": position.asset_symbol or "UNKNOWN",
+                            "name": position.asset_name or "Unknown Asset",
+                            "value": round(valuation, 2),
+                            "asset_id": position.asset_id
+                        })
+                        total_value += valuation
+                
+                # 5. 비중(percentage) 계산
+                if total_value > 0:
+                    for pv in position_values:
+                        percentage = (pv["value"] / total_value) * 100
+                        asset_summaries.append(PortfolioAssetSummary(
+                            symbol=pv["symbol"],
+                            name=pv["name"],
+                            value=pv["value"],
+                            percentage=round(percentage, 1)
+                        ))
+            
+            # 6. 응답 스키마 생성
+            portfolio_with_assets = PortfolioWithAssetsSummary(
+                id=portfolio.id,
+                name=portfolio.name,
+                description=portfolio.description,
+                created_at=portfolio.created_at,
+                total_value=round(total_value, 2),
+                assets=asset_summaries
+            )
+            portfolio_responses.append(portfolio_with_assets)
+        
+        return portfolio_responses
+

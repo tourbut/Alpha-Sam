@@ -1,8 +1,10 @@
 import asyncio
 import logging
 import yfinance as yf
-from typing import Dict, Optional
+import uuid
+from typing import List, Optional, Dict
 from app.src.core.cache import cache_service
+from sqlalchemy.ext.asyncio import AsyncSession # Assuming AsyncSession is needed for the new signature
 
 logger = logging.getLogger(__name__)
 
@@ -24,13 +26,13 @@ class PriceService:
     CACHE_KEY_PREFIX = "price:"
     CACHE_TTL = 180  # 3 minutes
 
-    async def get_current_price(self, symbol: str, use_cache: bool = True) -> float:
+    async def get_latest_price(self, session: AsyncSession, asset_id: uuid.UUID) -> Optional[float]:
         """
         Returns current price of an asset (Redis only)
         
         Args:
-            symbol: Asset symbol
-            use_cache: Legacy parameter, now always uses cache (Redis)
+            session: The database session.
+            asset_id: The UUID of the asset.
         
         Returns:
             Current price from Redis, or Fallback Mock

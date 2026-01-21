@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional
 from pydantic import EmailStr
 from sqlmodel import SQLModel
@@ -23,7 +24,7 @@ class UserPasswordUpdate(SQLModel):
     new_password: str
 
 # Properties to return to client
-class UserRead(schemas.BaseUser[int]):
+class UserRead(schemas.BaseUser[uuid.UUID]):
     nickname: Optional[str] = None
 
 class Token(SQLModel):

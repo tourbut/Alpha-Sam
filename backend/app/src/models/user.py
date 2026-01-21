@@ -1,7 +1,9 @@
+import uuid
 from datetime import datetime
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import Column, DateTime, func, String
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 if TYPE_CHECKING:
     from app.src.models.portfolio import Portfolio
@@ -12,7 +14,10 @@ class User(SQLModel, table=True):
     """
     __tablename__ = "users"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        sa_column=Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    )
     email: str = Field(
         sa_column=Column(String, unique=True, index=True) 
     )

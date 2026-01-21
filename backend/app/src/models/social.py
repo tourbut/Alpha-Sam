@@ -1,17 +1,29 @@
 from datetime import datetime
-from enum import Enum
 import uuid
-from typing import Optional
-from sqlmodel import SQLModel, Field, UniqueConstraint
-from sqlalchemy import Column, DateTime, func
+from enum import Enum
+from typing import Optional, List, TYPE_CHECKING
+from sqlmodel import SQLModel, Field, Relationship, UniqueConstraint
+from sqlalchemy import Column, DateTime, String, func, Enum as SAEnum, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+
+if TYPE_CHECKING:
+    from app.src.models.user import User
+    from app.src.models.portfolio import Portfolio
 
 class UserFollow(SQLModel, table=True):
     """사용자 팔로우 관계 테이블"""
     __tablename__ = "user_follows"
     
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    follower_id: int = Field(foreign_key="users.id", nullable=False, index=True)
-    following_id: int = Field(foreign_key="users.id", nullable=False, index=True)
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid4,
+        sa_column=Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    )
+    follower_id: uuid.UUID = Field(
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True),
+    )
+    following_id: uuid.UUID = Field(
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True),
+    )
     created_at: datetime = Field(
         default_factory=datetime.utcnow,
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -31,9 +43,18 @@ class LeaderboardRank(SQLModel, table=True):
     """리더보드 랭킹 스냅샷 테이블"""
     __tablename__ = "leaderboard_ranks"
     
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    user_id: int = Field(foreign_key="users.id", nullable=False, index=True)
-    portfolio_id: int = Field(foreign_key="portfolios.id", nullable=False)
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid4,
+        sa_column=Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    )
+    user_id: uuid.UUID = Field(
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True),
+        description="평가 참여자 ID"
+    )
+    portfolio_id: uuid.UUID = Field(
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("portfolios.id"), nullable=False),
+        description="대상 포트폴리오 ID"
+    )
     period: LeaderboardPeriod = Field(nullable=False, index=True)
     return_rate: float = Field(nullable=False)  # 수익률 (소수점, 예: 0.15 = 15%)
     rank: int = Field(nullable=False)           # 순위 (1부터 시작)

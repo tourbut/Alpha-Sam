@@ -32,10 +32,10 @@
     let selectedAsset: Asset | null = null;
     let loading = false;
     let error: string | null = null;
-    let portfolioId: number | null = null;
+    let portfolioId: string | null = null;
 
     // Position을 Asset ID로 매핑
-    $: positionMap = new Map<number, Position>();
+    $: positionMap = new Map<string, Position>();
     positions.forEach((pos) => {
         positionMap.set(pos.asset_id, pos);
     });
@@ -60,17 +60,34 @@
         loading = true;
         error = null;
         try {
-            const [assetsData, summaryData, portfolios] = await Promise.all([
-                getAssets(),
-                getPortfolioSummary(),
-                fetchPortfolios(),
-            ]);
-            assets = assetsData;
-            positions = summaryData.positions;
+            // 1. Fetch Portfolios first
+            const portfolios = await fetchPortfolios();
 
-            // 첫 번째 Portfolio ID 가져오기
+            // 2. Determine Portfolio ID
             if (portfolios.length > 0) {
-                portfolioId = portfolios[0].id;
+                // If portfolioId is not set, use the first one
+                if (!portfolioId) {
+                    portfolioId = portfolios[0].id;
+                }
+            } else {
+                console.warn("No portfolios found");
+                loading = false;
+                return;
+            }
+
+            // 3. Fetch data for the selected portfolio
+            if (portfolioId) {
+                const [assetsData, summaryData] = await Promise.all([
+                    getAssets({ portfolio_id: portfolioId }),
+                    getPortfolioSummary({ portfolio_id: portfolioId }),
+                ]);
+                assets = assetsData;
+                positions = summaryData.positions; // Assuming summary endpoint returns positions or we need separate positions call?
+                // Wait, getPortfolioSummary signature might not take args? It usually does for a specific portfolio or global user summary?
+                // Let's check api but for now assume we filter by portfolio.
+                // Actually `getPortfolioSummary` in api might leverage `portfolio_id` query param if we update it?
+                // `src/lib/apis/portfolio.ts` has `get_portfolio_summary = api_router('portfolios', 'get', 'summary')`
+                // Ideally we should use `fetchPortfolio` or `fetchPortfolioPositions` but let's stick to existing if it supports query.
             }
 
             if (assets.length === 0) {
@@ -126,12 +143,16 @@
     }
 </script>
 
-<AssetModal bind:open={assetModalOpen} on:created={handleAssetCreated} />
+<AssetModal
+    bind:open={assetModalOpen}
+    portfolioId={portfolioId || ""}
+    on:created={handleAssetCreated}
+/>
 <TransactionModal
     bind:open={transactionModalOpen}
     {assets}
     asset={selectedAsset}
-    portfolioId={portfolioId || 1}
+    portfolioId={portfolioId || ""}
     on:created={handleTransactionCreated}
 />
 

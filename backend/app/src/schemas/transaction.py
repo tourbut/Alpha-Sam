@@ -1,18 +1,20 @@
+import uuid
 from sqlmodel import SQLModel, Field
 from pydantic import computed_field, ConfigDict
 from datetime import datetime
 from typing import Literal, Optional
 
 class TransactionCreate(SQLModel):
-    asset_id: int
+    portfolio_id: uuid.UUID
+    asset_id: uuid.UUID
     type: Literal["BUY", "SELL"]
     quantity: float = Field(gt=0, description="거래 수량")
     price: float = Field(gt=0, description="거래 단가")
-    executed_at: Optional[str] = Field(None, description="거래 실행 일시 (ISO 8601)")
+    executed_at: Optional[datetime] = Field(None, description="거래 실행 일시")
 
 class TransactionRead(SQLModel):
-    id: int
-    asset_id: int
+    id: uuid.UUID
+    asset_id: uuid.UUID
     type: str
     quantity: float
     price: float

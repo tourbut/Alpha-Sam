@@ -1,7 +1,8 @@
 """
 Portfolio History CRUD
 """
-from typing import List
+import uuid
+from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from app.src.models.portfolio_history import PortfolioHistory
@@ -19,7 +20,7 @@ async def create_portfolio_history(*, session: AsyncSession, history: PortfolioH
 
 async def get_portfolio_history(
     *, session: AsyncSession,
-    owner_id: int,
+    owner_id: uuid.UUID,
     skip: int = 0, 
     limit: int = 100
 ) -> List[PortfolioHistory]:

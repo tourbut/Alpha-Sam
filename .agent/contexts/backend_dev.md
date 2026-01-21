@@ -5,8 +5,12 @@
 - [2025-12-31 16:50:00] v0.9.0 배포를 위해 `deps.py`(JWT 옵션), `portfolio.py`, `positions.py`, `migrations_script` 등 미커밋 변경사항을 `develop` 브랜치에 커밋 및 푸시함. Standby 상태 진입.
 - [2026-01-01 17:30:00] v1.0.0 대비 Backend Refactoring 완료. `main.py`/`api.py` 라우터 정리, `AssetService` 분리(비즈니스 로직 캡슐화), `security.py` JWT 로직 중앙화, `deps.py` 환경 분리 적용. 테스트(`test_assets_autofill` 등) 수정 및 통과 확인.
 
-- [2026-01-04 22:35:00] Hotfix: Frontend 연동 검증 중 `AssetService.get_assets_with_metrics`에서 `crud_asset.get_assets` 호출 시 `session` 인자가 Positional로 전달되어 TypeError 발생하는 문제 확인. Keyword Argument (`session=session`)로 수정하여 해결함. Style Guide 준수 확인.
+- [2026-01-04 22:35:00] Hotfix: Frontend 연동 검증 중 `AssetService.get_assets_with_metrics`에서 `crud_asset.get_assets` 호출 시 `session` 인자가 Positional로 전달되어 TypeError 발생하는 문제 확인. Keyword Argument (`session=session`)로 수정하여 해결함. Style Guide 준수
+## 해야 할 일 (Tasks)
+- (없음 - 복구 완료)
 
+## 기대 산출물 (Expected Outputs)
+- (없음)
 - [2026-01-08] Refactored `Position` model to be transaction-based (Removed `asset_id` FK from Position, purely calculated). Created `calculate_positions_from_transactions` engine logic.
 - [2026-01-15] Fixed 404 error on `/api/v1/transactions` by adding missing router in `api.py`.
 - [2026-01-16] Implemented v1.1.0 Social Features Backend:

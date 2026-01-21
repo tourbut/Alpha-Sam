@@ -1,10 +1,12 @@
 """
 Transaction (거래 내역) 모델
 """
+import uuid
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
-from sqlalchemy import Column, DateTime, Numeric, String, func
+from sqlalchemy import Column, DateTime, Numeric, String, func, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 if TYPE_CHECKING:
     from app.src.models.asset import Asset
@@ -25,15 +27,16 @@ class Transaction(SQLModel, table=True):
     """
     __tablename__ = "transactions"
     
-    id: Optional[int] = Field(default=None, primary_key=True)
-    portfolio_id: int = Field(
-        foreign_key="portfolios.id",
-        index=True,
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        sa_column=Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    )
+    portfolio_id: uuid.UUID = Field(
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("portfolios.id"), nullable=False, index=True),
         description="포트폴리오 ID"
     )
-    asset_id: int = Field(
-        foreign_key="assets.id",
-        index=True,
+    asset_id: uuid.UUID = Field(
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("assets.id"), nullable=False, index=True),
         description="자산 ID"
     )
     type: str = Field(

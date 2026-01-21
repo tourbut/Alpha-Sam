@@ -11,6 +11,7 @@
     import { createEventDispatcher } from "svelte";
 
     export let open = false;
+    export let portfolioId: string;
 
     const dispatch = createEventDispatcher();
 
@@ -33,9 +34,9 @@
         error = null;
         try {
             await createAsset({
-                symbol,
                 name,
                 category,
+                portfolio_id: portfolioId,
             });
             dispatch("created");
             open = false;

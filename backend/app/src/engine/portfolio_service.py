@@ -2,7 +2,8 @@
 포트폴리오 수익률 계산 서비스
 domain_rules.md의 계산 규칙을 정확히 따름
 """
-from typing import Optional, List, Dict
+import uuid
+from typing import List, Optional, Dict, Any
 from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -129,7 +130,7 @@ def calculate_portfolio_summary(
 
 async def calculate_positions_from_transactions(
     session: AsyncSession,
-    portfolio_id: int
+    portfolio_id: uuid.UUID
 ) -> List[PositionWithAsset]:
     """
     Portfolio의 모든 Transaction을 Asset별로 집계하여 Position 계산
@@ -226,28 +227,33 @@ async def calculate_positions_from_transactions(
 
 
 class PortfolioService:
-    async def create_portfolio(self, session: AsyncSession, owner_id: int, name: str, description: str = None) -> Portfolio:
+    async def create_portfolio(self, session: AsyncSession, owner_id: uuid.UUID, name: str, description: Optional[str] = None) -> Portfolio:
         portfolio = Portfolio(owner_id=owner_id, name=name, description=description)
         session.add(portfolio)
         await session.commit()
         await session.refresh(portfolio)
         return portfolio
 
-    async def get_user_portfolios(self, session: AsyncSession, owner_id: int) -> List[Portfolio]:
+    async def get_user_portfolios(self, session: AsyncSession, owner_id: uuid.UUID) -> List[Portfolio]:
         stmt = select(Portfolio).where(Portfolio.owner_id == owner_id)
         result = await session.execute(stmt)
         return result.scalars().all()
 
-    async def get_portfolio(self, session: AsyncSession, portfolio_id: int, owner_id: int) -> Optional[Portfolio]:
+    async def get_portfolio(self, session: AsyncSession, portfolio_id: uuid.UUID, owner_id: uuid.UUID) -> Optional[Portfolio]:
         stmt = select(Portfolio).where(Portfolio.id == portfolio_id, Portfolio.owner_id == owner_id)
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_portfolio_positions(self, session: AsyncSession, portfolio_id: int) -> List[PositionWithAsset]:
+    async def get_portfolio_positions(self, session: AsyncSession, portfolio_id: uuid.UUID) -> List[PositionWithAsset]:
         """Portfolio의 Position 목록 조회 (Transaction 기반 계산)"""
         return await calculate_positions_from_transactions(session, portfolio_id)
 
-    async def add_transaction(self, session: AsyncSession, portfolio_id: int, asset_id: int, type: str, quantity: float, price: float, executed_at) -> Transaction:
+    async def add_transaction(
+        self, 
+        session: AsyncSession, 
+        portfolio_id: uuid.UUID, 
+        asset_id: uuid.UUID, 
+        type: str, quantity: float, price: float, executed_at) -> Transaction:
         # 1. Add Transaction
         tx = Transaction(
             portfolio_id=portfolio_id,

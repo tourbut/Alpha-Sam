@@ -1,8 +1,8 @@
-from typing import List
+from typing import List, Optional
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.src.schemas.portfolio import PortfolioCreate, PortfolioRead, PortfolioResponse, PortfolioHistoryRead, PortfolioVisibilityUpdate, PortfolioSharedRead
+from app.src.schemas.portfolio import PortfolioCreate, PortfolioRead, PortfolioResponse, PortfolioHistoryRead, PortfolioVisibilityUpdate, PortfolioSharedRead, PortfolioWithAssetsSummary
 from app.src.schemas.transaction import TransactionCreate, TransactionRead
 from app.src.engine.portfolio_service import portfolio_service_instance
 from app.src.services.portfolio_service import PortfolioService
@@ -37,6 +37,21 @@ async def read_portfolios(
     """
     return await portfolio_service_instance.get_user_portfolios(session=db, owner_id=current_user.id)
 
+@router.get("/with-assets", response_model=List[PortfolioWithAssetsSummary])
+async def read_portfolios_with_assets(
+    current_user: CurrentUser,
+    db: SessionDep_async
+):
+    """
+    포트폴리오 목록 + 자산 요약 정보 조회
+    
+    각 포트폴리오에 대해 다음 정보를 반환합니다:
+    - 기본 정보 (id, name, description, created_at)
+    - 총 평가금액 (total_value)
+    - 자산 구성 리스트 (symbol, name, value, percentage)
+    """
+    return await PortfolioService.get_portfolios_with_assets(session=db, user_id=current_user.id)
+
 # Merged from portfolio.py (singular)
 @router.post("/snapshot", status_code=status.HTTP_201_CREATED)
 async def create_portfolio_snapshot(
@@ -52,12 +67,13 @@ async def create_portfolio_snapshot(
 @router.get("/summary", response_model=PortfolioResponse)
 async def get_portfolio_summary(
     session: SessionDep_async,
-    current_user: CurrentUser
+    current_user: CurrentUser,
+    portfolio_id: Optional[uuid.UUID] = None
 ):
     """
     포트폴리오 요약 정보 및 전체 포지션 현황 조회
     """
-    return await PortfolioService.get_summary(session, current_user.id)
+    return await PortfolioService.get_summary(session, current_user.id, portfolio_id)
 
 @router.get("/history", response_model=List[PortfolioHistoryRead])
 async def read_portfolio_history(
@@ -73,7 +89,7 @@ async def read_portfolio_history(
 
 @router.get("/{portfolio_id}", response_model=PortfolioRead)
 async def read_portfolio(
-    portfolio_id: int,
+    portfolio_id: uuid.UUID,
     current_user: CurrentUser,
     db: SessionDep_async
 ):
@@ -93,7 +109,7 @@ from app.src.schemas.position import PositionRead
 
 @router.get("/{portfolio_id}/positions", response_model=List[PositionRead])
 async def read_portfolio_positions(
-    portfolio_id: int,
+    portfolio_id: uuid.UUID,
     current_user: CurrentUser,
     db: SessionDep_async
 ):
@@ -109,7 +125,7 @@ async def read_portfolio_positions(
 
 @router.patch("/{portfolio_id}/visibility", response_model=PortfolioRead)
 async def update_portfolio_visibility(
-    portfolio_id: int,
+    portfolio_id: uuid.UUID,
     visibility_in: PortfolioVisibilityUpdate,
     current_user: CurrentUser,
     db: SessionDep_async
@@ -140,7 +156,7 @@ async def read_shared_portfolio(
 
 @router.post("/{portfolio_id}/transactions", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
 async def create_transaction(
-    portfolio_id: int,
+    portfolio_id: uuid.UUID,
     tx_in: TransactionCreate,
     current_user: CurrentUser,
     db: SessionDep_async

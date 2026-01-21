@@ -1,10 +1,11 @@
+import uuid
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.src.models.notification import NotificationSettings
 from app.src.schemas.notification import NotificationSettingsUpdate
 
-async def get_notification_settings(*, session: AsyncSession, user_id: int) -> Optional[NotificationSettings]:
+async def get_notification_settings(*, session: AsyncSession, user_id: uuid.UUID) -> Optional[NotificationSettings]:
     """
     사용자의 알림 설정 조회. 없으면 생성하지 않고 None 반환 (API 레벨에서 처리 권장)
     """
@@ -16,7 +17,7 @@ async def get_notification_settings(*, session: AsyncSession, user_id: int) -> O
         print(e)
         raise e
 
-async def create_default_notification_settings(*, session: AsyncSession, user_id: int) -> NotificationSettings:
+async def create_default_notification_settings(*, session: AsyncSession, user_id: uuid.UUID) -> NotificationSettings:
     """
     기본 알림 설정 생성
     """
@@ -34,7 +35,7 @@ async def create_default_notification_settings(*, session: AsyncSession, user_id
 async def update_notification_settings(
     *,
     session: AsyncSession, 
-    user_id: int, 
+    user_id: uuid.UUID, 
     settings_in: NotificationSettingsUpdate
 ) -> NotificationSettings:
     """

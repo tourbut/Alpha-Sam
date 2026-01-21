@@ -1,12 +1,15 @@
-"""
-Asset (자산) 모델
-사용자가 관리하는 개별 투자 대상을 나타냄
-"""
+import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
-from sqlalchemy import Column, String, DateTime, func
+from sqlalchemy import Column, String, DateTime, func, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
+if TYPE_CHECKING:
+    from app.src.models.price import Price
+    from app.src.models.transaction import Transaction
+    from app.src.models.position import Position
+    from app.src.models.portfolio import Portfolio
 
 class Asset(SQLModel, table=True):
     """
@@ -22,8 +25,19 @@ class Asset(SQLModel, table=True):
     """
     __tablename__ = "assets"
     
-    id: Optional[int] = Field(default=None, primary_key=True)
-    owner_id: Optional[int] = Field(default=None, foreign_key="users.id", description="Owner User ID")
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        sa_column=Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    )
+    portfolio_id: uuid.UUID = Field(
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("portfolios.id"), nullable=False, index=True),
+        description="귀속 포트폴리오 ID"
+    )
+    owner_id: Optional[uuid.UUID] = Field(
+        default=None, 
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("users.id"), nullable=True),
+        description="Owner User ID"
+    )
     symbol: str = Field(
         max_length=20,
         index=True,
@@ -48,7 +62,7 @@ class Asset(SQLModel, table=True):
     )
     
     # Relationships
-    prices: list["Price"] = Relationship(back_populates="asset")
-    transactions: list["Transaction"] = Relationship(back_populates="asset")
-
-
+    portfolio: Optional["Portfolio"] = Relationship(back_populates="assets")
+    prices: List["Price"] = Relationship(back_populates="asset")
+    transactions: List["Transaction"] = Relationship(back_populates="asset")
+    positions: List["Position"] = Relationship(back_populates="asset")

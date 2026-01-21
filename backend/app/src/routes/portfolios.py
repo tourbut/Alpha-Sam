@@ -2,7 +2,7 @@ from typing import List, Optional
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.src.schemas.portfolio import PortfolioCreate, PortfolioRead, PortfolioResponse, PortfolioHistoryRead, PortfolioVisibilityUpdate, PortfolioSharedRead
+from app.src.schemas.portfolio import PortfolioCreate, PortfolioRead, PortfolioResponse, PortfolioHistoryRead, PortfolioVisibilityUpdate, PortfolioSharedRead, PortfolioWithAssetsSummary
 from app.src.schemas.transaction import TransactionCreate, TransactionRead
 from app.src.engine.portfolio_service import portfolio_service_instance
 from app.src.services.portfolio_service import PortfolioService
@@ -36,6 +36,21 @@ async def read_portfolios(
     내 포트폴리오 목록 조회
     """
     return await portfolio_service_instance.get_user_portfolios(session=db, owner_id=current_user.id)
+
+@router.get("/with-assets", response_model=List[PortfolioWithAssetsSummary])
+async def read_portfolios_with_assets(
+    current_user: CurrentUser,
+    db: SessionDep_async
+):
+    """
+    포트폴리오 목록 + 자산 요약 정보 조회
+    
+    각 포트폴리오에 대해 다음 정보를 반환합니다:
+    - 기본 정보 (id, name, description, created_at)
+    - 총 평가금액 (total_value)
+    - 자산 구성 리스트 (symbol, name, value, percentage)
+    """
+    return await PortfolioService.get_portfolios_with_assets(session=db, user_id=current_user.id)
 
 # Merged from portfolio.py (singular)
 @router.post("/snapshot", status_code=status.HTTP_201_CREATED)

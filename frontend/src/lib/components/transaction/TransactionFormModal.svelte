@@ -105,7 +105,7 @@
 <Modal
     bind:open
     title={assetId ? `Add Transaction (${assetSymbol})` : "Add New Transaction"}
-    size="xs"
+    size="lg"
     autoclose={false}
     class="w-full"
 >

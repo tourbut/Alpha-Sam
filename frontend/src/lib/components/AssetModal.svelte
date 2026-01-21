@@ -57,7 +57,13 @@
     }
 </script>
 
-<Modal bind:open title="Add New Asset" autoclose={false}>
+<Modal
+    bind:open
+    title="Add New Asset"
+    autoclose={false}
+    size="lg"
+    class="w-full"
+>
     <form
         on:submit|preventDefault={handleSubmit}
         class="flex flex-col space-y-4"

@@ -11,10 +11,6 @@
     TableHeadCell,
     Spinner,
     Alert,
-    Modal,
-    Label,
-    Input,
-    Select,
   } from "flowbite-svelte";
   import { Plus, ArrowLeft, DollarSign } from "lucide-svelte";
   import { goto } from "$app/navigation";
@@ -22,10 +18,9 @@
   import {
     fetchPortfolioAsset,
     fetchPortfolioAssetTransactions,
-    createTransaction,
-    type TransactionCreate,
   } from "$lib/apis/portfolio";
   import type { AssetSummary, AssetTransaction } from "$lib/types";
+  import TransactionFormModal from "$lib/components/transaction/TransactionFormModal.svelte";
 
   let portfolioId = $derived(page.params.id);
   let assetId = $derived(page.params.assetId);
@@ -37,13 +32,6 @@
 
   // Modal State
   let showModal = $state(false);
-  let isSubmitting = $state(false);
-  let newTransaction: Partial<TransactionCreate> = $state({
-    type: "BUY",
-    quantity: 0,
-    price: 0,
-    executed_at: new Date().toISOString().split("T")[0],
-  });
 
   onMount(async () => {
     await loadData();
@@ -72,45 +60,7 @@
   }
 
   function openAddTransaction() {
-    newTransaction = {
-      type: "BUY",
-      quantity: 0,
-      price: asset?.current_price || asset?.avg_price || 0,
-      executed_at: new Date().toISOString().split("T")[0],
-    };
     showModal = true;
-  }
-
-  async function handleSaveTransaction() {
-    if (!newTransaction.quantity || newTransaction.quantity <= 0) {
-      alert("Please enter a valid quantity greater than 0");
-      return;
-    }
-    if (!newTransaction.price || newTransaction.price < 0) {
-      alert("Please enter a valid price");
-      return;
-    }
-
-    isSubmitting = true;
-    try {
-      await createTransaction({
-        portfolio_id: portfolioId,
-        asset_id: assetId,
-        type: newTransaction.type as "BUY" | "SELL",
-        quantity: Number(newTransaction.quantity),
-        price: Number(newTransaction.price),
-        executed_at: newTransaction.executed_at
-          ? new Date(newTransaction.executed_at).toISOString()
-          : undefined,
-      });
-      showModal = false;
-      await loadData(); // Reload data to reflect changes
-    } catch (e: any) {
-      console.error("Failed to create transaction:", e);
-      alert("Failed to create transaction: " + (e.message || "Unknown error"));
-    } finally {
-      isSubmitting = false;
-    }
   }
 </script>
 
@@ -256,66 +206,10 @@
 </div>
 
 <!-- Add Transaction Modal -->
-<Modal
+<TransactionFormModal
   bind:open={showModal}
-  title="Add Transaction"
-  size="xs"
-  autoclose={false}
->
-  <form
-    onsubmit={(e) => {
-      e.preventDefault();
-      handleSaveTransaction();
-    }}
-    class="flex flex-col space-y-4"
-  >
-    <div>
-      <Label for="type" class="mb-2">Type</Label>
-      <Select id="type" bind:value={newTransaction.type}>
-        <option value="BUY">Buy</option>
-        <option value="SELL">Sell</option>
-      </Select>
-    </div>
-    <div>
-      <Label for="date" class="mb-2">Date</Label>
-      <Input
-        type="date"
-        id="date"
-        bind:value={newTransaction.executed_at}
-        required
-      />
-    </div>
-    <div>
-      <Label for="quantity" class="mb-2">Quantity</Label>
-      <Input
-        type="number"
-        id="quantity"
-        step="any"
-        bind:value={newTransaction.quantity}
-        required
-      />
-    </div>
-    <div>
-      <Label for="price" class="mb-2">Price per unit</Label>
-      <Input
-        type="number"
-        id="price"
-        step="any"
-        bind:value={newTransaction.price}
-        required
-      />
-    </div>
-
-    <div class="pt-4 flex justify-end gap-2">
-      <Button
-        color="alternative"
-        onclick={() => (showModal = false)}
-        disabled={isSubmitting}>Cancel</Button
-      >
-      <Button type="submit" color="purple" disabled={isSubmitting}>
-        {#if isSubmitting}<Spinner class="mr-2" size="4" />{/if}
-        Save
-      </Button>
-    </div>
-  </form>
-</Modal>
+  {assetId}
+  assetSymbol={asset?.symbol || ""}
+  {portfolioId}
+  oncreated={loadData}
+/>

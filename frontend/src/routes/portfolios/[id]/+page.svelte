@@ -229,4 +229,4 @@
   {/if}
 </div>
 
-<AssetModal bind:open={openAssetModal} {portfolioId} />
+<AssetModal bind:open={openAssetModal} {portfolioId} on:created={loadAssets} />

@@ -47,3 +47,7 @@
     - Backend Build Check: PASS.
   - **Result**: 23개 TypeScript 에러 모두 해결됨.
   - **Report**: `2026-01-22_qa_report_pr16_final.md`.
+
+- [2026-01-22 21:20:00] **APP_NAME 리팩토링 검증 완료 (PASS)**.
+  - **Verified**: 하드코딩된 "Alpha-Sam"이 모두 제거되고 `APP_NAME` 상수로 대체됨을 확인.
+  - **Report**: `2026-01-22_qa_report_app_name_refactor.md`.

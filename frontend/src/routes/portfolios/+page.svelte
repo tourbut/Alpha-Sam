@@ -28,34 +28,41 @@
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
+  async function loadPortfoliosData() {
+    try {
+      isLoading = true;
+      error = null;
+      portfoliosWithAssets = await fetchPortfoliosWithAssets();
+    } catch (err) {
+      console.error("Failed to load portfolios with assets:", err);
+      error = "포트폴리오 목록을 불러오는데 실패했습니다.";
+      portfoliosWithAssets = [];
+    } finally {
+      isLoading = false;
+    }
+
+    // Lazy load chart component only when portfolios exist
+    if (portfoliosWithAssets.length > 0 && !PortfolioPieChart) {
+      const module = await import(
+        "$lib/components/portfolio/PortfolioPieChart.svelte"
+      );
+      PortfolioPieChart = module.default;
+    }
+  }
+
   onMount(async () => {
     if (auth.isAuthenticated) {
       portfolioStore.loadPortfolios();
-
-      // 실제 API 호출로 포트폴리오 + 자산 요약 정보 조회
-      try {
-        isLoading = true;
-        error = null;
-        portfoliosWithAssets = await fetchPortfoliosWithAssets();
-      } catch (err) {
-        console.error("Failed to load portfolios with assets:", err);
-        error = "포트폴리오 목록을 불러오는데 실패했습니다.";
-        portfoliosWithAssets = [];
-      } finally {
-        isLoading = false;
-      }
-
-      // Lazy load chart component only when portfolios exist
-      if (portfoliosWithAssets.length > 0) {
-        const module = await import(
-          "$lib/components/portfolio/PortfolioPieChart.svelte"
-        );
-        PortfolioPieChart = module.default;
-      }
+      await loadPortfoliosData();
     } else {
       isLoading = false;
     }
   });
+
+  function handlePortfolioCreated() {
+    portfolioStore.loadPortfolios();
+    loadPortfoliosData();
+  }
 
   function viewPortfolio(id: string) {
     goto(`/portfolios/${id}`);
@@ -171,4 +178,7 @@
   {/if}
 </div>
 
-<CreatePortfolioModal bind:open={openCreateModal} />
+<CreatePortfolioModal
+  bind:open={openCreateModal}
+  oncreated={handlePortfolioCreated}
+/>

@@ -3,7 +3,10 @@
     import { portfolioStore } from "$lib/stores/portfolio.svelte";
     import { PlusOutline, RefreshOutline } from "flowbite-svelte-icons";
 
-    let { open = $bindable(false) } = $props();
+    let {
+        open = $bindable(false),
+        oncreated,
+    }: { open?: boolean; oncreated?: () => void } = $props();
 
     let name = $state("");
     let description = $state("");
@@ -21,6 +24,7 @@
             open = false;
             name = "";
             description = "";
+            if (oncreated) oncreated();
         } catch (e) {
             alert("Failed to create portfolio");
         } finally {

@@ -49,7 +49,7 @@ class PriceService:
         
         if price > 0:
             # Update Cache
-            await cache_service.set(cache_key, str(price), expire=self.CACHE_TTL)
+            await cache_service.set(cache_key, str(price), ttl=self.CACHE_TTL)
         else:
             # Fallback to Mock if yfinance fails
             price = self.MOCK_PRICES.get(symbol_upper, 0.0)

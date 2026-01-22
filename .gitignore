@@ -44,6 +44,10 @@ redis_data/
 *.sqlite
 *.sqlite3
 
+# Database backups
+db_backup_*.sql
+*.sql.bak
+
 # Logs
 *.log
 logs/

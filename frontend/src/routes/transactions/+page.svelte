@@ -72,7 +72,9 @@
                 alert("No portfolio found.");
                 return;
             }
-            await createTransaction(portfolioId, {
+            // createTransaction은 단일 TransactionCreate 객체를 받음
+            await createTransaction({
+                portfolio_id: portfolioId,
                 asset_id: selectedAssetId,
                 type: type,
                 quantity: Number(quantity),

@@ -28,7 +28,7 @@
   let asset: AssetSummary | null = $state(null);
   let transactions: AssetTransaction[] = $state([]);
   let loading = $state(true);
-  let error = $state(null);
+  let error: string | null = $state(null);
 
   // Modal State
   let showModal = $state(false);
@@ -38,6 +38,13 @@
   });
 
   async function loadData() {
+    // ID가 없으면 로딩하지 않음
+    if (!portfolioId || !assetId) {
+      error = "Portfolio ID 또는 Asset ID가 없습니다.";
+      loading = false;
+      return;
+    }
+
     loading = true;
     error = null;
     try {
@@ -79,7 +86,7 @@
 
   {#if loading}
     <div class="flex justify-center py-12">
-      <Spinner size="lg" color="purple" />
+      <Spinner size="12" color="purple" />
     </div>
   {:else if error}
     <Alert color="red" class="mb-4">

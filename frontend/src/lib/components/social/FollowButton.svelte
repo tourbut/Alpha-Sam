@@ -6,14 +6,24 @@
         CheckOutline,
     } from "flowbite-svelte-icons";
     import { followUser, unfollowUser } from "$lib/apis/social";
-    import type { ButtonColor } from "flowbite-svelte/dist/types";
+
+    // Flowbite-Svelte Button 타입 정의
+    type ButtonSize = "xs" | "sm" | "md" | "lg" | "xl";
+    type ButtonColor = "primary" | "light" | "dark" | "alternative" | "red" | "green" | "yellow" | "purple";
+
+    interface Props {
+        userId: string;
+        initialIsFollowing?: boolean;
+        size?: ButtonSize;
+        onToggle?: (isFollowing: boolean) => void;
+    }
 
     let {
         userId,
         initialIsFollowing = false,
-        size = "sm",
+        size = "sm" as ButtonSize,
         onToggle = () => {},
-    } = $props();
+    }: Props = $props();
 
     let isFollowing = $state(initialIsFollowing);
     let isLoading = $state(false);
@@ -39,9 +49,8 @@
         }
     }
 
-    let btnColor = $derived(
-        isFollowing ? ("light" as ButtonColor) : ("primary" as ButtonColor),
-    );
+    // 버튼 색상: 팔로우 중이면 light, 아니면 primary
+    let btnColor: ButtonColor = $derived(isFollowing ? "light" : "primary");
 </script>
 
 <Button

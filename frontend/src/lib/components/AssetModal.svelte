@@ -10,8 +10,9 @@
     import { create_asset as createAsset } from "$lib/apis/assets";
     import { createEventDispatcher } from "svelte";
 
+    // portfolioId를 optional로 변경 (레이아웃에서 전역적으로 사용될 수 있음)
     export let open = false;
-    export let portfolioId: string;
+    export let portfolioId: string | undefined = undefined;
 
     const dispatch = createEventDispatcher();
 
@@ -30,6 +31,12 @@
     ];
 
     async function handleSubmit() {
+        // portfolioId가 없으면 제출 불가
+        if (!portfolioId) {
+            error = "포트폴리오를 선택해주세요.";
+            return;
+        }
+
         loading = true;
         error = null;
         try {

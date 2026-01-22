@@ -19,15 +19,28 @@
   import AssetModal from "$lib/components/AssetModal.svelte";
   import { goto } from "$app/navigation";
 
+  // 자산 데이터 인터페이스 정의
+  interface AssetRow {
+    id: string;
+    symbol: string;
+    name: string;
+    quantity: number;
+    avgPrice: number;
+    currentPrice: number;
+    totalValue: number;
+    change: number;
+  }
+
   let openAssetModal = $state(false);
   let portfolioId = $derived(page.params.id);
   let currentPortfolio = $derived(
     portfolioStore.portfolios.find((p) => p.id === portfolioId),
   );
 
-  let assets = $state([]);
+  // 명시적 타입 지정으로 never[] 추론 문제 해결
+  let assets: AssetRow[] = $state([]);
   let loading = $state(false);
-  let error = $state(null);
+  let error: string | null = $state(null);
 
   onMount(async () => {
     if (!currentPortfolio) {
@@ -39,12 +52,18 @@
   });
 
   async function loadAssets() {
+    // portfolioId가 없으면 로딩하지 않음
+    if (!portfolioId) {
+      error = "Portfolio ID가 없습니다.";
+      return;
+    }
+
     loading = true;
     error = null;
     try {
       const positions = await fetchPortfolioPositions(portfolioId);
       // Map API response (snake_case) to UI format (camelCase)
-      assets = positions.map((p) => ({
+      assets = positions.map((p: any) => ({
         id: p.asset_id,
         symbol: p.asset_symbol,
         name: p.asset_name,
@@ -105,7 +124,7 @@
 
   {#if loading}
     <div class="flex justify-center py-12">
-      <Spinner size="lg" color="purple" />
+      <Spinner size="12" color="purple" />
     </div>
   {:else if error}
     <Alert color="red" class="mb-4">
@@ -208,4 +227,4 @@
   {/if}
 </div>
 
-<AssetModal bind:open={openAssetModal} />
+<AssetModal bind:open={openAssetModal} {portfolioId} />

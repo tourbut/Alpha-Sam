@@ -57,3 +57,11 @@
     - `/portfolios/[id]`: Mock data 제거, 포지션 API 연동, 로딩/에러 UI 추가.
     - `/portfolios/[id]/assets/[assetId]`: Mock data 제거, 자산/거래 API 연동, 로딩/에러 UI 추가.
 
+- [2026-01-22 17:00:00] **Frontend 타입 에러 23개 수정 완료 (PR #16)**.
+  - **AssetModal**: `portfolioId` optional prop으로 변경.
+  - **ShareModal**: `portfolioId` 타입을 `string`(UUID)으로 변경, Props 타입 명시.
+  - **FollowButton**: Flowbite-Svelte 타입 직접 정의, Props 인터페이스 추가.
+  - **portfolios/[id]/+page.svelte**: `AssetRow` 인터페이스 정의, 타입 명시.
+  - **transactions/+page.svelte**: `createTransaction` 함수 호출 인자 수정.
+  - **social.ts**: follow/unfollow API ID 타입을 `string`(UUID)으로 변경.
+  - **결과**: `npm run check` → 0 errors, 6 warnings.

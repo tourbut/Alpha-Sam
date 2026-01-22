@@ -18,6 +18,7 @@
   import { goto } from "$app/navigation";
   import type { PortfolioWithAssets } from "$lib/types";
   import { fetchPortfoliosWithAssets } from "$lib/apis/portfolio";
+  import { APP_NAME } from "$lib/constants";
 
   // Lazy load chart component
   let PortfolioPieChart: any = $state(null);
@@ -62,7 +63,7 @@
 </script>
 
 <svelte:head>
-  <title>Portfolios | Alpha-Sam</title>
+  <title>Portfolios | {APP_NAME}</title>
 </svelte:head>
 
 <div class="space-y-6">

@@ -3,6 +3,7 @@
     import { signup, login, get_me } from "$lib/apis/auth";
     import { auth } from "$lib/stores/auth.svelte";
     import { goto } from "$app/navigation";
+    import { APP_NAME } from "$lib/constants";
 
     let email = "";
     let password = "";
@@ -48,7 +49,7 @@
                 <p
                     class="text-sm font-medium text-neutral-600 dark:text-neutral-400"
                 >
-                    Join Alpha-Sam to start managing your portfolio
+                    Join {APP_NAME} to start managing your portfolio
                 </p>
             </div>
             <form

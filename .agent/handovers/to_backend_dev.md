@@ -7,7 +7,7 @@
 - `develop`
 
 ## 현재 상황 (Context)
-- 포트폴리오 상세 자산 API (`/assets/{id}`, `/assets/{id}/transactions`) 구현 완료.
+- 포트폴리오 상세 자산 API (자산 상세 및 트랜잭션 조회) 구현 완료.
 - 프론트엔드 연동 작업 대기 중.
 
 ## 해야 할 일 (Tasks)

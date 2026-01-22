@@ -11,6 +11,7 @@
     import { get_portfolio_summary as getPortfolioSummary } from "$lib/apis/portfolio";
     import { calculatePortfolioSummary } from "$lib/utils";
     import type { Position } from "$lib/types";
+    import { APP_NAME } from "$lib/constants";
 
     let positions: Position[] = [];
     let loading = false;
@@ -49,7 +50,7 @@
 </script>
 
 <svelte:head>
-    <title>Positions - Alpha-Sam</title>
+    <title>Positions - {APP_NAME}</title>
 </svelte:head>
 
 <div class="max-w-[1400px] mx-auto p-5">

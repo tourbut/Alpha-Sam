@@ -258,49 +258,8 @@
 
         <!-- Quick Actions & Summary 섹션 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Quick Actions -->
-            <Card class="card p-6">
-                <h2 class="card-title text-lg normal-case mb-4">
-                    Quick Actions
-                </h2>
-                <div class="grid grid-cols-2 gap-3">
-                    <Button
-                        href="/assets"
-                        class="btn-primary w-full justify-center"
-                    >
-                        <BriefcaseOutline class="w-4 h-4 mr-2" />
-                        Assets
-                    </Button>
-                    <Button
-                        href="/positions"
-                        class="btn-outline w-full justify-center"
-                    >
-                        <ChartPieOutline class="w-4 h-4 mr-2" />
-                        Positions
-                    </Button>
-                    <Button
-                        href="/transactions"
-                        class="btn-outline w-full justify-center"
-                    >
-                        <PlusOutline class="w-4 h-4 mr-2" />
-                        Transactions
-                    </Button>
-                    <Button class="btn-outline w-full justify-center" disabled>
-                        <FileExportOutline class="w-4 h-4 mr-2" />
-                        Export (Soon)
-                    </Button>
-                    <Button
-                        href="/leaderboard"
-                        class="btn-outline w-full justify-center col-span-2"
-                    >
-                        <ClipboardListOutline class="w-4 h-4 mr-2" />
-                        Weekly Leaderboard
-                    </Button>
-                </div>
-            </Card>
-
             <!-- Portfolio Summary -->
-            <Card class="card p-6">
+            <Card class="card p-6 md:col-span-2">
                 <h2 class="card-title text-lg normal-case mb-4">
                     Portfolio Summary
                 </h2>

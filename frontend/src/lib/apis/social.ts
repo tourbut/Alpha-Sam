@@ -11,18 +11,20 @@ export const getLeaderboard = async (n: number = 10): Promise<LeaderboardEntry[]
     return await _getLeaderboard({ n });
 }
 
-export const followUser = async (target_id: number): Promise<any> => {
+// UUID 형식으로 ID 타입 변경 (string)
+export const followUser = async (target_id: string): Promise<any> => {
     return await _followUser({ target_id });
 }
 
-export const unfollowUser = async (target_id: number): Promise<any> => {
+export const unfollowUser = async (target_id: string): Promise<any> => {
     return await _unfollowUser({ target_id });
 }
 
-export const getFollowers = async (id: number, skip: number = 0, limit: number = 20): Promise<FollowListResponse> => {
+export const getFollowers = async (id: string, skip: number = 0, limit: number = 20): Promise<FollowListResponse> => {
     return await _getFollowers({ user_id: id, skip, limit });
 }
 
-export const getFollowing = async (id: number, skip: number = 0, limit: number = 20): Promise<FollowListResponse> => {
+export const getFollowing = async (id: string, skip: number = 0, limit: number = 20): Promise<FollowListResponse> => {
     return await _getFollowing({ user_id: id, skip, limit });
 }
+

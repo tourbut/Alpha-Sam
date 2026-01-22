@@ -21,15 +21,22 @@
     import { updatePortfolioVisibility } from "$lib/apis/portfolio";
     import { onMount } from "svelte";
 
+    // portfolioId를 string으로 변경 (UUID 형식)
     let {
         open = $bindable(false),
-        portfolioId = 0,
+        portfolioId = "",
         currentVisibility = "PRIVATE",
         shareToken = null,
+    }: {
+        open?: boolean;
+        portfolioId?: string;
+        currentVisibility?: string;
+        shareToken?: string | null;
     } = $props();
 
-    let visibility = $state(currentVisibility);
-    let token = $state(shareToken);
+    // 상태값 초기화 - $effect에서 동기화하므로 빈 값으로 시작
+    let visibility = $state("PRIVATE");
+    let token: string | null = $state(null);
     let isLoading = $state(false);
     let copied = $state(false);
 
@@ -63,7 +70,8 @@
                 visibility as PortfolioVisibility,
             );
             visibility = updated.visibility;
-            token = updated.share_token;
+            // undefined를 null로 변환하여 타입 일치
+            token = updated.share_token ?? null;
             // Parent needs to know? Maybe dispatch event or just rely on local state update
         } catch (e) {
             console.error(e);

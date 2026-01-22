@@ -12,3 +12,9 @@
 - [2026-01-16 22:10:00] v1.4.0 정식 배포 완료.
     - Git: `release/v1.4.0` 생성 -> Version Bump(1.4.0) -> `main` Merge -> Tag `v1.4.0` 생성.
     - 현재 브랜치 상태: `main`, `develop` 모두 v1.4.0으로 최신화됨.
+- [2026-01-22 16:15:00] 코드베이스 임시 파일 정리 작업 완료.
+    - 삭제: 20개 임시/레거시 테스트 스크립트 (루트 및 backend/).
+    - 이동: QA 스크립트 5개 → `backend/tests/manual/` 및 `.agent/project/artifacts/qa_reports/`로 통합.
+    - .gitignore 업데이트: `db_backup_*.sql`, `*.sql.bak` 패턴 추가.
+    - PR #15: `chore/cleanup-temp-files` → `develop` Squash Merge 완료 (b924505).
+    - 원격 브랜치 `chore/cleanup-temp-files` 삭제 완료.

@@ -30,3 +30,13 @@
   - **Verified**: Backend API (`/assets/{id}`, `/transactions`) Unit Tests Passed. Frontend Integration (Mock removal, Type consistency) Checked.
   - **Result**: Data flow from DB to UI confirmed correct. Fallback logic for missing prices verified.
   - **Report**: `2026-01-21_qa_report_portfolio_assets.md`.
+
+- [2026-01-22 16:30:00] **PR #15 코드 정리 및 Transaction Modal 통합 검증 (PARTIAL PASS)**.
+  - **Verified**: 
+    - PR #15 (코드베이스 정리) 머지 후 회귀 없음 확인.
+    - Backend Import 정상, 런타임 동작 확인.
+    - Transaction Modal (Asset Detail 페이지) 정상 동작 확인.
+  - **Issues Found**:
+    - Frontend `npm run check` 23개 타입 에러 (기존 이슈, PR #15 무관).
+    - Assets 페이지 "No assets found" 표시 이슈 (별도 확인 필요).
+  - **Report**: `2026-01-22_qa_report_cleanup_verification.md`.

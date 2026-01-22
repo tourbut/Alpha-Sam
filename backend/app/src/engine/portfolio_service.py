@@ -134,6 +134,7 @@ async def calculate_positions_from_transactions(
 ) -> List[PositionWithAsset]:
     """
     Portfolio의 모든 Transaction을 Asset별로 집계하여 Position 계산
+    트랜잭션이 없는 자산(초기 등록 상태)도 포함하여 반환.
     
     Args:
         session: Database session
@@ -142,30 +143,36 @@ async def calculate_positions_from_transactions(
     Returns:
         PositionWithAsset 리스트 (asset 정보 포함)
     """
-    # 1. 해당 Portfolio의 모든 Transaction 조회 (Asset join)
-    stmt = (
+    # 1. 해당 Portfolio의 모든 Asset 조회
+    asset_stmt = select(Asset).where(Asset.portfolio_id == portfolio_id)
+    asset_result = await session.execute(asset_stmt)
+    assets = asset_result.scalars().all()
+
+    if not assets:
+        return []
+
+    # 2. 해당 Portfolio의 모든 Transaction 조회
+    tx_stmt = (
         select(Transaction)
         .where(Transaction.portfolio_id == portfolio_id)
-        .options(selectinload(Transaction.asset))
         .order_by(Transaction.executed_at, Transaction.id)
     )
-    result = await session.execute(stmt)
-    transactions = result.scalars().all()
+    tx_result = await session.execute(tx_stmt)
+    transactions = tx_result.scalars().all()
     
-    if not transactions:
-        return []
-    
-    # 2. Asset별로 Transaction 그룹화
-    asset_transactions: Dict[int, List[Transaction]] = {}
+    # 3. Asset별로 Transaction 그룹화
+    asset_transactions: Dict[uuid.UUID, List[Transaction]] = {asset.id: [] for asset in assets}
     for tx in transactions:
-        if tx.asset_id not in asset_transactions:
-            asset_transactions[tx.asset_id] = []
-        asset_transactions[tx.asset_id].append(tx)
+        if tx.asset_id in asset_transactions:
+            asset_transactions[tx.asset_id].append(tx)
     
-    # 3. 각 Asset별로 Position 계산
+    # 4. 각 Asset별로 Position 계산
     positions: List[PositionWithAsset] = []
     
-    for asset_id, txs in asset_transactions.items():
+    from app.src.engine.price_service import price_service
+
+    for asset in assets:
+        txs = asset_transactions.get(asset.id, [])
         current_qty = Decimal("0")
         total_cost = Decimal("0")  # for avg price calc
         
@@ -185,7 +192,6 @@ async def calculate_positions_from_transactions(
                     # 남은 수량에 대한 total_cost 재계산
                     total_cost = current_qty * avg_price
                 else:
-                    # 보유 수량이 없는데 SELL (이론적으로는 검증에서 걸러져야 함)
                     current_qty -= qty
             
             # 음수 수량 방지
@@ -196,32 +202,31 @@ async def calculate_positions_from_transactions(
         # 최종 평단가 계산
         avg_price = (total_cost / current_qty) if current_qty > 0 else Decimal("0")
         
-        # 수량이 0보다 큰 경우만 Position으로 추가
-        if current_qty > 0:
-            # Asset 정보 가져오기 (이미 selectinload로 로드됨)
-            asset = txs[0].asset
-            
-            # 최신 가격 조회 (선택 사항, 여기서는 일단 None)
-            # 나중에 Price 조회 로직 추가 가능
-            
-            position = PositionWithAsset(
-                id=None,  # DB ID 없음
-                asset_id=asset_id,
-                quantity=float(current_qty),
-                avg_price=float(avg_price),
-                created_at=None,
-                updated_at=None,
-                # Asset 정보
-                asset_symbol=asset.symbol if asset else None,
-                asset_name=asset.name if asset else None,
-                asset_category=asset.category if asset else None,
-                # 계산된 필드는 나중에 추가
-                valuation=None,
-                profit_loss=None,
-                return_rate=None,
-                current_price=None
-            )
-            positions.append(position)
+        # 최신 가격 조회 (Cache or Fetch)
+        try:
+             current_price = await price_service.get_current_price(asset.symbol, use_cache=True)
+        except Exception:
+             current_price = 0.0
+
+        # Position 생성 (수량이 0이어도 포함)
+        position = PositionWithAsset(
+            id=None,  # DB ID 없음 (Transiet Object)
+            asset_id=asset.id,
+            quantity=float(current_qty),
+            avg_price=float(avg_price),
+            created_at=None,
+            updated_at=None,
+            # Asset 정보
+            asset_symbol=asset.symbol,
+            asset_name=asset.name,
+            asset_category=asset.category,
+            # 계산된 필드
+            valuation=float(current_qty) * current_price if current_price else 0.0,
+            profit_loss=(current_price - float(avg_price)) * float(current_qty) if current_price else 0.0,
+            return_rate=((current_price - float(avg_price)) / float(avg_price) * 100) if float(avg_price) > 0 and current_price else 0.0,
+            current_price=current_price
+        )
+        positions.append(position)
     
     return positions
 

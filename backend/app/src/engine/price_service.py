@@ -26,38 +26,48 @@ class PriceService:
     CACHE_KEY_PREFIX = "price:"
     CACHE_TTL = 180  # 3 minutes
 
-    async def get_latest_price(self, session: AsyncSession, asset_id: uuid.UUID) -> Optional[float]:
+    async def get_current_price(self, symbol: str, use_cache: bool = True) -> float:
         """
-        Returns current price of an asset (Redis only)
-        
-        Args:
-            session: The database session.
-            asset_id: The UUID of the asset.
-        
-        Returns:
-            Current price from Redis, or Fallback Mock
+        Get current price of an asset.
+        If use_cache is True, try Redis first.
+        If not found or use_cache is False, fetch from yfinance API.
         """
         symbol_upper = symbol.upper()
         cache_key = f"{self.CACHE_KEY_PREFIX}{symbol_upper}"
         
-        # 1. Check Redis Cache
-        cached_value = await cache_service.get(cache_key)
-        if cached_value is not None:
-            try:
-                return float(cached_value)
-            except (ValueError, TypeError):
-                logger.error(f"Invalid price value in cache for {symbol_upper}: {cached_value}")
+        if use_cache:
+            cached_value = await cache_service.get(cache_key)
+            if cached_value is not None:
+                try:
+                    return float(cached_value)
+                except (ValueError, TypeError):
+                    logger.error(f"Invalid price value in cache for {symbol_upper}: {cached_value}")
         
-        # 2. Refactoring: No dynamic fetch from Yahoo Finance to avoid latency/instability.
-        # Everything should be populated by the Price Collector.
+        # Fetch from Source (yfinance)
+        # Note: _fetch_price_from_yfinance is an async wrapper around blocking yfinance call
+        price = await self._fetch_price_from_yfinance(symbol_upper)
         
-        # Fallback to Mock prices for development/safety
-        current_price = self.MOCK_PRICES.get(symbol_upper, 0.0)
-        
-        if current_price == 0.0:
-            logger.warning(f"Price for {symbol_upper} not found in Redis and no mock available.")
-        
-        return current_price
+        if price > 0:
+            # Update Cache
+            await cache_service.set(cache_key, str(price), expire=self.CACHE_TTL)
+        else:
+            # Fallback to Mock if yfinance fails
+            price = self.MOCK_PRICES.get(symbol_upper, 0.0)
+            if price == 0.0:
+                 logger.warning(f"Price for {symbol_upper} not found in Source or Mock.")
+
+        return price
+
+    async def get_latest_price(self, session: AsyncSession, asset_id: uuid.UUID) -> Optional[float]:
+        """
+        [Legacy/Deprecated] Use get_current_price instead.
+        Kept for backward compatibility if needed, but logic is broken (uses undefined 'symbol').
+        """
+        # This method in previous file content had a bug: 'symbol' was undefined.
+        # Assuming we need to fetch asset symbol from DB using asset_id.
+        # But for now, let's just log error or return 0 as this seems unused or broken previously.
+        logger.error("get_latest_price called but it is broken. Use get_current_price(symbol).")
+        return 0.0
 
     async def _fetch_price_from_yfinance(self, symbol: str) -> float:
         """

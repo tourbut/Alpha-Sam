@@ -1,6 +1,7 @@
 <script lang="ts">
     import { Modal, Label, Input, Button, Textarea } from "flowbite-svelte";
     import { portfolioStore } from "$lib/stores/portfolio.svelte";
+    import { PlusOutline, RefreshOutline } from "flowbite-svelte-icons";
 
     let { open = $bindable(false) } = $props();
 
@@ -65,8 +66,14 @@
             <span>Currency</span>
             <Input type="text" name="currency" bind:value={currency} disabled />
         </Label>
-        <Button type="submit" class="w-full1" disabled={loading}>
-            {loading ? "Creating..." : "Create Portfolio"}
+        <Button type="submit" class="w-full btn-primary" disabled={loading}>
+            {#if loading}
+                <RefreshOutline class="w-4 h-4 mr-2 animate-spin" />
+                Creating...
+            {:else}
+                <PlusOutline class="w-4 h-4 mr-2" />
+                Create Portfolio
+            {/if}
         </Button>
     </form>
 </Modal>

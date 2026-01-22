@@ -7,7 +7,8 @@
     import type { Transaction, Asset, CreateTransaction } from "$lib/types";
     import { auth } from "$lib/stores/auth.svelte";
     import { goto } from "$app/navigation";
-    import { PlusOutline } from "flowbite-svelte-icons";
+    import { goto } from "$app/navigation";
+    import { PlusOutline, RefreshOutline } from "flowbite-svelte-icons";
     import { APP_NAME } from "$lib/constants";
 
     let transactions: Transaction[] = [];
@@ -126,7 +127,11 @@
         <h1 class="text-2xl font-bold text-neutral-900 dark:text-white">
             Transactions
         </h1>
-        <Button onclick={() => (formModal = true)} class="btn-primary">
+        <Button
+            onclick={() => (formModal = true)}
+            class="btn-primary"
+            size="sm"
+        >
             <PlusOutline class="w-4 h-4 mr-2" />
             Add Transaction
         </Button>
@@ -270,7 +275,13 @@
                 class="btn-primary w-full"
                 disabled={submitting}
             >
-                {submitting ? "Submitting..." : "Confirm Transaction"}
+                {#if submitting}
+                    <RefreshOutline class="w-4 h-4 mr-2 animate-spin" />
+                    Submitting...
+                {:else}
+                    <PlusOutline class="w-4 h-4 mr-2" />
+                    Confirm Transaction
+                {/if}
             </Button>
         </form>
     </Modal>

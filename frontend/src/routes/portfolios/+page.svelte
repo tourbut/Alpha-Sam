@@ -80,7 +80,8 @@
       </p>
     </div>
     <Button
-      class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg"
+      class="btn-primary"
+      size="sm"
       onclick={() => (openCreateModal = true)}
     >
       <Plus class="w-4 h-4 mr-2" />
@@ -156,7 +157,8 @@
               Create your first portfolio to start tracking your assets
             </p>
             <Button
-              class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+              class="btn-primary"
+              size="sm"
               onclick={() => (openCreateModal = true)}
             >
               <Plus class="w-4 h-4 mr-2" />

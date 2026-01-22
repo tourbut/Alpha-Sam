@@ -103,10 +103,7 @@
           Transaction history and performance
         </p>
       </div>
-      <Button
-        class="bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l text-white"
-        onclick={openAddTransaction}
-      >
+      <Button class="btn-primary" size="sm" onclick={openAddTransaction}>
         <Plus class="w-4 h-4 mr-2" />
         Add Transaction
       </Button>
@@ -196,10 +193,7 @@
         <p class="text-neutral-600 dark:text-neutral-400 mb-4">
           Add your first transaction to start tracking this asset
         </p>
-        <Button
-          class="bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l text-white"
-          onclick={openAddTransaction}
-        >
+        <Button class="btn-primary" size="sm" onclick={openAddTransaction}>
           <Plus class="w-4 h-4 mr-2" />
           Add Transaction
         </Button>

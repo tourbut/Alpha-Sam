@@ -7,6 +7,7 @@
         Select,
         Helper,
     } from "flowbite-svelte";
+    import { PlusOutline, RefreshOutline } from "flowbite-svelte-icons";
     import { create_asset as createAsset } from "$lib/apis/assets";
     import { createEventDispatcher } from "svelte";
 
@@ -119,9 +120,15 @@
             <Button color="alternative" onclick={() => (open = false)}
                 >Cancel</Button
             >
-            <Button type="submit" disabled={loading}
-                >{loading ? "Creating..." : "Create Asset"}</Button
-            >
+            <Button type="submit" disabled={loading} class="btn-primary">
+                {#if loading}
+                    <RefreshOutline class="w-4 h-4 mr-2 animate-spin" />
+                    Creating...
+                {:else}
+                    <PlusOutline class="w-4 h-4 mr-2" />
+                    Create Asset
+                {/if}
+            </Button>
         </div>
     </form>
 </Modal>

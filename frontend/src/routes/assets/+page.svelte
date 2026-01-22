@@ -12,6 +12,7 @@
         Badge,
         Skeleton,
     } from "flowbite-svelte";
+    import { PlusOutline } from "flowbite-svelte-icons";
     import { onMount } from "svelte";
     import { fade } from "svelte/transition";
     import { get_assets as getAssets } from "$lib/apis/assets";
@@ -160,10 +161,16 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Assets</h1>
         <div class="flex gap-2 flex-wrap">
-            <Button color="alternative" onclick={handleRefreshPrices}
-                >Refresh Prices</Button
+            <Button
+                color="alternative"
+                class="btn-outline"
+                size="sm"
+                onclick={handleRefreshPrices}>Refresh Prices</Button
             >
-            <Button onclick={openAddAssetModal}>Add Asset</Button>
+            <Button onclick={openAddAssetModal} class="btn-primary" size="sm">
+                <PlusOutline class="w-4 h-4 mr-2" />
+                Add Asset
+            </Button>
         </div>
     </div>
 
@@ -385,10 +392,11 @@
                             <TableBodyCell>
                                 <Button
                                     size="xs"
-                                    color="blue"
+                                    class="btn-primary"
                                     onclick={() =>
                                         openAddTransactionModal(asset)}
                                 >
+                                    <PlusOutline class="w-3 h-3 mr-1" />
                                     Add Transaction
                                 </Button>
                             </TableBodyCell>

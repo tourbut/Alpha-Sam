@@ -4,17 +4,16 @@
 - 2026-01-22
 
 ## 브랜치 (Version Control)
-- `fix/frontend-portfolio-refresh` (from `develop` or `main`)
+- `fix/frontend-asset-creation` (from `develop`)
 
 ## 현재 상황 (Context)
-- 포트폴리오 생성(`Create Portfolio`) 후 목록 화면(`portfolios/+page.svelte`)이 즉시 갱신되지 않고 새로고침해야만 반영되는 문제 발생.
+- 자산 추가(`Add Asset`) 시 `422 Unprocessable Content` 에러 발생.
+- `AssetModal.svelte`에서 `createAsset` API 호출 시 필수 필드인 `symbol`이 누락된 것으로 확인됨.
 
 ## 해야 할 일 (Tasks)
-1. `src/lib/components/portfolio/CreatePortfolioModal.svelte` 수정:
-   - 포트폴리오 생성(API 성공) 후, 부모 컴포넌트에 알리기 위해 `dispatch('created')` 이벤트 발생 로직 추가.
-2. `src/routes/portfolios/+page.svelte` 수정:
-   - `<CreatePortfolioModal>` 컴포넌트 사용 부분에 `on:created={...}` 이벤트 핸들러 추가.
-   - 핸들러 내에서 `portfoliosWithAssets` 목록을 다시 불러오는 함수(`fetchPortfoliosWithAssets` 등) 호출.
+1. `src/lib/components/AssetModal.svelte` 수정:
+   - `handleSubmit` 함수 내 `createAsset` 호출 인자에 `symbol` 필드 추가.
+2. (선택사항) 자산 추가 후 목록 자동 갱신(`dispatch('created')`)이 잘 동작하는지 확인.
 
 ## 기대 산출물 (Expected Outputs)
-- 포트폴리오 생성 모달이 닫힌 후, 페이지 새로고침 없이 즉시 새로운 포트폴리오 카드가 목록에 표시되어야 함.
+- 자산 추가 모달에서 "Create Asset" 클릭 시 422 에러 없이 자산이 정상 생성되어야 함.

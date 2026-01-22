@@ -42,6 +42,7 @@
         error = null;
         try {
             await createAsset({
+                symbol,
                 name,
                 category,
                 portfolio_id: portfolioId,

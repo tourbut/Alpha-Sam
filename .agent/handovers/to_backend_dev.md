@@ -4,18 +4,20 @@
 - 2026-01-22
 
 ## 브랜치 (Version Control)
-- `fix/backend-position-calc` (from `develop`)
+- `fix/backend-portfolio-summary` (from `develop`)
 
 ## 현재 상황 (Context)
-- 포트폴리오에 자산(`Asset`)을 추가했지만 트랜잭션(`Transaction`)이 없으면 자산 목록(Position)에 표시되지 않는 문제.
-- `calculate_positions_from_transactions` 함수가 트랜잭션이 있는 경우만 계산하여 반환하고 있음.
+- 1. 자산 조회(`get_asset_by_symbol`) 시 동일 심볼이 여러 포트폴리오에 존재할 수 있어 `portfolio_id` 구분이 필요함.
+- 2. 포트폴리오 요약 조회(`get_summary`) 시 `portfolio_id` 없이 호출하면 첫 번째 포트폴리오만 반환하고 있음(전체 합산 필요).
 
 ## 해야 할 일 (Tasks)
-1. `backend/app/src/engine/portfolio_service.py`의 `calculate_positions_from_transactions` 함수 수정.
-   - 1단계: 해당 `portfolio_id`를 가진 모든 `Asset`을 조회.
-   - 2단계: `Transaction`을 조회하여 자산별로 매핑.
-   - 3단계: 트랜잭션이 없는 자산도 포함하여 `PositionWithAsset` 객체 생성 (quantity=0, avg_price=0 등 초기값).
-   - 4단계: `if current_qty > 0` 조건 제거 (모든 자산 반환).
+1. `app/src/services/portfolio_service.py`의 `get_summary` 메서드 수정:
+   - `portfolio_id`가 `None`인 경우, 사용자의 **모든 포트폴리오**를 조회.
+   - 각 포트폴리오의 포지션을 모두 합산하여 전체 자산 현황과 요약(Total Value, PL 등)을 반환하도록 로직 변경.
+2. `app/src/routes/assets.py` (또는 해당 기능 라우터) 수정:
+   - `get_asset_by_symbol` (또는 자산 조회) 엔드포인트에 `portfolio_id` 파라미터(Optional) 추가.
+   - 서비스/CRUD 호출 시 `portfolio_id`를 전달하여 정확한 자산을 찾도록 수정.
 
 ## 기대 산출물 (Expected Outputs)
-- 포트폴리오 상세 조회 시, 트랜잭션이 없는 초기 자산도 목록에 표시됨(수량 0).
+- 대시보드 등에서 전체 요약 조회 시 모든 포트폴리오의 합산 데이터가 반환됨.
+- 자산 추가/조회 시 포트폴리오별로 정확한 자산이 식별됨.

@@ -76,11 +76,17 @@ class AssetService:
         자산 생성 (심볼 자동 검색 및 채우기 포함)
         """
         # 중복 체크
-        existing_asset = await crud_asset.get_asset_by_symbol(session=session, symbol=asset_in.symbol, owner_id=user_id)
+        # 중복 체크 (포트폴리오 별로 유니크해야 함)
+        existing_asset = await crud_asset.get_asset_by_symbol(
+            session=session, 
+            symbol=asset_in.symbol, 
+            owner_id=user_id,
+            portfolio_id=asset_in.portfolio_id
+        )
         if existing_asset and (existing_asset.owner_id is None or existing_asset.owner_id == user_id):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Asset with symbol {asset_in.symbol} already exists"
+                detail=f"Asset with symbol {asset_in.symbol} already exists in this portfolio"
             )
         
         # Auto-fill name/category if missing

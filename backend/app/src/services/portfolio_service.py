@@ -178,20 +178,22 @@ class PortfolioService:
     async def get_summary(session: AsyncSession, user_id: uuid.UUID, portfolio_id: Optional[uuid.UUID] = None) -> PortfolioResponse:
         """
         Get portfolio summary and positions.
+        If portfolio_id is None, aggregates data from ALL user portfolios.
         """
-        with open("/Users/shin/.gemini/antigravity/brain/fe135e23-aef4-4cc1-b5ab-914a5d85fdd6/debug_log.txt", "a") as f:
-            f.write(f"[DEBUG] PortfolioService.get_summary called for user_id={user_id}\n")
-        
-        # 특정 portfolio_id가 없으면 첫 번째 포트폴리오 사용
         from app.src.models.portfolio import Portfolio
+        
+        portfolios = []
         if portfolio_id:
             portfolio = await session.get(Portfolio, portfolio_id)
+            if portfolio:
+                portfolios.append(portfolio)
         else:
-            stmt_portfolio = select(Portfolio).where(Portfolio.owner_id == user_id).limit(1)
+            # Fetch ALL portfolios
+            stmt_portfolio = select(Portfolio).where(Portfolio.owner_id == user_id)
             result_portfolio = await session.execute(stmt_portfolio)
-            portfolio = result_portfolio.scalar_one_or_none()
+            portfolios = result_portfolio.scalars().all()
         
-        if not portfolio:
+        if not portfolios:
             return PortfolioResponse(
                 summary=PortfolioSummary(
                     total_value=0.0,
@@ -202,10 +204,34 @@ class PortfolioService:
                 positions=[]
             )
         
-        # 1. Transaction 기반으로 Positions 계산
-        positions = await calculate_positions_from_transactions(session, portfolio.id)
+        # 1. Aggregate Positions from all target portfolios
+        all_positions_map: Dict[uuid.UUID, PositionWithAsset] = {}
         
-        if not positions:
+        for portfolio in portfolios:
+            positions = await calculate_positions_from_transactions(session, portfolio.id)
+            
+            for pos in positions:
+                if pos.asset_id in all_positions_map:
+                    existing = all_positions_map[pos.asset_id]
+                    
+                    # Merge logic: Weighted Average for Price, Sum for Quantity
+                    total_qty = existing.quantity + pos.quantity
+                    
+                    cost1 = existing.quantity * existing.avg_price
+                    cost2 = pos.quantity * pos.avg_price
+                    total_cost = cost1 + cost2
+                    
+                    new_avg_price = (total_cost / total_qty) if total_qty > 0 else 0.0
+                    
+                    existing.quantity = total_qty
+                    existing.avg_price = new_avg_price
+                else:
+                    # Clone position to avoid reference issues if mutable? Pydantic models are distinct.
+                    all_positions_map[pos.asset_id] = pos
+
+        final_positions = list(all_positions_map.values())
+        
+        if not final_positions:
             return PortfolioResponse(
                 summary=PortfolioSummary(
                     total_value=0.0,
@@ -217,13 +243,13 @@ class PortfolioService:
             )
 
         # 2. Fetch Prices
-        asset_ids = [p.asset_id for p in positions]
+        asset_ids = [p.asset_id for p in final_positions]
         price_map = await PortfolioService._get_latest_prices(session, asset_ids)
         
         position_reads: List[PositionWithAsset] = []
         summary_input_data = []
 
-        for position in positions:
+        for position in final_positions:
             current_price = price_map.get(position.asset_id)
             
             metrics = calculate_position_metrics(
@@ -232,7 +258,7 @@ class PortfolioService:
                 current_price=current_price
             )
             
-            # Position 데이터 업데이트 (계산된 필드 추가)
+            # Position 데이터 업데이트
             position.valuation = metrics["valuation"]
             position.profit_loss = metrics["profit_loss"]
             position.return_rate = metrics["return_rate"]

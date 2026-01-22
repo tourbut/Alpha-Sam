@@ -32,6 +32,7 @@
         ClipboardListOutline,
         BriefcaseOutline,
     } from "flowbite-svelte-icons";
+    import { APP_NAME } from "$lib/constants";
 
     let assets: Asset[] = [];
     let positions: Position[] = [];
@@ -118,7 +119,7 @@
 </script>
 
 <svelte:head>
-    <title>Portfolio Dashboard - Alpha-Sam</title>
+    <title>Portfolio Dashboard - {APP_NAME}</title>
 </svelte:head>
 
 <!-- 대시보드 콘텐츠 (사이드바는 +layout.svelte에서 처리) -->

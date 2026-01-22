@@ -2,6 +2,7 @@
     import { Button } from "flowbite-svelte";
     import { auth } from "$lib/stores/auth.svelte";
     import { tick } from "svelte";
+    import { APP_NAME } from "$lib/constants";
 
     let isOpen = $state(false);
     let message = $state("");
@@ -19,7 +20,7 @@
     let messages = $state<Message[]>([
         {
             id: "1",
-            text: "안녕하세요! Alpha-Sam 도우미입니다 무엇을 도와드릴까요?",
+            text: `안녕하세요! ${APP_NAME} 도우미입니다 무엇을 도와드릴까요?`,
             sender: "bot",
             timestamp: new Date(),
         },
@@ -119,7 +120,7 @@
                 <!-- Header -->
                 <div class="bg-primary-600 p-4 text-white">
                     <h3 class="font-bold text-lg">AI Assistant</h3>
-                    <p class="text-xs opacity-80">Alpha-Sam 도우미</p>
+                    <p class="text-xs opacity-80">{APP_NAME} 도우미</p>
                 </div>
 
                 <!-- Body -->

@@ -8,6 +8,7 @@
     import { auth } from "$lib/stores/auth.svelte";
     import { goto } from "$app/navigation";
     import { PlusOutline } from "flowbite-svelte-icons";
+    import { APP_NAME } from "$lib/constants";
 
     let transactions: Transaction[] = [];
     let assets: Asset[] = [];
@@ -112,7 +113,7 @@
 </script>
 
 <svelte:head>
-    <title>Transactions - Alpha-Sam</title>
+    <title>Transactions - {APP_NAME}</title>
 </svelte:head>
 
 <div class="max-w-[1400px] mx-auto p-5">

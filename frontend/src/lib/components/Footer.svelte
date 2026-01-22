@@ -5,6 +5,7 @@
         FooterLinkGroup,
         FooterLink,
     } from "flowbite-svelte";
+    import { APP_NAME } from "$lib/constants";
 </script>
 
 <Footer
@@ -16,7 +17,7 @@
         >
             <FooterCopyright
                 href="/"
-                by="Alpha-Sam"
+                by={APP_NAME}
                 year={new Date().getFullYear()}
             />
             <FooterLinkGroup

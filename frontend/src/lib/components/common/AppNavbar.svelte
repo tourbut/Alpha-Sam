@@ -10,6 +10,7 @@
     } from "flowbite-svelte";
     import { auth } from "$lib/stores/auth.svelte";
     import { goto } from "$app/navigation";
+    import { APP_NAME } from "$lib/constants";
 
     let hidden = $state(true); // 모바일 메뉴 기본 비활성화
 
@@ -31,7 +32,7 @@
         <span
             class="self-center whitespace-nowrap text-xl font-semibold dark:text-white"
         >
-            Alpha-Sam
+            {APP_NAME}
         </span>
     </NavBrand>
 

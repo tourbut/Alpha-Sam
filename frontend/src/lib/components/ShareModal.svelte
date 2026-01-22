@@ -145,7 +145,7 @@
             </div>
 
             <Button
-                class="w-full mt-2"
+                class="w-full mt-2 btn-primary"
                 onclick={handleUpdate}
                 disabled={isLoading ||
                     (visibility === currentVisibility && token === shareToken)}

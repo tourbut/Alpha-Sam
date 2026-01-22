@@ -114,7 +114,8 @@
       </p>
     </div>
     <Button
-      class="bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l text-white"
+      class="btn-primary"
+      size="sm"
       onclick={() => (openAssetModal = true)}
     >
       <Plus class="w-4 h-4 mr-2" />
@@ -217,7 +218,8 @@
         Add your first asset to start tracking your portfolio
       </p>
       <Button
-        class="bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l text-white"
+        class="btn-primary"
+        size="sm"
         onclick={() => (openAssetModal = true)}
       >
         <Plus class="w-4 h-4 mr-2" />

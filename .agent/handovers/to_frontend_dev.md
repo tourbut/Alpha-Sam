@@ -1,20 +1,27 @@
 # Handovers: To Frontend Developer
 
 ## 날짜
-- 2026-01-22
+- 2026-01-23
 
 ## 브랜치 (Version Control)
-- `fix/frontend-asset-lookup` (from `develop`)
+- `feature/dashboard-recent-activity`
 
 ## 현재 상황 (Context)
-- Backend에서 자산 조회(`get_asset_by_symbol` 등) 시 `portfolio_id`가 필수(또는 권장) 파라미터로 변경될 예정.
-- 포트폴리오별로 동일한 심볼(예: AAPL)을 가질 수 있으므로 정확한 조회를 위해 필요.
+- 대시보드의 "Recent Activity" 섹션(현재 Placeholder)을 실제 데이터로 연동해야 합니다.
+- Backend에서 통합 API (`/api/v1/dashboard/activities`)를 개발 중입니다.
 
 ## 해야 할 일 (Tasks)
-1. 자산 정보를 조회하는 로직(예: `getAssetBySymbol` API 호출부) 확인.
-   - 위치 예상: `AssetModal.svelte` 또는 자산 상세 페이지 등.
-2. 해당 API 호출 시 현재 선택된 `portfolio_id`를 파라미터로 함께 전달하도록 수정.
-   - (참고: Backend API가 Query Parameter 등으로 `portfolio_id`를 받도록 수정될 것임)
+1. **API Client 추가**:
+   - `$lib/apis/dashboard.ts` (신규) 또는 `portfolio.ts`에 `getRecentActivities()` 함수 추가.
+   - Endpoint: `GET /api/v1/dashboard/activities`
+   - Type 정의: `ActivityItem` 인터페이스 추가.
+
+2. **Dashboard UI 수정 (`src/routes/+page.svelte`)**:
+   - `Recent Activity` 카드 내부의 Placeholder 텍스트 제거.
+   - `{#each}` 블록을 사용하여 활동 리스트 렌더링.
+   - 각 활동 타입(`PORTFOLIO`, `ASSET`, `TRANSACTION`)별로 적절한 아이콘/텍스트 표시.
+     - 예: Transaction -> 화살표 아이콘, Portfolio -> 가방 아이콘 등.
+   - 데이터 로딩 중/에러/비어있음 상태 처리.
 
 ## 기대 산출물 (Expected Outputs)
-- 자산 조회 기능이 포트폴리오 컨텍스트에 맞게 정확히 동작함.
+- 대시보드 진입 시 "Recent Activity" 섹션에 실제 사용자의 최근 활동 5개가 리스트 형태로 표시됨.

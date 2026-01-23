@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.src.routes import assets, prices, auth, users, portfolios, market, user_settings, social, transactions
+from app.src.routes import assets, prices, auth, users, portfolios, market, user_settings, social, transactions, dashboard
 
 api_router = APIRouter()
 
@@ -51,3 +51,4 @@ api_router.include_router(portfolios.router, prefix="/portfolios", tags=["portfo
 api_router.include_router(market.router, prefix="/market", tags=["market"])
 api_router.include_router(social.router, prefix="/social", tags=["social"])
 api_router.include_router(transactions.router, prefix="/transactions", tags=["transactions"])
+api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])

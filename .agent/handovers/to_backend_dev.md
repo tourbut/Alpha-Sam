@@ -1,23 +1,50 @@
 # Handovers: To Backend Developer
 
 ## 날짜
-- 2026-01-22
+- 2026-01-23
 
 ## 브랜치 (Version Control)
-- `fix/backend-portfolio-summary` (from `develop`)
+- `feature/dashboard-recent-activity`
 
 ## 현재 상황 (Context)
-- 1. 자산 조회(`get_asset_by_symbol`) 시 동일 심볼이 여러 포트폴리오에 존재할 수 있어 `portfolio_id` 구분이 필요함.
-- 2. 포트폴리오 요약 조회(`get_summary`) 시 `portfolio_id` 없이 호출하면 첫 번째 포트폴리오만 반환하고 있음(전체 합산 필요).
+- 대시보드(Frontend)에 "Recent Activity" 섹션을 구현하려 합니다.
+- 사용자의 모든 포트폴리오, 자산 추가, 트랜잭션 기록 중 가청 최근 5개 항목을 통합 조회하는 API가 필요합니다.
 
 ## 해야 할 일 (Tasks)
-1. `app/src/services/portfolio_service.py`의 `get_summary` 메서드 수정:
-   - `portfolio_id`가 `None`인 경우, 사용자의 **모든 포트폴리오**를 조회.
-   - 각 포트폴리오의 포지션을 모두 합산하여 전체 자산 현황과 요약(Total Value, PL 등)을 반환하도록 로직 변경.
-2. `app/src/routes/assets.py` (또는 해당 기능 라우터) 수정:
-   - `get_asset_by_symbol` (또는 자산 조회) 엔드포인트에 `portfolio_id` 파라미터(Optional) 추가.
-   - 서비스/CRUD 호출 시 `portfolio_id`를 전달하여 정확한 자산을 찾도록 수정.
+1. **Schema 정의**:
+   - `ActivityType` (Enum): `PORTFOLIO_CREATED`, `ASSET_ADDED`, `TRANSACTION_EXECUTED` (또는 유사한 구분)
+   - `ActivityItem` (Model): `id`, `type`, `title`, `description`, `timestamp`, `entity_id`, `portfolio_id`(Optional) 등을 포함.
+
+2. **API Endpoint 구현 (`/api/v1/dashboard/activities`)**:
+   - **Method**: GET
+   - **Logic**:
+     - 현재 로그인한 사용자의:
+       1) 최근 생성된 **Portfolios** (Created At 기준)
+       2) 최근 추가된 **Assets** (Created At 기준)
+       3) 최근 실행된 **Transactions** (Executed At 기준)
+     - 위 3가지를 각각 상위 5~10개씩 Fetch 후, Python에서 하나의 리스트로 통합.
+     - 통합 리스트를 `timestamp` 내림차순 정렬.
+     - 상위 **5개**만 슬라이싱하여 반환.
+   
+3. **Response Example**:
+   ```json
+   [
+     {
+       "type": "transaction",
+       "title": "Buy BTC",
+       "description": "Bought 0.1 BTC in Main Portfolio",
+       "timestamp": "2026-01-23T14:30:00Z",
+       "entity_id": "...",
+       "portfolio_id": "..."
+     },
+     {
+       "type": "portfolio_create",
+       "title": "New Portfolio",
+       "description": "Created 'Retirement' portfolio",
+       "timestamp": "2026-01-22T10:00:00Z",
+...
+   ]
+   ```
 
 ## 기대 산출물 (Expected Outputs)
-- 대시보드 등에서 전체 요약 조회 시 모든 포트폴리오의 합산 데이터가 반환됨.
-- 자산 추가/조회 시 포트폴리오별로 정확한 자산이 식별됨.
+- `GET /api/v1/dashboard/activities` 호출 시 최근 활동 5개가 JSON 리스트로 반환됨.

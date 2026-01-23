@@ -69,32 +69,74 @@
     async function loadData() {
         loading = true;
         error = null;
+        console.log(
+            "Loading Dashboard Data. Auth Token Present:",
+            !!auth.token,
+        );
+
         try {
-            const [
-                assetsData,
-                summaryResponse,
-                historyData,
-                portfoliosData,
-                activitiesData,
-            ] = await Promise.all([
+            const results = await Promise.allSettled([
                 getAssets(),
                 getPortfolioSummary(),
                 getPortfolioHistory({ skip: 0, limit: 30 }),
                 fetchPortfolios(),
                 getRecentActivities(),
             ]);
-            assets = assetsData;
-            positions = summaryResponse.positions;
-            portfolioSummary = summaryResponse.summary;
-            history = historyData;
-            activities = activitiesData;
 
-            if (portfoliosData.length > 0) {
-                currentPortfolio = portfoliosData[0];
+            // 0: assets, 1: summary, 2: history, 3: portfolios, 4: activities
+
+            if (results[0].status === "fulfilled") {
+                assets = results[0].value;
+            } else {
+                console.error("Failed to load assets:", results[0].reason);
+            }
+
+            if (results[1].status === "fulfilled") {
+                positions = results[1].value.positions;
+                portfolioSummary = results[1].value.summary;
+            } else {
+                console.error(
+                    "Failed to load portfolio summary:",
+                    results[1].reason,
+                );
+            }
+
+            if (results[2].status === "fulfilled") {
+                history = results[2].value;
+            } else {
+                console.error("Failed to load history:", results[2].reason);
+            }
+
+            let portfoliosData: Portfolio[] = [];
+            if (results[3].status === "fulfilled") {
+                portfoliosData = results[3].value;
+                if (portfoliosData.length > 0) {
+                    currentPortfolio = portfoliosData[0];
+                }
+            } else {
+                console.error("Failed to load portfolios:", results[3].reason);
+            }
+
+            if (results[4].status === "fulfilled") {
+                activities = results[4].value;
+            } else {
+                console.error(
+                    "Failed to load recent activities:",
+                    results[4].reason,
+                );
+                // Don't set global error for this, just leave empty list logic to handle
+            }
+
+            // If critical data failed (e.g. portfolios and assets both failed), maybe set error
+            if (
+                results[0].status === "rejected" &&
+                results[3].status === "rejected"
+            ) {
+                error = "Failed to load core data. Please try refreshing.";
             }
         } catch (e) {
-            console.error("Error loading data:", e);
-            error = "Failed to load portfolio data. Please try again later.";
+            console.error("Critical error in loadData:", e);
+            error = "Unexpected error loading data.";
         } finally {
             loading = false;
         }

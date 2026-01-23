@@ -14,7 +14,10 @@
         ApiPortfolioSummary,
         PortfolioHistory,
         Portfolio, // Import Portfolio type
+        ActivityItem,
+        ActivityType,
     } from "$lib/types";
+    import { get_recent_activities as getRecentActivities } from "$lib/apis/dashboard";
     import PortfolioDistributionChart from "$lib/components/PortfolioDistributionChart.svelte";
     import PortfolioHistoryChart from "$lib/components/PortfolioHistoryChart.svelte";
     import ShareModal from "$lib/components/ShareModal.svelte";
@@ -43,6 +46,7 @@
         total_pl_stats: { percent: 0, direction: "flat" },
     };
     let history: PortfolioHistory[] = [];
+    let activities: ActivityItem[] = [];
     let currentPortfolio: Portfolio | null = null; // State for current portfolio
     let error: string | null = null;
     let loading = true;
@@ -66,17 +70,24 @@
         loading = true;
         error = null;
         try {
-            const [assetsData, summaryResponse, historyData, portfoliosData] =
-                await Promise.all([
-                    getAssets(),
-                    getPortfolioSummary(),
-                    getPortfolioHistory({ skip: 0, limit: 30 }),
-                    fetchPortfolios(), // Fetch portfolios
-                ]);
+            const [
+                assetsData,
+                summaryResponse,
+                historyData,
+                portfoliosData,
+                activitiesData,
+            ] = await Promise.all([
+                getAssets(),
+                getPortfolioSummary(),
+                getPortfolioHistory({ skip: 0, limit: 30 }),
+                fetchPortfolios(),
+                getRecentActivities(),
+            ]);
             assets = assetsData;
             positions = summaryResponse.positions;
             portfolioSummary = summaryResponse.summary;
             history = historyData;
+            activities = activitiesData;
 
             if (portfoliosData.length > 0) {
                 currentPortfolio = portfoliosData[0];
@@ -311,13 +322,70 @@
                 <h2 class="card-title text-lg normal-case mb-4">
                     Recent Activity
                 </h2>
-                <div class="space-y-3">
-                    <p
-                        class="text-sm text-neutral-500 dark:text-neutral-400 italic"
-                    >
-                        No recent transactions to display. Add your first
-                        transaction!
-                    </p>
+                <div class="space-y-4">
+                    {#if activities.length === 0}
+                        <p
+                            class="text-sm text-neutral-500 dark:text-neutral-400 italic"
+                        >
+                            No recent transactions to display. Add your first
+                            transaction!
+                        </p>
+                    {:else}
+                        {#each activities as activity}
+                            <div
+                                class="flex items-start gap-3 pb-3 border-b border-neutral-100 dark:border-neutral-700 last:border-0 last:pb-0"
+                            >
+                                <div class="mt-1">
+                                    {#if activity.type === ActivityType.TRANSACTION_EXECUTED}
+                                        <div
+                                            class="p-2 bg-blue-100 text-blue-600 rounded-lg dark:bg-blue-900/30 dark:text-blue-400"
+                                        >
+                                            <DollarOutline class="w-4 h-4" />
+                                        </div>
+                                    {:else if activity.type === ActivityType.PORTFOLIO_CREATED}
+                                        <div
+                                            class="p-2 bg-purple-100 text-purple-600 rounded-lg dark:bg-purple-900/30 dark:text-purple-400"
+                                        >
+                                            <BriefcaseOutline class="w-4 h-4" />
+                                        </div>
+                                    {:else if activity.type === ActivityType.ASSET_ADDED}
+                                        <div
+                                            class="p-2 bg-green-100 text-green-600 rounded-lg dark:bg-green-900/30 dark:text-green-400"
+                                        >
+                                            <PlusOutline class="w-4 h-4" />
+                                        </div>
+                                    {:else}
+                                        <div
+                                            class="p-2 bg-gray-100 text-gray-600 rounded-lg dark:bg-gray-800 dark:text-gray-400"
+                                        >
+                                            <ClipboardListOutline
+                                                class="w-4 h-4"
+                                            />
+                                        </div>
+                                    {/if}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p
+                                        class="text-sm font-medium text-gray-900 dark:text-white truncate"
+                                    >
+                                        {activity.title}
+                                    </p>
+                                    <p
+                                        class="text-xs text-gray-500 dark:text-gray-400 truncate"
+                                    >
+                                        {activity.description}
+                                    </p>
+                                    <p
+                                        class="text-xs text-gray-400 dark:text-gray-500 mt-1"
+                                    >
+                                        {new Date(
+                                            activity.timestamp,
+                                        ).toLocaleString()}
+                                    </p>
+                                </div>
+                            </div>
+                        {/each}
+                    {/if}
                 </div>
             </Card>
 

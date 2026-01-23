@@ -243,3 +243,19 @@ export interface AssetTransaction {
     total: number;
     fee: number | null;
 }
+
+export enum ActivityType {
+    PORTFOLIO_CREATED = "portfolio_create",
+    ASSET_ADDED = "asset_add",
+    TRANSACTION_EXECUTED = "transaction"
+}
+
+export interface ActivityItem {
+    id: string;
+    type: ActivityType;
+    title: string;
+    description: string;
+    timestamp: string;
+    entity_id: string;
+    portfolio_id?: string;
+}

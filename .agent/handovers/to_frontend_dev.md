@@ -7,8 +7,8 @@
 - `feature/dashboard-recent-activity`
 
 ## 현재 상황 (Context)
-- 대시보드의 "Recent Activity" 섹션(현재 Placeholder)을 실제 데이터로 연동해야 합니다.
-- Backend에서 통합 API (`/api/v1/dashboard/activities`)를 개발 중입니다.
+- Backend API (`GET /api/v1/dashboard/activities`)가 개발 완료되었습니다.
+- 이제 Frontend에서 이를 실제 UI에 연결해야 합니다.
 
 ## 해야 할 일 (Tasks)
 1. **API Client 추가**:

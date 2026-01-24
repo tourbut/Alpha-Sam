@@ -8,7 +8,7 @@ from app.src.core.db import AsyncSessionLocal
 from app.src.models.user import User
 from app.src.models.position import Position
 from app.src.models.price import Price
-from app.src.engine.portfolio_service import calculate_portfolio_summary
+from app.src.engine.portfolio_calculator import calculate_portfolio_summary
 from app.src.engine.tasks.email_tasks import send_daily_report_email
 
 from app.src.models.notification import NotificationSettings

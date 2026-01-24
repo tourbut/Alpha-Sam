@@ -103,3 +103,19 @@ async def remove_asset(*, session: AsyncSession, asset_id: uuid.UUID) -> Optiona
         print(e)
         await session.rollback()
         raise e
+
+async def get_recent_assets(
+    *, session: AsyncSession, owner_id: uuid.UUID, limit: int = 5
+) -> List[Asset]:
+    try:
+        stmt = (
+            select(Asset)
+            .where(Asset.owner_id == owner_id)
+            .order_by(desc(Asset.created_at))
+            .limit(limit)
+        )
+        result = await session.execute(stmt)
+        return result.scalars().all()
+    except Exception as e:
+        print(e)
+        raise e

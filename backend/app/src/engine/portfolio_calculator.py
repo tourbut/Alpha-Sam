@@ -1,19 +1,15 @@
 """
 포트폴리오 수익률 계산 서비스
 domain_rules.md의 계산 규칙을 정확히 따름
+PURE BUSINESS LOGIC ONLY - NO DB DEPENDENCY
 """
-import uuid
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 from decimal import Decimal
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
-from app.src.models.portfolio import Portfolio
-from app.src.models.transaction import Transaction
-from app.src.models.asset import Asset
-from app.src.models.price import Price
-from app.src.schemas.position import PositionWithAsset
+import uuid
 
+# Pydantic models needed for calculation inputs/outputs?
+# Assuming these schemas are safe to use here as they define data structure.
+from app.src.schemas.position import PositionWithAsset
 
 def calculate_position_metrics(
     quantity: float,
@@ -120,6 +116,7 @@ def calculate_portfolio_summary(
         )
         portfolio_return_rate = round(portfolio_return_rate, 2)
     
+
     return {
         "total_valuation": float(total_valuation) if total_valuation > 0 else None,
         "total_profit_loss": float(total_profit_loss),
@@ -128,49 +125,24 @@ def calculate_portfolio_summary(
     }
 
 
-async def calculate_positions_from_transactions(
-    session: AsyncSession,
-    portfolio_id: uuid.UUID
+def calculate_positions(
+    assets: List,
+    transactions: List,
+    price_provider_func = None # Optional: if we want to inject price lookup, or pass prices map
 ) -> List[PositionWithAsset]:
     """
-    Portfolio의 모든 Transaction을 Asset별로 집계하여 Position 계산
-    트랜잭션이 없는 자산(초기 등록 상태)도 포함하여 반환.
-    
-    Args:
-        session: Database session
-        portfolio_id: Portfolio ID
-    
-    Returns:
-        PositionWithAsset 리스트 (asset 정보 포함)
+    Asset과 Transaction 리스트를 받아 Postion 리스트를 계산 (Pure Logic).
+    DB Session 의존성 없음.
     """
-    # 1. 해당 Portfolio의 모든 Asset 조회
-    asset_stmt = select(Asset).where(Asset.portfolio_id == portfolio_id)
-    asset_result = await session.execute(asset_stmt)
-    assets = asset_result.scalars().all()
-
-    if not assets:
-        return []
-
-    # 2. 해당 Portfolio의 모든 Transaction 조회
-    tx_stmt = (
-        select(Transaction)
-        .where(Transaction.portfolio_id == portfolio_id)
-        .order_by(Transaction.executed_at, Transaction.id)
-    )
-    tx_result = await session.execute(tx_stmt)
-    transactions = tx_result.scalars().all()
-    
     # 3. Asset별로 Transaction 그룹화
-    asset_transactions: Dict[uuid.UUID, List[Transaction]] = {asset.id: [] for asset in assets}
+    asset_transactions: Dict[uuid.UUID, List] = {asset.id: [] for asset in assets}
     for tx in transactions:
+        # tx.asset_id가 DB 모델 속성이라고 가정
         if tx.asset_id in asset_transactions:
             asset_transactions[tx.asset_id].append(tx)
     
-    # 4. 각 Asset별로 Position 계산
     positions: List[PositionWithAsset] = []
     
-    from app.src.engine.price_service import price_service
-
     for asset in assets:
         txs = asset_transactions.get(asset.id, [])
         current_qty = Decimal("0")
@@ -202,79 +174,25 @@ async def calculate_positions_from_transactions(
         # 최종 평단가 계산
         avg_price = (total_cost / current_qty) if current_qty > 0 else Decimal("0")
         
-        # 최신 가격 조회 (Cache or Fetch)
-        try:
-             current_price = await price_service.get_current_price(asset.symbol, use_cache=True)
-        except Exception:
-             current_price = 0.0
+        # 현재가 조회 (외부에서 주입받은 price_map 사용 권장, 여기서는 0.0 처리 후 Service에서 업데이트)
+        current_price = 0.0
 
-        # Position 생성 (수량이 0이어도 포함)
+        # Position 생성
         position = PositionWithAsset(
-            id=None,  # DB ID 없음 (Transiet Object)
+            id=None,
             asset_id=asset.id,
             quantity=float(current_qty),
             avg_price=float(avg_price),
             created_at=None,
             updated_at=None,
-            # Asset 정보
             asset_symbol=asset.symbol,
             asset_name=asset.name,
             asset_category=asset.category,
-            # 계산된 필드
-            valuation=float(current_qty) * current_price if current_price else 0.0,
-            profit_loss=(current_price - float(avg_price)) * float(current_qty) if current_price else 0.0,
-            return_rate=((current_price - float(avg_price)) / float(avg_price) * 100) if float(avg_price) > 0 and current_price else 0.0,
-            current_price=current_price
+            valuation=0.0,
+            profit_loss=0.0,
+            return_rate=0.0,
+            current_price=None
         )
         positions.append(position)
     
     return positions
-
-
-class PortfolioService:
-    async def create_portfolio(self, session: AsyncSession, owner_id: uuid.UUID, name: str, description: Optional[str] = None) -> Portfolio:
-        portfolio = Portfolio(owner_id=owner_id, name=name, description=description)
-        session.add(portfolio)
-        await session.commit()
-        await session.refresh(portfolio)
-        return portfolio
-
-    async def get_user_portfolios(self, session: AsyncSession, owner_id: uuid.UUID) -> List[Portfolio]:
-        stmt = select(Portfolio).where(Portfolio.owner_id == owner_id)
-        result = await session.execute(stmt)
-        return result.scalars().all()
-
-    async def get_portfolio(self, session: AsyncSession, portfolio_id: uuid.UUID, owner_id: uuid.UUID) -> Optional[Portfolio]:
-        stmt = select(Portfolio).where(Portfolio.id == portfolio_id, Portfolio.owner_id == owner_id)
-        result = await session.execute(stmt)
-        return result.scalar_one_or_none()
-
-    async def get_portfolio_positions(self, session: AsyncSession, portfolio_id: uuid.UUID) -> List[PositionWithAsset]:
-        """Portfolio의 Position 목록 조회 (Transaction 기반 계산)"""
-        return await calculate_positions_from_transactions(session, portfolio_id)
-
-    async def add_transaction(
-        self, 
-        session: AsyncSession, 
-        portfolio_id: uuid.UUID, 
-        asset_id: uuid.UUID, 
-        type: str, quantity: float, price: float, executed_at) -> Transaction:
-        # 1. Add Transaction
-        tx = Transaction(
-            portfolio_id=portfolio_id,
-            asset_id=asset_id,
-            type=type,
-            quantity=quantity,
-            price=price,
-            executed_at=executed_at
-        )
-        session.add(tx)
-        
-        # 2. Position 재계산 로직 제거 (더 이상 필요 없음)
-        # await self._recalculate_position(session, portfolio_id, asset_id)
-        
-        await session.commit()
-        await session.refresh(tx)
-        return tx
-
-portfolio_service_instance = PortfolioService()

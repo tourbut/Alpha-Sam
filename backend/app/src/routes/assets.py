@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.src.core.db import get_session
 from app.src.schemas.asset import AssetCreate, AssetRead
 from app.src.engine.asset_service import asset_service
-from app.src.crud import crud_asset
+from app.src.crud import assets as crud_asset
 from app.src.deps import SessionDep_async, CurrentUser
 
 router = APIRouter()

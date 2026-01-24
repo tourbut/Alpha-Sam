@@ -5,7 +5,6 @@ from app.src.core.cache import get_redis_client
 from app.src.models.social import LeaderboardRank, LeaderboardPeriod
 from app.src.models.portfolio import Portfolio
 from app.src.services.portfolio_service import PortfolioService
-from app.src.engine.portfolio_service import calculate_positions_from_transactions
 import logging
 
 logger = logging.getLogger(__name__)
@@ -34,21 +33,22 @@ class LeaderboardService:
 
         for pf in portfolios:
             try:
-                # Calculate return rate
-                positions = await calculate_positions_from_transactions(session, pf.id)
+                # Use PortfolioService to get positions with calculated metrics (valuation, etc.)
+                positions = await PortfolioService.get_positions(session, pf.id)
                 
                 total_current_value = 0.0
                 total_invested = 0.0
                 
                 if positions:
-                    asset_ids = [p.asset_id for p in positions]
-                    price_map = await PortfolioService._get_latest_prices(session, asset_ids)
-                    
                     for pos in positions:
-                        price = price_map.get(pos.asset_id)
-                        if price:
-                            total_current_value += float(pos.quantity) * price
-                            total_invested += float(pos.quantity) * float(pos.avg_price)
+                        # get_positions calculates valuation based on latest price if available
+                        if pos.valuation is not None:
+                            total_current_value += pos.valuation
+                        elif pos.quantity > 0 and pos.avg_price > 0:
+                            # Fallback if no current price (should rarely happen if price service works)
+                           total_current_value += pos.quantity * pos.avg_price
+
+                        total_invested += float(pos.quantity) * float(pos.avg_price)
                 
                 return_rate = 0.0
                 if total_invested > 0:
@@ -80,6 +80,7 @@ class LeaderboardService:
             
             db_objects = []
             redis_mapping = {}
+            redis_key = self._get_redis_key(period) # Defined here for use in Redis block
 
             for rank_idx, data in enumerate(ranking_data, 1):
                 db_objects.append(LeaderboardRank(

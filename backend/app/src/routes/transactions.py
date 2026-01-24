@@ -3,7 +3,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.src.schemas.transaction import TransactionCreate, TransactionRead
-from app.src.crud import crud_transaction
+from app.src.crud import transactions as crud_transaction
 from app.src.deps import SessionDep_async, CurrentUser
 
 router = APIRouter()

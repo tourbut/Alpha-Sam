@@ -89,3 +89,24 @@ async def get_transactions(
     except Exception as e:
         print(e)
         raise e
+
+
+async def get_recent_transactions(
+    *, session: AsyncSession, owner_id: uuid.UUID, limit: int = 5
+) -> List[Transaction]:
+    """
+    Get recent transactions for a user across all their portfolios.
+    """
+    try:
+        stmt = (
+            select(Transaction)
+            .join(Portfolio)
+            .where(Portfolio.owner_id == owner_id)
+            .order_by(desc(Transaction.executed_at))
+            .limit(limit)
+        )
+        result = await session.execute(stmt)
+        return result.scalars().all()
+    except Exception as e:
+        print(e)
+        raise e

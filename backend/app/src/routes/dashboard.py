@@ -1,12 +1,11 @@
 from typing import List
 import uuid
 from fastapi import APIRouter, Depends
-from sqlalchemy import select, desc
 from app.src.deps import SessionDep_async, CurrentUser
 from app.src.schemas.dashboard import ActivityItem, ActivityType
-from app.src.models.portfolio import Portfolio
-from app.src.models.asset import Asset
-from app.src.models.transaction import Transaction
+from app.src.crud import portfolios as crud_portfolio
+from app.src.crud import assets as crud_asset
+from app.src.crud import transactions as crud_transaction
 
 router = APIRouter(tags=["dashboard"])
 
@@ -23,38 +22,13 @@ async def get_recent_activities(
     """
     
     # 1. Recent Portfolios (Created)
-    portfolio_stmt = (
-        select(Portfolio)
-        .where(Portfolio.owner_id == current_user.id)
-        .order_by(desc(Portfolio.created_at))
-        .limit(5)
-    )
-    portfolios_result = await db.execute(portfolio_stmt)
-    portfolios = portfolios_result.scalars().all()
+    portfolios = await crud_portfolio.get_recent_portfolios(session=db, owner_id=current_user.id, limit=5)
     
     # 2. Recent Assets (Added)
-    # Asset has owner_id, so we can filter by that.
-    asset_stmt = (
-        select(Asset)
-        .where(Asset.owner_id == current_user.id)
-        .order_by(desc(Asset.created_at))
-        .limit(5)
-    )
-    assets_result = await db.execute(asset_stmt)
-    assets = assets_result.scalars().all()
+    assets = await crud_asset.get_recent_assets(session=db, owner_id=current_user.id, limit=5)
     
     # 3. Recent Transactions (Executed)
-    # Transaction doesn't have owner_id directly but links to Portfolio which has owner_id.
-    # We join Portfolio to filter by owner.
-    transaction_stmt = (
-        select(Transaction)
-        .join(Portfolio)
-        .where(Portfolio.owner_id == current_user.id)
-        .order_by(desc(Transaction.executed_at))
-        .limit(5)
-    )
-    transactions_result = await db.execute(transaction_stmt)
-    transactions = transactions_result.scalars().all()
+    transactions = await crud_transaction.get_recent_transactions(session=db, owner_id=current_user.id, limit=5)
     
     # 4. Integrate & Map to ActivityItem
     activities = []
@@ -85,11 +59,6 @@ async def get_recent_activities(
         
     # Map Transactions
     for t in transactions:
-        # Pre-fetch asset symbol if possible, or use placeholder. 
-        # In a real scenario, we might want to eagerly load 'asset' relationship.
-        # Here we'll do a simple string format.
-        # Since we didn't eager load, accessing t.asset might trigger lazy load error or be missing.
-        # For performance, let's assume simple description for now.
         verb = "Bought" if t.type.upper() == "BUY" else "Sold"
         activities.append(ActivityItem(
             id=uuid.uuid4(),

@@ -6,7 +6,7 @@ from app.src.models.notification import NotificationSettings
 from app.src.schemas.notification import NotificationSettingsRead, NotificationSettingsUpdate
 from app.src.models.user import User
 
-from app.src.crud import crud_notification
+from app.src.crud import notifications as crud_notification
 from app.src.deps import SessionDep_async, CurrentUser
 
 router = APIRouter()

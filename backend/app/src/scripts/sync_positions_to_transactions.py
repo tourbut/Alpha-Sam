@@ -9,7 +9,7 @@ from app.src.core.db import AsyncSessionLocal
 from app.src.models.position import Position
 from app.src.models.transaction import Transaction
 from app.src.schemas.transaction import TransactionCreate
-from app.src.crud import crud_transaction
+from app.src.crud import transactions as crud_transaction
 
 async def migrate_positions():
     async with AsyncSessionLocal() as session:

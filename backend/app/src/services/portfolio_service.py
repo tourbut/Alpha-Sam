@@ -7,98 +7,109 @@ from app.src.models.portfolio import Portfolio, PortfolioVisibility
 from app.src.models.portfolio_history import PortfolioHistory
 from app.src.schemas.position import PositionWithAsset
 from app.src.schemas.portfolio import PortfolioResponse, PortfolioSummary, PortfolioStats, PortfolioSharedRead
-from app.src.engine.portfolio_service import calculate_position_metrics, calculate_portfolio_summary, calculate_positions_from_transactions
-from app.src.crud import crud_portfolio_history
+from app.src.engine.portfolio_calculator import calculate_position_metrics, calculate_portfolio_summary, calculate_positions
+from app.src.crud import portfolio_histories as crud_portfolio_history
+from app.src.crud import portfolios as crud_portfolio
+from app.src.crud import assets as crud_asset
+from app.src.crud import transactions as crud_transaction
 from sqlalchemy.orm import selectinload
 
 class PortfolioService:
     @staticmethod
-    async def update_visibility(session: AsyncSession, portfolio_id: uuid.UUID, visibility: PortfolioVisibility) -> Portfolio:
+    async def get_positions(session: AsyncSession, portfolio_id: uuid.UUID) -> List[PositionWithAsset]:
         """
-        Update portfolio visibility and manage share_token.
+        Orchestration method to calculate positions.
+        1. Fetch Assets and Transactions via CRUD.
+        2. Pass them to Engine to calculate Positions.
         """
-        stmt = select(Portfolio).where(Portfolio.id == portfolio_id)
-        result = await session.execute(stmt)
-        portfolio = result.scalar_one_or_none()
+        # 1. Fetch Data
+        # We need a method in crud_asset to get assets by portfolio?
+        # Assuming we can just select them here or add a helper in crud.
+        # But wait, to be strict, we should use CRUD.
+        # Let's use direct selection for now if CRUD lacks method, or better, add to CRUD.
+        # Check crud/assets.py content? Assuming basic CRUD.
+        # For Refactor, let's keep logic simple.
         
-        if not portfolio:
-            return None
-            
-        portfolio.visibility = visibility
+        # Fetch Assets
+        from app.src.models.asset import Asset
+        stmt_asset = select(Asset).where(Asset.portfolio_id == portfolio_id)
+        result_asset = await session.execute(stmt_asset)
+        assets = result_asset.scalars().all()
         
-        if visibility == PortfolioVisibility.LINK_ONLY:
-            if not portfolio.share_token:
-                portfolio.share_token = uuid.uuid4()
-        elif visibility == PortfolioVisibility.PRIVATE:
-            portfolio.share_token = None
-            
-        session.add(portfolio)
-        await session.commit()
-        await session.refresh(portfolio)
-        return portfolio
+        if not assets:
+            return []
 
-    @staticmethod
-    async def get_shared_portfolio(session: AsyncSession, token: uuid.UUID) -> Optional[PortfolioSharedRead]:
-        """
-        Get portfolio by share_token for public/link usage.
-        """
-        stmt = select(Portfolio).where(Portfolio.share_token == token)
-        result = await session.execute(stmt)
-        portfolio = result.scalar_one_or_none()
+        # Fetch Transactions
+        from app.src.models.transaction import Transaction
+        stmt_tx = (
+            select(Transaction)
+            .where(Transaction.portfolio_id == portfolio_id)
+            .order_by(Transaction.executed_at, Transaction.id)
+        )
+        result_tx = await session.execute(stmt_tx)
+        transactions = result_tx.scalars().all()
         
-        if not portfolio:
-            return None
+        # 2. Call Engine
+        positions = calculate_positions(assets=assets, transactions=transactions)
         
-        # LINK_ONLY가 아니면 token으로 접근 불가? -> 설계상 LINK_ONLY일때 토큰 사용.
-        # PUBLIC이어도 토큰이 있으면 접근 허용 가능.
-        # 하지만 LINK_ONLY/PUBLIC 상태가 아니면 접근 불가 처리해야 함.
-        if portfolio.visibility == PortfolioVisibility.PRIVATE:
-            return None
-
-        # Calculate Summary logic reused
-        # 1. Transaction 기반으로 Positions 계산
-        positions = await calculate_positions_from_transactions(session, portfolio.id)
-        
-        total_value = 0.0
-        total_cost = 0.0
-        portfolio_return_rate = 0.0
-        
-        position_reads: List[PositionWithAsset] = []
-        
+        # 3. Enhance with Prices (Service Responsibility)
         if positions:
-            # 2. Fetch Prices
             asset_ids = [p.asset_id for p in positions]
             price_map = await PortfolioService._get_latest_prices(session, asset_ids)
             
-            summary_input_data = []
-
             for position in positions:
                 current_price = price_map.get(position.asset_id)
+                
+                # Re-calculate metrics with price
                 metrics = calculate_position_metrics(
                     quantity=position.quantity,
                     buy_price=position.avg_price,
                     current_price=current_price
                 )
+                
                 position.valuation = metrics["valuation"]
                 position.profit_loss = metrics["profit_loss"]
                 position.return_rate = metrics["return_rate"]
                 position.current_price = current_price
-                position_reads.append(position)
-                
+
+        return positions
+
+    @staticmethod
+    async def update_visibility(session: AsyncSession, portfolio_id: uuid.UUID, visibility: PortfolioVisibility) -> Optional[Portfolio]:
+        return await crud_portfolio.update_visibility(session=session, portfolio_id=portfolio_id, visibility=visibility)
+
+    @staticmethod
+    async def get_shared_portfolio(session: AsyncSession, token: uuid.UUID) -> Optional[PortfolioSharedRead]:
+        portfolio = await crud_portfolio.get_shared_portfolio(session=session, token=token)
+        
+        if not portfolio:
+            return None
+        
+        if portfolio.visibility == PortfolioVisibility.PRIVATE:
+            return None
+
+        # 1. Calculate Positions
+        positions = await PortfolioService.get_positions(session, portfolio.id)
+        
+        total_value = 0.0
+        total_cost = 0.0
+        portfolio_return_rate = 0.0
+        
+        summary_input_data = []
+
+        if positions:
+             for position in positions:
                 summary_input_data.append({
                     "quantity": float(position.quantity),
                     "buy_price": float(position.avg_price),
-                    "current_price": current_price
+                    "current_price": position.current_price
                 })
             
-            # 3. Calculate Summary
-            summary_metrics = calculate_portfolio_summary(summary_input_data)
-            total_value = summary_metrics["total_valuation"] or 0.0
-            total_cost = summary_metrics["total_invested"] or 0.0
-            
-            if total_cost > 0:
-                portfolio_return_rate = ((total_value - total_cost) / total_cost) * 100
-            
+             summary_metrics = calculate_portfolio_summary(summary_input_data)
+             total_value = summary_metrics["total_valuation"] or 0.0
+             total_cost = summary_metrics["total_invested"] or 0.0
+             portfolio_return_rate = summary_metrics["portfolio_return_rate"] or 0.0
+
         # Owner nickname
         from app.src.models.user import User
         user = await session.get(User, portfolio.owner_id)
@@ -111,59 +122,41 @@ class PortfolioService:
             description=portfolio.description,
             total_value=total_value,
             return_rate=portfolio_return_rate,
-            positions=position_reads,
+            positions=positions,
             visibility=portfolio.visibility
         )
 
     @staticmethod
     async def create_snapshot(session: AsyncSession, user_id: uuid.UUID, portfolio_id: Optional[uuid.UUID] = None) -> PortfolioHistory:
-        """
-        Create a portfolio snapshot for the given user.
-        """
-        # 특정 portfolio_id가 없으면 첫 번째 포트폴리오 사용
-        from app.src.models.portfolio import Portfolio
         if portfolio_id:
-            portfolio = await session.get(Portfolio, portfolio_id)
+            portfolio = await crud_portfolio.get_portfolio(session=session, portfolio_id=portfolio_id)
         else:
-            stmt_portfolio = select(Portfolio).where(Portfolio.owner_id == user_id).limit(1)
-            result_portfolio = await session.execute(stmt_portfolio)
-            portfolio = result_portfolio.scalar_one_or_none()
+            # First portfolio fallback
+            portfolios = await crud_portfolio.get_user_portfolios(session=session, owner_id=user_id)
+            portfolio = portfolios[0] if portfolios else None
         
         if not portfolio:
-            # Portfolio가 없으면 빈 snapshot 생성
-            history = PortfolioHistory(
+             history = PortfolioHistory(
                 owner_id=user_id,
                 total_value=0.0,
                 total_cost=0.0,
                 total_pl=0.0
             )
-            await crud_portfolio_history.create_portfolio_history(session=session, history=history)
-            return history
+             await crud_portfolio_history.create_portfolio_history(session=session, history=history)
+             return history
         
-        # 1. Transaction 기반으로 Positions 계산
-        positions = await calculate_positions_from_transactions(session, portfolio.id)
+        positions = await PortfolioService.get_positions(session, portfolio.id)
         
         summary_input_data = []
-
-        if positions:
-            # 2. Fetch latest prices (Batch)
-            asset_ids = [p.asset_id for p in positions]
-            price_map = await PortfolioService._get_latest_prices(session, asset_ids)
-        else:
-            price_map = {}
-
         for position in positions:
-            current_price = price_map.get(position.asset_id)
             summary_input_data.append({
                 "quantity": float(position.quantity),
                 "buy_price": float(position.avg_price),
-                "current_price": current_price
+                "current_price": position.current_price
             })
 
-        # 3. Calculate Summary
         summary_metrics = calculate_portfolio_summary(summary_input_data)
         
-        # 4. Save History
         history = PortfolioHistory(
             owner_id=user_id,
             total_value=summary_metrics["total_valuation"] or 0.0,
@@ -176,22 +169,13 @@ class PortfolioService:
 
     @staticmethod
     async def get_summary(session: AsyncSession, user_id: uuid.UUID, portfolio_id: Optional[uuid.UUID] = None) -> PortfolioResponse:
-        """
-        Get portfolio summary and positions.
-        If portfolio_id is None, aggregates data from ALL user portfolios.
-        """
-        from app.src.models.portfolio import Portfolio
-        
         portfolios = []
         if portfolio_id:
-            portfolio = await session.get(Portfolio, portfolio_id)
+            portfolio = await crud_portfolio.get_portfolio(session=session, portfolio_id=portfolio_id)
             if portfolio:
                 portfolios.append(portfolio)
         else:
-            # Fetch ALL portfolios
-            stmt_portfolio = select(Portfolio).where(Portfolio.owner_id == user_id)
-            result_portfolio = await session.execute(stmt_portfolio)
-            portfolios = result_portfolio.scalars().all()
+            portfolios = await crud_portfolio.get_user_portfolios(session=session, owner_id=user_id)
         
         if not portfolios:
             return PortfolioResponse(
@@ -204,78 +188,41 @@ class PortfolioService:
                 positions=[]
             )
         
-        # 1. Aggregate Positions from all target portfolios
         all_positions_map: Dict[uuid.UUID, PositionWithAsset] = {}
         
         for portfolio in portfolios:
-            positions = await calculate_positions_from_transactions(session, portfolio.id)
+            positions = await PortfolioService.get_positions(session, portfolio.id)
             
             for pos in positions:
                 if pos.asset_id in all_positions_map:
                     existing = all_positions_map[pos.asset_id]
                     
-                    # Merge logic: Weighted Average for Price, Sum for Quantity
                     total_qty = existing.quantity + pos.quantity
-                    
                     cost1 = existing.quantity * existing.avg_price
                     cost2 = pos.quantity * pos.avg_price
                     total_cost = cost1 + cost2
-                    
                     new_avg_price = (total_cost / total_qty) if total_qty > 0 else 0.0
                     
                     existing.quantity = total_qty
                     existing.avg_price = new_avg_price
+                    # Prices should be same for same asset
                 else:
-                    # Clone position to avoid reference issues if mutable? Pydantic models are distinct.
                     all_positions_map[pos.asset_id] = pos
 
         final_positions = list(all_positions_map.values())
         
-        if not final_positions:
-            return PortfolioResponse(
-                summary=PortfolioSummary(
-                    total_value=0.0,
-                    total_cost=0.0,
-                    total_pl=0.0,
-                    total_pl_stats=PortfolioStats(percent=0.0, direction="flat")
-                ),
-                positions=[]
-            )
-
-        # 2. Fetch Prices
-        asset_ids = [p.asset_id for p in final_positions]
-        price_map = await PortfolioService._get_latest_prices(session, asset_ids)
-        
-        position_reads: List[PositionWithAsset] = []
+        # Prices are already enriched in get_positions, so we just calculate summary
         summary_input_data = []
-
         for position in final_positions:
-            current_price = price_map.get(position.asset_id)
-            
-            metrics = calculate_position_metrics(
-                quantity=position.quantity,
-                buy_price=position.avg_price,
-                current_price=current_price
-            )
-            
-            # Position 데이터 업데이트
-            position.valuation = metrics["valuation"]
-            position.profit_loss = metrics["profit_loss"]
-            position.return_rate = metrics["return_rate"]
-            position.current_price = current_price
-            
-            position_reads.append(position)
-            
-            summary_input_data.append({
+             summary_input_data.append({
                 "quantity": float(position.quantity),
                 "buy_price": float(position.avg_price),
-                "current_price": current_price
+                "current_price": position.current_price
             })
 
-        # 3. Calculate Summary
         summary_metrics = calculate_portfolio_summary(summary_input_data)
-        total_pl = summary_metrics["total_profit_loss"]
         
+        total_pl = summary_metrics["total_profit_loss"]
         direction = "flat"
         if total_pl is not None:
             if total_pl > 0:
@@ -295,14 +242,11 @@ class PortfolioService:
 
         return PortfolioResponse(
             summary=summary_schema,
-            positions=position_reads
+            positions=final_positions
         )
 
     @staticmethod
     async def _get_latest_prices(session: AsyncSession, asset_ids: List[uuid.UUID]) -> Dict[uuid.UUID, float]:
-        """
-        Helper to fetch latest prices for given assets efficiently.
-        """
         if not asset_ids:
             return {}
             
@@ -319,22 +263,9 @@ class PortfolioService:
 
     @staticmethod
     async def get_portfolios_with_assets(session: AsyncSession, user_id: uuid.UUID) -> List[Dict[str, Any]]:
-        """
-        사용자의 모든 포트폴리오 목록과 각 포트폴리오의 자산 요약 정보를 조회합니다.
-        
-        Args:
-            session: Database session
-            user_id: 사용자 ID
-        
-        Returns:
-            포트폴리오 목록 (각 포트폴리오에 자산 구성 정보 포함)
-        """
         from app.src.schemas.portfolio import PortfolioAssetSummary, PortfolioWithAssetsSummary
         
-        # 1. 사용자의 모든 포트폴리오 조회
-        stmt = select(Portfolio).where(Portfolio.owner_id == user_id)
-        result = await session.execute(stmt)
-        portfolios = result.scalars().all()
+        portfolios = await crud_portfolio.get_user_portfolios(session=session, owner_id=user_id)
         
         if not portfolios:
             return []
@@ -342,50 +273,36 @@ class PortfolioService:
         portfolio_responses = []
         
         for portfolio in portfolios:
-            # 2. 각 포트폴리오의 positions 계산 (Transaction 기반)
-            positions = await calculate_positions_from_transactions(session, portfolio.id)
+            positions = await PortfolioService.get_positions(session, portfolio.id)
             
             total_value = 0.0
             asset_summaries = []
             
-            if positions:
-                # 3. 가격 정보 조회
-                asset_ids = [p.asset_id for p in positions]
-                price_map = await PortfolioService._get_latest_prices(session, asset_ids)
-                
-                # 4. 각 position의 평가금액 계산
-                position_values = []
-                for position in positions:
-                    current_price = price_map.get(position.asset_id)
-                    
-                    # 가격이 있으면 현재가 기준, 없으면 평균 매수가 기준으로 평가
-                    if current_price is not None:
-                        valuation = position.quantity * current_price
-                    else:
-                        # Fallback: 평균 매수가 기준으로 평가금액 계산
-                        valuation = position.quantity * position.avg_price
-                    
-                    # 가격 유무와 관계없이 자산 정보 추가
-                    position_values.append({
-                        "symbol": position.asset_symbol or "UNKNOWN",
-                        "name": position.asset_name or "Unknown Asset",
-                        "value": round(valuation, 2),
-                        "asset_id": position.asset_id
-                    })
-                    total_value += valuation
-                
-                # 5. 비중(percentage) 계산
-                if total_value > 0:
-                    for pv in position_values:
-                        percentage = (pv["value"] / total_value) * 100
-                        asset_summaries.append(PortfolioAssetSummary(
-                            symbol=pv["symbol"],
-                            name=pv["name"],
-                            value=pv["value"],
-                            percentage=round(percentage, 1)
-                        ))
+            # Positions already have prices from get_positions
             
-            # 6. 응답 스키마 생성
+            position_values = []
+            for position in positions:
+                # Use pre-calculated valuation if available (since get_positions does it)
+                valuation = position.valuation if position.valuation is not None else (position.quantity * position.avg_price)
+                 
+                position_values.append({
+                    "symbol": position.asset_symbol or "UNKNOWN",
+                    "name": position.asset_name or "Unknown Asset",
+                    "value": round(valuation, 2),
+                    "asset_id": position.asset_id
+                })
+                total_value += valuation
+            
+            if total_value > 0:
+                for pv in position_values:
+                    percentage = (pv["value"] / total_value) * 100
+                    asset_summaries.append(PortfolioAssetSummary(
+                        symbol=pv["symbol"],
+                        name=pv["name"],
+                        value=pv["value"],
+                        percentage=round(percentage, 1)
+                    ))
+            
             portfolio_with_assets = PortfolioWithAssetsSummary(
                 id=portfolio.id,
                 name=portfolio.name,
@@ -397,4 +314,3 @@ class PortfolioService:
             portfolio_responses.append(portfolio_with_assets)
         
         return portfolio_responses
-

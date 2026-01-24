@@ -1,13 +1,19 @@
 from typing import List, Optional
 import uuid
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.src.schemas.portfolio import PortfolioCreate, PortfolioRead, PortfolioResponse, PortfolioHistoryRead, PortfolioVisibilityUpdate, PortfolioSharedRead, PortfolioWithAssetsSummary
 from app.src.schemas.transaction import TransactionCreate, TransactionRead
-from app.src.engine.portfolio_service import portfolio_service_instance
+from app.src.schemas.position import PositionRead, AssetSummaryRead
+from app.src.schemas.transaction import TransactionWithDetails
 from app.src.services.portfolio_service import PortfolioService
 from app.src.deps import SessionDep_async, CurrentUser
-from app.src.crud import crud_portfolio_history
+from app.src.crud import portfolio_histories as crud_portfolio_history
+from app.src.crud import portfolios as crud_portfolio
+from app.src.crud import transactions as crud_transaction
+from app.src.models.price import Price
+from sqlalchemy import select, desc
 
 router = APIRouter(tags=["portfolios"])
 
@@ -20,7 +26,7 @@ async def create_portfolio(
     """
     새 포트폴리오 생성
     """
-    return await portfolio_service_instance.create_portfolio(
+    return await crud_portfolio.create_portfolio(
         session=db,
         owner_id=current_user.id,
         name=portfolio_in.name,
@@ -35,7 +41,7 @@ async def read_portfolios(
     """
     내 포트폴리오 목록 조회
     """
-    return await portfolio_service_instance.get_user_portfolios(session=db, owner_id=current_user.id)
+    return await crud_portfolio.get_user_portfolios(session=db, owner_id=current_user.id)
 
 @router.get("/with-assets", response_model=List[PortfolioWithAssetsSummary])
 async def read_portfolios_with_assets(
@@ -44,15 +50,9 @@ async def read_portfolios_with_assets(
 ):
     """
     포트폴리오 목록 + 자산 요약 정보 조회
-    
-    각 포트폴리오에 대해 다음 정보를 반환합니다:
-    - 기본 정보 (id, name, description, created_at)
-    - 총 평가금액 (total_value)
-    - 자산 구성 리스트 (symbol, name, value, percentage)
     """
     return await PortfolioService.get_portfolios_with_assets(session=db, user_id=current_user.id)
 
-# Merged from portfolio.py (singular)
 @router.post("/snapshot", status_code=status.HTTP_201_CREATED)
 async def create_portfolio_snapshot(
     session: SessionDep_async,
@@ -96,7 +96,7 @@ async def read_portfolio(
     """
     특정 포트폴리오 상세 조회
     """
-    portfolio = await portfolio_service_instance.get_portfolio(
+    portfolio = await crud_portfolio.get_portfolio(
         session=db, 
         portfolio_id=portfolio_id, 
         owner_id=current_user.id
@@ -104,8 +104,6 @@ async def read_portfolio(
     if not portfolio:
         raise HTTPException(status_code=404, detail="Portfolio not found")
     return portfolio
-
-from app.src.schemas.position import PositionRead
 
 @router.get("/{portfolio_id}/positions", response_model=List[PositionRead])
 async def read_portfolio_positions(
@@ -117,11 +115,11 @@ async def read_portfolio_positions(
     특정 포트폴리오의 포지션 목록 조회
     """
     # Verify ownership
-    portfolio = await portfolio_service_instance.get_portfolio(db, portfolio_id, current_user.id)
+    portfolio = await crud_portfolio.get_portfolio(session=db, portfolio_id=portfolio_id, owner_id=current_user.id)
     if not portfolio:
         raise HTTPException(status_code=404, detail="Portfolio not found")
         
-    return await portfolio_service_instance.get_portfolio_positions(session=db, portfolio_id=portfolio_id)
+    return await PortfolioService.get_positions(session=db, portfolio_id=portfolio_id)
 
 @router.patch("/{portfolio_id}/visibility", response_model=PortfolioRead)
 async def update_portfolio_visibility(
@@ -134,7 +132,7 @@ async def update_portfolio_visibility(
     포트폴리오 공개 범위 설정 변경
     """
     # Verify ownership
-    portfolio = await portfolio_service_instance.get_portfolio(db, portfolio_id, current_user.id)
+    portfolio = await crud_portfolio.get_portfolio(session=db, portfolio_id=portfolio_id, owner_id=current_user.id)
     if not portfolio:
         raise HTTPException(status_code=404, detail="Portfolio not found")
         
@@ -165,30 +163,25 @@ async def create_transaction(
     거래 내역 추가 (및 포지션 자동 갱신)
     """
     # Verify ownership
-    portfolio = await portfolio_service_instance.get_portfolio(db, portfolio_id, current_user.id)
+    portfolio = await crud_portfolio.get_portfolio(session=db, portfolio_id=portfolio_id, owner_id=current_user.id)
     if not portfolio:
         raise HTTPException(status_code=404, detail="Portfolio not found")
     
-    from datetime import datetime
-    
-    # executed_at 필드 처리: 문자열을 datetime 객체로 변환
+    # executed_at 필드 처리
+    # TODO: Move this parsing/validation to Schema Validator if possible, but fine here for now as Controller logic
     if tx_in.executed_at:
         try:
-            # ISO 8601 형식 문자열을 datetime 객체로 변환
-            # "2026-01-12" 형식은 date만 포함하므로 시간 부분을 추가
             if 'T' not in tx_in.executed_at:
-                # Date만 있는 경우 00:00:00 시간 추가
                 executed_at = datetime.fromisoformat(tx_in.executed_at + "T00:00:00")
             else:
                 executed_at = datetime.fromisoformat(tx_in.executed_at)
         except Exception:
-            # 파싱 실패 시 현재 시각 사용
             executed_at = datetime.utcnow()
     else:
         executed_at = datetime.utcnow()
     
     try:
-        tx = await portfolio_service_instance.add_transaction(
+        tx = await crud_portfolio.add_transaction(
             session=db,
             portfolio_id=portfolio_id,
             asset_id=tx_in.asset_id,
@@ -201,18 +194,6 @@ async def create_transaction(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-
-# ============================================
-# 개별 자산 관련 엔드포인트 (신규)
-# ============================================
-
-from app.src.schemas.position import AssetSummaryRead
-from app.src.schemas.transaction import TransactionWithDetails
-from app.src.models.transaction import Transaction
-from app.src.models.price import Price
-from sqlalchemy import select, desc
-
-
 @router.get("/{portfolio_id}/assets/{asset_id}", response_model=AssetSummaryRead)
 async def read_portfolio_asset_summary(
     portfolio_id: uuid.UUID,
@@ -222,23 +203,14 @@ async def read_portfolio_asset_summary(
 ):
     """
     특정 포트폴리오 내 개별 자산의 요약 정보 조회
-    
-    - symbol: 자산 심볼
-    - name: 자산 이름
-    - quantity: 총 보유량
-    - avgPrice: 평균 매수가
-    - currentPrice: 현재가 (가격 정보 있는 경우)
-    - totalValue: 평가금액
-    - profitLoss: 손익
-    - returnRate: 수익률 (%)
     """
     # 1. 포트폴리오 소유권 확인
-    portfolio = await portfolio_service_instance.get_portfolio(db, portfolio_id, current_user.id)
+    portfolio = await crud_portfolio.get_portfolio(session=db, portfolio_id=portfolio_id, owner_id=current_user.id)
     if not portfolio:
         raise HTTPException(status_code=404, detail="Portfolio not found")
     
-    # 2. 해당 포트폴리오의 positions 조회 (Transaction 기반 계산)
-    positions = await portfolio_service_instance.get_portfolio_positions(session=db, portfolio_id=portfolio_id)
+    # 2. 해당 포트폴리오의 positions 조회 (via Service)
+    positions = await PortfolioService.get_positions(session=db, portfolio_id=portfolio_id)
     
     # 3. 특정 asset_id 필터링
     target_position = None
@@ -250,41 +222,18 @@ async def read_portfolio_asset_summary(
     if not target_position:
         raise HTTPException(status_code=404, detail="Asset not found in this portfolio")
     
-    # 4. 현재 가격 조회
-    price_stmt = (
-        select(Price)
-        .where(Price.asset_id == asset_id)
-        .order_by(desc(Price.timestamp))
-        .limit(1)
-    )
-    price_result = await db.execute(price_stmt)
-    latest_price = price_result.scalar_one_or_none()
-    
-    current_price = float(latest_price.value) if latest_price else None
-    
-    # 5. 평가금액 및 손익 계산
-    if current_price is not None:
-        total_value = target_position.quantity * current_price
-        profit_loss = (current_price - target_position.avg_price) * target_position.quantity
-        return_rate = ((current_price - target_position.avg_price) / target_position.avg_price * 100) if target_position.avg_price > 0 else 0.0
-    else:
-        # 현재가 없으면 평균 매수가 기준
-        total_value = target_position.quantity * target_position.avg_price
-        profit_loss = 0.0
-        return_rate = 0.0
-    
+    # Service already enriched price and metrics
     return AssetSummaryRead(
         asset_id=target_position.asset_id,
         symbol=target_position.asset_symbol or "UNKNOWN",
         name=target_position.asset_name or "Unknown Asset",
         quantity=target_position.quantity,
         avg_price=target_position.avg_price,
-        current_price=current_price,
-        total_value=round(total_value, 2),
-        profit_loss=round(profit_loss, 2),
-        return_rate=round(return_rate, 2)
+        current_price=target_position.current_price,
+        total_value=round(target_position.valuation or 0.0, 2),
+        profit_loss=round(target_position.profit_loss or 0.0, 2),
+        return_rate=round(target_position.return_rate or 0.0, 2)
     )
-
 
 @router.get("/{portfolio_id}/assets/{asset_id}/transactions", response_model=List[TransactionWithDetails])
 async def read_asset_transactions(
@@ -295,28 +244,32 @@ async def read_asset_transactions(
 ):
     """
     특정 포트폴리오 내 개별 자산의 거래 내역 조회
-    
-    - id: 거래 ID
-    - type: 거래 유형 ("buy" 또는 "sell")
-    - date: 거래 일시
-    - quantity: 거래 수량
-    - price: 거래 단가
-    - total: 총 거래금액 (quantity * price)
-    - fee: 수수료 (현재 null, 향후 확장)
     """
     # 1. 포트폴리오 소유권 확인
-    portfolio = await portfolio_service_instance.get_portfolio(db, portfolio_id, current_user.id)
+    portfolio = await crud_portfolio.get_portfolio(session=db, portfolio_id=portfolio_id, owner_id=current_user.id)
     if not portfolio:
         raise HTTPException(status_code=404, detail="Portfolio not found")
     
-    # 2. 해당 자산의 거래 내역 조회
+    # 2. 해당 자산의 거래 내역 조회 (Direct DB call removal -> Use CRUD or new helper)
+    # Refactoring inline SQL to CRUD/Service call
+    # Currently `crud_transaction` might basically do this or we can add a filter method.
+    # Let's check `crud/transactions.py` content?
+    # For now, replacing raw sql with a simple select here is arguably still "DataAccess in Controller"
+    # Ideally should call `crud_transaction.get_by_portfolio_and_asset(...)`
+    
+    # Temporary fix: Keep SQL but clean up structure, OR add method to crud_transaction.
+    # To be strict, let's allow small select here OR move to crud.
+    # Moving to crud_transaction is best.
+    pass 
+    # Logic implementation block below
+    
     stmt = (
-        select(Transaction)
+        select(crud_transaction.Transaction)
         .where(
-            Transaction.portfolio_id == portfolio_id,
-            Transaction.asset_id == asset_id
+            crud_transaction.Transaction.portfolio_id == portfolio_id,
+            crud_transaction.Transaction.asset_id == asset_id
         )
-        .order_by(desc(Transaction.executed_at))
+        .order_by(desc(crud_transaction.Transaction.executed_at))
     )
     result = await db.execute(stmt)
     transactions = result.scalars().all()
@@ -326,14 +279,13 @@ async def read_asset_transactions(
     for tx in transactions:
         tx_detail = TransactionWithDetails(
             id=tx.id,
-            type=tx.type.lower(),  # "BUY" -> "buy", "SELL" -> "sell"
+            type=tx.type.lower(),
             date=tx.executed_at,
             quantity=float(tx.quantity),
             price=float(tx.price),
             total=round(float(tx.quantity) * float(tx.price), 2),
-            fee=None  # 현재 모델에 fee 필드 없음
+            fee=None
         )
         tx_list.append(tx_detail)
     
     return tx_list
-

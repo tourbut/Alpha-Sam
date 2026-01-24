@@ -4,9 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from fastapi import HTTPException, status
 
-from app.src.crud import crud_asset
+from app.src.crud import assets as crud_asset
 from app.src.schemas.asset import AssetCreate, AssetRead
-from app.src.engine.portfolio_service import calculate_position_metrics
+from app.src.engine.portfolio_calculator import calculate_position_metrics
 from app.src.engine.price_service import price_service
 
 class AssetService:
@@ -23,7 +23,7 @@ class AssetService:
         )
         # 2. 사용자의 Portfolio 조회 (Position 계산을 위해)
         from app.src.models.portfolio import Portfolio
-        from app.src.engine.portfolio_service import calculate_positions_from_transactions
+        from app.src.engine.portfolio_calculator import calculate_positions_from_transactions
         
         stmt_portfolio = select(Portfolio).where(Portfolio.owner_id == user_id).limit(1)
         result_portfolio = await session.execute(stmt_portfolio)

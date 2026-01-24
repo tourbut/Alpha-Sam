@@ -11,7 +11,7 @@ from sqlmodel import SQLModel
 from app.celery_app import celery_app
 from app.src.models.asset import Asset
 from app.src.models.price import Price
-from app.src.engine.price_service import price_service
+from app.src.services.price_service import price_service
 from app.src.core.cache import cache_service
 from app.src.core.db import engine, AsyncSessionLocal
 import yfinance as yf
@@ -53,7 +53,7 @@ async def _update_all_prices_async() -> int:
         return updated_count
 
 
-@celery_app.task(name="app.src.engine.tasks.price_tasks.update_all_prices")
+@celery_app.task(name="app.src.services.tasks.price_tasks.update_all_prices")
 def update_all_prices() -> dict:
     """
     모든 자산의 시세를 업데이트하는 Celery 태스크
@@ -78,7 +78,7 @@ def update_all_prices() -> dict:
         }
 
 
-@celery_app.task(name="app.src.engine.tasks.price_tasks.collect_market_prices")
+@celery_app.task(name="app.src.services.tasks.price_tasks.collect_market_prices")
 def collect_market_prices() -> dict:
     """
     Yahoo Finance에서 시세를 가져와 Redis에 동기화하는 태스크

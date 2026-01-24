@@ -176,7 +176,7 @@ class PriceService:
         from sqlalchemy import select
         from app.src.models.user import User
         from app.src.models.notification import NotificationSettings
-        from app.src.engine.tasks.email_tasks import send_price_alert
+        from app.src.services.tasks.email_tasks import send_price_alert
         from datetime import datetime
 
         # 1. 알림 설정이 켜져 있는 활성 사용자 조회

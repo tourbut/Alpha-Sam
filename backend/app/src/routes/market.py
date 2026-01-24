@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
-from app.src.engine.price_service import price_service
+from app.src.services.price_service import price_service
 
 router = APIRouter()
 

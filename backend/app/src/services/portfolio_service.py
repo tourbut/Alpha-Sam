@@ -7,7 +7,7 @@ from app.src.models.portfolio import Portfolio, PortfolioVisibility
 from app.src.models.portfolio_history import PortfolioHistory
 from app.src.schemas.position import PositionWithAsset
 from app.src.schemas.portfolio import PortfolioResponse, PortfolioSummary, PortfolioStats, PortfolioSharedRead
-from app.src.engine.portfolio_calculator import calculate_position_metrics, calculate_portfolio_summary, calculate_positions
+from app.src.services.portfolio_calculator import calculate_position_metrics, calculate_portfolio_summary, calculate_positions
 from app.src.crud import portfolio_histories as crud_portfolio_history
 from app.src.crud import portfolios as crud_portfolio
 from app.src.crud import assets as crud_asset

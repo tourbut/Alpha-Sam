@@ -5,7 +5,7 @@ from typing import Dict
 
 from app.src.models.asset import Asset
 from app.src.models.price import Price
-from app.src.engine.price_service import price_service
+from app.src.services.price_service import price_service
 from app.src.deps import SessionDep_async
 
 router = APIRouter()

@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 redis_client = redis.from_url(celery_settings.redis_url, decode_responses=True)
 
 @celery_app.task(
-    name="app.src.engine.tasks.email_tasks.send_price_alert",
+    name="app.src.services.tasks.email_tasks.send_price_alert",
     autoretry_for=(Exception,),
     retry_backoff=True,
     max_retries=5
@@ -47,7 +47,7 @@ def send_price_alert(to_email: str, symbol: str, price: float, timestamp: str):
         raise e  # Re-raise to trigger Celery retry
 
 @celery_app.task(
-    name="app.src.engine.tasks.email_tasks.send_daily_report_email",
+    name="app.src.services.tasks.email_tasks.send_daily_report_email",
     autoretry_for=(Exception,),
     retry_backoff=True,
     max_retries=5

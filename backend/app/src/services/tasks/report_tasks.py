@@ -8,8 +8,8 @@ from app.src.core.db import AsyncSessionLocal
 from app.src.models.user import User
 from app.src.models.position import Position
 from app.src.models.price import Price
-from app.src.engine.portfolio_calculator import calculate_portfolio_summary
-from app.src.engine.tasks.email_tasks import send_daily_report_email
+from app.src.services.portfolio_calculator import calculate_portfolio_summary
+from app.src.services.tasks.email_tasks import send_daily_report_email
 
 from app.src.models.notification import NotificationSettings
 
@@ -86,7 +86,7 @@ async def _process_daily_reports():
             except Exception as e:
                 logger.error(f"Error processing report for user {user.id}: {e}")
 
-@celery_app.task(name="app.src.engine.tasks.report_tasks.daily_portfolio_report_job")
+@celery_app.task(name="app.src.services.tasks.report_tasks.daily_portfolio_report_job")
 def daily_portfolio_report_job():
     """
     매일 실행되는 포트폴리오 리포트 발송 배치 작업

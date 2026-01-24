@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.src.schemas.portfolio import PortfolioCreate, PortfolioRead, PortfolioResponse, PortfolioHistoryRead, PortfolioVisibilityUpdate, PortfolioSharedRead, PortfolioWithAssetsSummary
 from app.src.schemas.transaction import TransactionCreate, TransactionRead
-from app.src.schemas.position import PositionRead, AssetSummaryRead
+from app.src.schemas.position import PositionRead, AssetSummaryRead, PositionWithAsset
 from app.src.schemas.transaction import TransactionWithDetails
 from app.src.services.portfolio_service import PortfolioService
 from app.src.deps import SessionDep_async, CurrentUser
@@ -105,7 +105,7 @@ async def read_portfolio(
         raise HTTPException(status_code=404, detail="Portfolio not found")
     return portfolio
 
-@router.get("/{portfolio_id}/positions", response_model=List[PositionRead])
+@router.get("/{portfolio_id}/positions", response_model=List[PositionWithAsset])
 async def read_portfolio_positions(
     portfolio_id: uuid.UUID,
     current_user: CurrentUser,

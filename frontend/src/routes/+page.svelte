@@ -15,7 +15,6 @@
         PortfolioHistory,
         Portfolio, // Import Portfolio type
         ActivityItem,
-        ActivityItem,
     } from "$lib/types";
     import { ActivityType } from "$lib/types";
     import { get_recent_activities as getRecentActivities } from "$lib/apis/dashboard";

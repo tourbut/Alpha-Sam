@@ -138,12 +138,12 @@
         <Table hoverable={true}>
           <TableHead>
             <TableHeadCell>Asset</TableHeadCell>
-            <TableHeadCell>Quantity</TableHeadCell>
-            <TableHeadCell>Avg Price</TableHeadCell>
-            <TableHeadCell>Current Price</TableHeadCell>
-            <TableHeadCell>Total Value</TableHeadCell>
-            <TableHeadCell>Change</TableHeadCell>
-            <TableHeadCell>Actions</TableHeadCell>
+            <TableHeadCell class="text-right">Quantity</TableHeadCell>
+            <TableHeadCell class="text-right">Avg Price</TableHeadCell>
+            <TableHeadCell class="text-right">Current Price</TableHeadCell>
+            <TableHeadCell class="text-right">Total Value</TableHeadCell>
+            <TableHeadCell class="text-right">Change</TableHeadCell>
+            <TableHeadCell class="text-center">Actions</TableHeadCell>
           </TableHead>
           <TableBody>
             {#each assets as asset}
@@ -171,16 +171,19 @@
                     </div>
                   </div>
                 </TableBodyCell>
-                <TableBodyCell>{asset.quantity}</TableBodyCell>
-                <TableBodyCell>${asset.avgPrice.toLocaleString()}</TableBodyCell
+                <TableBodyCell class="text-right"
+                  >{asset.quantity}</TableBodyCell
                 >
-                <TableBodyCell
+                <TableBodyCell class="text-right"
+                  >${asset.avgPrice.toLocaleString()}</TableBodyCell
+                >
+                <TableBodyCell class="text-right"
                   >${asset.currentPrice.toLocaleString()}</TableBodyCell
                 >
-                <TableBodyCell class="font-semibold">
+                <TableBodyCell class="text-right font-semibold">
                   ${asset.totalValue.toLocaleString()}
                 </TableBodyCell>
-                <TableBodyCell>
+                <TableBodyCell class="text-right">
                   <span
                     class={asset.change >= 0
                       ? "text-accent-600 dark:text-accent-400"
@@ -189,7 +192,7 @@
                     {asset.change >= 0 ? "+" : ""}{asset.change.toFixed(2)}%
                   </span>
                 </TableBodyCell>
-                <TableBodyCell>
+                <TableBodyCell class="text-center">
                   <Button
                     size="xs"
                     color="light"

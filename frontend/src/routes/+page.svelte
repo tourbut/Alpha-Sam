@@ -15,8 +15,9 @@
         PortfolioHistory,
         Portfolio, // Import Portfolio type
         ActivityItem,
-        ActivityType,
+        ActivityItem,
     } from "$lib/types";
+    import { ActivityType } from "$lib/types";
     import { get_recent_activities as getRecentActivities } from "$lib/apis/dashboard";
     import PortfolioDistributionChart from "$lib/components/PortfolioDistributionChart.svelte";
     import PortfolioHistoryChart from "$lib/components/PortfolioHistoryChart.svelte";

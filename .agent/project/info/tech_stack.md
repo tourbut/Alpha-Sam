@@ -90,6 +90,15 @@
 Alpha-Sam/
 ├── backend/          # FastAPI 백엔드
 │   ├── app/          # 애플리케이션 코드
+│   │   ├── src/
+│   │   │   ├── api/      # API Router 등록
+│   │   │   ├── core/     # 설정, DB, 캐시
+│   │   │   ├── crud/     # [Layer 4] Data Access (CRUD)
+│   │   │   ├── engine/   # [Layer 3] Business Logic (Pure Calculation)
+│   │   │   ├── services/ # [Layer 2] Orchestration Service
+│   │   │   ├── routes/   # [Layer 1] Controllers (HTTP Handlers)
+│   │   │   ├── models/   # SQLModel/SQLAlchemy 모델
+│   │   │   └── schemas/  # Pydantic Schemas
 │   ├── alembic/      # DB 마이그레이션
 │   └── pyproject.toml
 ├── frontend/         # SvelteKit 프론트엔드

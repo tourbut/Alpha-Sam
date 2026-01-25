@@ -28,6 +28,18 @@
     { href: "/settings", label: "Settings", icon: CogOutline },
   ];
 
+  let finalNavItems = $derived.by(() => {
+    const items = [...navItems];
+    if (auth.user?.is_superuser) {
+      items.push({
+        href: "/admin/assets",
+        label: "System Admin",
+        icon: CogOutline, // Or specific icon
+      });
+    }
+    return items;
+  });
+
   // 사이드바를 표시하지 않을 경로 목록
   const noSidebarPaths = ["/login", "/signup"];
 
@@ -55,7 +67,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5">
           <!-- 사이드바 네비게이션 -->
           <aside class="sidebar hidden lg:block">
-            {#each navItems as item}
+            {#each finalNavItems as item}
               <a
                 href={item.href}
                 class="nav-item flex items-center gap-3 {page.url.pathname ===

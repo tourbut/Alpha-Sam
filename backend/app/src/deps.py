@@ -66,6 +66,17 @@ async def get_current_user(
         
     return user
 
+
+async def get_current_superuser(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=400, detail="The user doesn't have enough privileges"
+        )
+    return current_user
+
 from typing import Annotated
 SessionDep_async = Annotated[AsyncSession, Depends(get_session)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
+CurrentSuperUser = Annotated[User, Depends(get_current_superuser)]

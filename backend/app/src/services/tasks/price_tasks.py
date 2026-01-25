@@ -81,37 +81,13 @@ def update_all_prices() -> dict:
 @celery_app.task(name="app.src.services.tasks.price_tasks.collect_market_prices")
 def collect_market_prices() -> dict:
     """
-    Yahoo Finance에서 시세를 가져와 Redis에 동기화하는 태스크
+    관심 종목(AdminAsset)의 시세를 가져와 Redis에 동기화하는 태스크
     """
-    # 스크립트의 로직을 태스크로 구현
-    SYMBOLS = {
-        "BTC-USD": "BTC", "ETH-USD": "ETH", "SOL-USD": "SOL",
-        "AAPL": "AAPL", "TSLA": "TSLA", "MSFT": "MSFT",
-        "GOOGL": "GOOGL", "NVDA": "NVDA"
-    }
+    from app.src.services.price_collector import price_collector
     
     async def run_collect():
-        results = {"success": 0, "failed": 0}
-        for yf_symbol, app_symbol in SYMBOLS.items():
-            def fetch():
-                ticker = yf.Ticker(yf_symbol)
-                try:
-                    return ticker.fast_info['last_price']
-                except:
-                    try:
-                        hist = ticker.history(period="1d")
-                        return hist['Close'].iloc[-1] if not hist.empty else 0.0
-                    except: return 0.0
-            
-            price = await asyncio.to_thread(fetch)
-            if price > 0:
-                cache_key = f"price:{app_symbol}"
-                # 3분 TTL로 Redis 저장
-                await cache_service.set(cache_key, str(price), ttl=180)
-                results["success"] += 1
-            else:
-                results["failed"] += 1
-        return results
+        async with AsyncSessionLocal() as session:
+            return await price_collector.collect_active_assets(session)
 
     try:
         results = asyncio.run(run_collect())

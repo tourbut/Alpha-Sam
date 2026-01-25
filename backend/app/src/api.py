@@ -52,3 +52,7 @@ api_router.include_router(market.router, prefix="/market", tags=["market"])
 api_router.include_router(social.router, prefix="/social", tags=["social"])
 api_router.include_router(transactions.router, prefix="/transactions", tags=["transactions"])
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
+
+# Admin Router
+from app.src.routes import admin
+api_router.include_router(admin.router, prefix="/admin", tags=["admin"])

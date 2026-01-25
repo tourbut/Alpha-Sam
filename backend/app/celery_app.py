@@ -29,9 +29,9 @@ celery_app = Celery(
     broker=celery_settings.celery_broker_url,
     backend=celery_settings.celery_result_backend,
     include=[
-        "app.src.engine.tasks.price_tasks", 
-        "app.src.engine.tasks.email_tasks",
-        "app.src.engine.tasks.report_tasks"
+        "app.src.services.tasks.price_tasks", 
+        "app.src.services.tasks.email_tasks",
+        "app.src.services.tasks.report_tasks"
     ],  # 태스크 모듈 포함
 )
 
@@ -50,15 +50,15 @@ celery_app.conf.update(
     # Celery Beat 스케줄 설정
     beat_schedule={
         "collect-market-prices": {
-            "task": "app.src.engine.tasks.price_tasks.collect_market_prices",
-            "schedule": 120.0,  # 2분마다 실행
+            "task": "app.src.services.tasks.price_tasks.collect_market_prices",
+            "schedule": 60.0,  # 1분마다 실행 (시스템 자산 수집)
         },
         "update-all-prices": {
-            "task": "app.src.engine.tasks.price_tasks.update_all_prices",
-            "schedule": 300.0,  # 5분마다 실행 (초 단위)
+            "task": "app.src.services.tasks.price_tasks.update_all_prices",
+            "schedule": 300.0,  # 5분마다 실행 (기존 로직 유지)
         },
         "daily-portfolio-report": {
-            "task": "app.src.engine.tasks.report_tasks.daily_portfolio_report_job",
+            "task": "app.src.services.tasks.report_tasks.daily_portfolio_report_job",
             "schedule": crontab(hour=0, minute=0),  # Daily at 00:00 UTC (09:00 KST)
         },
     },

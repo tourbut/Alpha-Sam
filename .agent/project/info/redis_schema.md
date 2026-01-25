@@ -39,14 +39,15 @@ Stores the leaderboard rank for a given user and portfolio.
 
 ```mermaid
 graph TD
-    A[Cron/Celery Worker] -- 1. Fetch --> B(Yahoo Finance API)
-    B -- 2. Return Price --> A
-    A -- 3. SET namespaced Key (TTL 3m) --> C[(Redis Cache)]
+    DB[(PostgreSQL)] -- 1. Fetch Active AdminAssets --> A[Celery Worker / PriceCollector]
+    A -- 2. Bulk Fetch Prices --> B(Yahoo Finance API)
+    B -- 3. Return Market Data --> A
+    A -- 4. SET price:{SYMBOL} (TTL 3m) --> C[(Redis Cache)]
     
-    D[Client/Frontend] -- 4. GET /api/prices/{symbol} --> E[Backend API]
-    E -- 5. GET price:{symbol} --> C
-    C -- 6. Return Value --> E
-    E -- 7. Return JSON --> D
+    D[Client/Frontend] -- 5. GET /api/prices/{symbol} --> E[Backend API]
+    E -- 6. GET price:{symbol} --> C
+    C -- 7. Return Value --> E
+    E -- 8. Return JSON --> D
     
     subgraph Fallback Logic
     E -.-> |Cache Miss| F{Handle Miss}

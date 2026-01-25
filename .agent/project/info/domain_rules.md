@@ -81,6 +81,22 @@
   - `price_alert_enabled`: 가격 알림 활성화 여부.
   - `created_at`, `updated_at`: 타임스탬프.
 
+### AdminAsset (관리자 관리 종목)
+- **Role**: 시스템 차원에서 시세를 수집 및 관리할 대상 자산 목록.
+- **Attributes**:
+  - `id`: 자산 ID (Primary Key, UUID v4)
+  - `symbol` (Unique, Indexed): 티커 (예: AAPL, BTC-USD).
+  - `name`: 자산 이름 (예: Apple Inc., Bitcoin).
+  - `type`: 자산 유형 (Stock, Crypto, Forex, Index).
+  - `currency`: 통화 (기본값: USD, KRW 등).
+  - `is_active`: 시세 수집 활성화 여부 (기본: True).
+  - `created_at`, `updated_at`: 타임스탬프.
+- **Rules**:
+  - `is_active=True`인 항목만 배치 작업(PriceCollector)의 수집 대상이 된다.
+  - 관리자(`is_superuser=True`)만 생성/수정/삭제 가능하다.
+- **Relationships**:
+  - 없음 (시스템 전역 설정값)
+
 ---
 
 ## 2. Invariants & Business Logic
@@ -97,6 +113,11 @@
 
 ### Price Alert
 - 동일 사용자의 동일 자산에 대한 시세 알림은 24시간 내 1회로 제한한다 (Redis Key 활용).
+
+### Batch Job & Price Caching
+- **Source of Truth for Symbols**: `AdminAsset` 테이블의 `is_active=True`인 심볼 목록.
+- **Caching Strategy**: Redis `price:{SYMBOL}` 키에 최신가 저장.
+- **Frequency**: 1분 주기 (Celery Beat).
 
 ---
 

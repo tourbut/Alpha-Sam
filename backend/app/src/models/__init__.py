@@ -11,5 +11,6 @@ from app.src.models.portfolio_history import PortfolioHistory
 from app.src.models.notification import NotificationSettings
 from app.src.models.portfolio import Portfolio
 from app.src.models.social import UserFollow, LeaderboardRank
+from app.src.models.admin import AdminAsset
 
-__all__ = ["Asset", "Price", "User", "Transaction", "Position", "PortfolioHistory", "NotificationSettings", "Portfolio", "UserFollow", "LeaderboardRank"]
+__all__ = ["Asset", "Price", "User", "Transaction", "Position", "PortfolioHistory", "NotificationSettings", "Portfolio", "UserFollow", "LeaderboardRank", "AdminAsset"]

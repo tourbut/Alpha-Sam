@@ -45,6 +45,14 @@
   - **Leaderboard**: Redis 기반 실시간 랭킹 시스템 구축.
   - **Social Graph**: 팔로우/팔로잉 기능 통합.
 
+## 🚧 v1.5.0: System Administration & Batch Operations (In Progress)
+- **Status**: Planning
+- **Themes**: Admin, Automation, Data Accuracy.
+- **Key Deliverables**:
+  1. **Admin Asset Management**: 관리자 전용 종목 관리 UI 및 API.
+  2. **Batch Price Collector**: Celery Beat 기반 1분 주기 시세 자동 수집.
+  3. **System Asset Source of Truth**: `AdminAsset` 테이블을 통한 중앙화된 시세 관리.
+
 ## 🚀 v2.0.0: Architecture Redesign (In Progress)
 - **Status**: Planning
 - **Themes**: Scalability, Security, Data Integrity.

@@ -58,13 +58,55 @@ def update_all_prices() -> dict:
     """
     모든 자산의 시세를 업데이트하는 Celery 태스크
     5분마다 Celery Beat에 의해 실행됨
-    
-    Returns:
-        업데이트 결과 딕셔너리
     """
+    from sqlalchemy.pool import NullPool
+    from app.src.core.db import settings
+    
+    # Celery Task마다 새로운 Event Loop가 생성되므로(asyncio.run),
+    # Global Engine(Pooling)을 사용하면 Loop 불일치로 인한 asyncpg 에러 발생 가능.
+    # 따라서 Task 내부에서 NullPool을 사용하는 전용 Engine을 생성하여 사용.
+    
+    async def run_update():
+        # Task 전용 엔진 생성 (Connection Pooling 미사용)
+        task_engine = create_async_engine(
+            settings.database_url,
+            poolclass=NullPool,
+            echo=True, # For debugging
+        )
+        TaskSessionLocal = async_sessionmaker(task_engine, class_=AsyncSession, expire_on_commit=False)
+        
+        try:
+            async with TaskSessionLocal() as session:
+                # 1. 모든 자산 조회
+                result = await session.execute(select(Asset))
+                assets = result.scalars().all()
+                
+                updated_count = 0
+                
+                # 2. 각 자산별 시세 조회 및 저장
+                for asset in assets:
+                    # [Refactor] 외부 API 호출을 생략하고 Redis에서만 최신 가격 조회
+                    current_price = await price_service.get_current_price(asset.symbol)
+                    
+                    new_price = Price(
+                        asset_id=asset.id,
+                        value=current_price,
+                        timestamp=datetime.utcnow()
+                    )
+                    
+                    session.add(new_price)
+                    updated_count += 1
+                    
+                    # Check for Price Alerts
+                    await price_service.check_and_trigger_alerts(asset.symbol, current_price, session=session)
+                
+                await session.commit()
+                return updated_count
+        finally:
+             await task_engine.dispose()
+
     try:
-        # 비동기 함수를 동기 컨텍스트에서 실행
-        updated_count = asyncio.run(_update_all_prices_async())
+        updated_count = asyncio.run(run_update())
         return {
             "status": "success",
             "updated_count": updated_count,
@@ -84,10 +126,23 @@ def collect_market_prices() -> dict:
     관심 종목(AdminAsset)의 시세를 가져와 Redis에 동기화하는 태스크
     """
     from app.src.services.price_collector import price_collector
+    from sqlalchemy.pool import NullPool
+    from app.src.core.db import settings
     
     async def run_collect():
-        async with AsyncSessionLocal() as session:
-            return await price_collector.collect_active_assets(session)
+        # Task 전용 엔진 생성 (Connection Pooling 미사용)
+        task_engine = create_async_engine(
+            settings.database_url,
+            poolclass=NullPool,
+            # echo=True,
+        )
+        TaskSessionLocal = async_sessionmaker(task_engine, class_=AsyncSession, expire_on_commit=False)
+        
+        try:
+            async with TaskSessionLocal() as session:
+                return await price_collector.collect_active_assets(session)
+        finally:
+            await task_engine.dispose()
 
     try:
         results = asyncio.run(run_collect())

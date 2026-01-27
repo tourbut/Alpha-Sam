@@ -65,3 +65,12 @@
   - **transactions/+page.svelte**: `createTransaction` 함수 호출 인자 수정.
   - **social.ts**: follow/unfollow API ID 타입을 `string`(UUID)으로 변경.
   - **결과**: `npm run check` → 0 errors, 6 warnings.
+- [2026-01-27 10:45:00] **PortfolioCard Edit/Delete 옵션 구현 완료 (PR #Feature/Options)**.
+  - **PortfolioCard**: Dropdown 메뉴(수정/삭제) 추가, Event bubbling 처리.
+  - **CreatePortfolioModal**: `initialData` Prop 추가로 수정 모드 지원. `PortfolioWithAssets` 타입 호환성 확보.
+  - **Store**: `portfolio.svelte.ts`에 `editPortfolio`, `removePortfolio` 액션 추가.
+  - **Pages**: `portfolios/+page.svelte`에서 삭제/수정 핸들러 연결 완료.
+- [2026-01-27 11:10:00] **UI Refinements Merged to Main**.
+  - **TransactionFormModal**: 'Add Transaction' 버튼 스타일 개선 (btn-primary).
+  - **AssetModal**: 'Add Asset' 버튼 Full-width 적용, 'Cancel' 버튼 제거.
+  - **ShareModal**: 모달 사이즈 'lg'로 변경.

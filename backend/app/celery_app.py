@@ -47,6 +47,7 @@ celery_app.conf.update(
     task_soft_time_limit=25 * 60,  # 25분
     worker_prefetch_multiplier=1,
     worker_max_tasks_per_child=1000,
+    result_expires=600,  # 결과 만료 시간 10분 (600초)
     # Celery Beat 스케줄 설정
     beat_schedule={
         "collect-market-prices": {

@@ -136,7 +136,21 @@ services:
         condition: service_started
       mailhog:
         condition: service_started
-    command: celery -A app.celery_app beat --loglevel=info
+    command: celery -A app.celery_app beat --loglevel=info --schedule=/app/celerybeat-schedule/schedule.db
+
+  # Celery Monitoring (Flower)
+  flower:
+    image: mher/flower:latest
+    container_name: alpha-sam-flower
+    ports:
+      - "${FLOWER_PORT:-5555}:5555"
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+      celery_worker:
+        condition: service_started
 
   # MailHog (Local Email Testing)
   mailhog:

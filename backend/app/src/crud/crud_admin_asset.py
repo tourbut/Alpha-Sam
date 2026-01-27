@@ -1,46 +1,50 @@
 from typing import List, Optional
 from uuid import UUID
-from sqlmodel import select, Session
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.src.models.admin import AdminAsset
 from app.src.schemas.admin_asset import AdminAssetCreate
 
 class CRUDAdminAsset:
-    def get(self, db: Session, id: UUID) -> Optional[AdminAsset]:
-        return db.get(AdminAsset, id)
+    async def get(self, db: AsyncSession, id: UUID) -> Optional[AdminAsset]:
+        return await db.get(AdminAsset, id)
 
-    def get_by_symbol(self, db: Session, symbol: str) -> Optional[AdminAsset]:
+    async def get_by_symbol(self, db: AsyncSession, symbol: str) -> Optional[AdminAsset]:
         statement = select(AdminAsset).where(AdminAsset.symbol == symbol)
-        return db.exec(statement).first()
+        result = await db.execute(statement)
+        return result.scalar_one_or_none()
 
-    def get_multi(self, db: Session, skip: int = 0, limit: int = 100) -> List[AdminAsset]:
+    async def get_multi(self, db: AsyncSession, skip: int = 0, limit: int = 100) -> List[AdminAsset]:
         statement = select(AdminAsset).offset(skip).limit(limit)
-        return db.exec(statement).all()
+        result = await db.execute(statement)
+        return result.scalars().all()
 
-    def get_all_active(self, db: Session) -> List[AdminAsset]:
+    async def get_all_active(self, db: AsyncSession) -> List[AdminAsset]:
         statement = select(AdminAsset).where(AdminAsset.is_active == True)
-        return db.exec(statement).all()
+        result = await db.execute(statement)
+        return result.scalars().all()
 
-    def create(self, db: Session, obj_in: AdminAssetCreate) -> AdminAsset:
+    async def create(self, db: AsyncSession, obj_in: AdminAssetCreate) -> AdminAsset:
         db_obj = AdminAsset.model_validate(obj_in)
         db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        await db.commit()
+        await db.refresh(db_obj)
         return db_obj
 
-    def remove(self, db: Session, id: UUID) -> Optional[AdminAsset]:
-        obj = db.get(AdminAsset, id)
+    async def remove(self, db: AsyncSession, id: UUID) -> Optional[AdminAsset]:
+        obj = await db.get(AdminAsset, id)
         if obj:
-            db.delete(obj)
-            db.commit()
+            await db.delete(obj)
+            await db.commit()
         return obj
 
-    def toggle_active(self, db: Session, id: UUID) -> Optional[AdminAsset]:
-        obj = db.get(AdminAsset, id)
+    async def toggle_active(self, db: AsyncSession, id: UUID) -> Optional[AdminAsset]:
+        obj = await db.get(AdminAsset, id)
         if obj:
             obj.is_active = not obj.is_active
             db.add(obj)
-            db.commit()
-            db.refresh(obj)
+            await db.commit()
+            await db.refresh(obj)
         return obj
 
 admin_asset = CRUDAdminAsset()

@@ -118,10 +118,7 @@
         {/if}
 
         <div class="flex justify-end gap-2">
-            <Button color="alternative" onclick={() => (open = false)}
-                >Cancel</Button
-            >
-            <Button type="submit" disabled={loading} class="btn-primary">
+            <Button type="submit" disabled={loading} class="w-full btn-primary">
                 {#if loading}
                     <RefreshOutline class="w-4 h-4 mr-2 animate-spin" />
                     Creating...

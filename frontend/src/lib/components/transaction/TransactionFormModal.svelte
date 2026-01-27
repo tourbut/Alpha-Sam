@@ -160,7 +160,7 @@
             <Input type="datetime-local" bind:value={date} required />
         </Label>
 
-        <Button type="submit" class="w-full" disabled={loading}>
+        <Button type="submit" class="w-full btn-primary" disabled={loading}>
             {loading ? "Processing..." : "Add Transaction"}
         </Button>
     </form>

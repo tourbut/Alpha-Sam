@@ -95,7 +95,7 @@
     });
 </script>
 
-<Modal title="포트폴리오 공유 설정" bind:open size="md">
+<Modal title="포트폴리오 공유 설정" bind:open size="lg">
     <div class="space-y-6">
         <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
             포트폴리오의 공개 범위를 설정하고 링크를 공유하세요.

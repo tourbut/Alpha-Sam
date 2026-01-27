@@ -11,7 +11,7 @@ from app.src.schemas.asset import AssetCreate
 
 async def get_assets(
     *, session: AsyncSession, owner_id: uuid.UUID, portfolio_id: Optional[uuid.UUID] = None, skip: int = 0, limit: int = 100
-) -> List[Tuple[Asset, Optional[float], Optional[datetime]]]:
+) -> List[Asset]:
     """
     Get assets with their latest price for the specific user.
     Returns assets where owner_id is None (Global) OR matches owner_id (Private).
@@ -27,29 +27,11 @@ async def get_assets(
             statement = statement.where(Asset.portfolio_id == portfolio_id)
             
         statement = statement.offset(skip).limit(limit)
-        
-        # Debug Logging for Data Leak Investigation
-        with open("/Users/shin/.gemini/antigravity/brain/fe135e23-aef4-4cc1-b5ab-914a5d85fdd6/debug_log.txt", "a") as f:
-            f.write(f"[DEBUG] get_assets called for owner_id={owner_id}\n")
-        
+    
         result = await session.execute(statement)
         assets = result.scalars().all()
-        with open("/Users/shin/.gemini/antigravity/brain/fe135e23-aef4-4cc1-b5ab-914a5d85fdd6/debug_log.txt", "a") as f:
-            f.write(f"[DEBUG] get_assets found {len(assets)} assets (Global + Private)\n")
-        
-        asset_data = []
-        for asset in assets:
-            # Latest price
-            price_stmt = select(Price).where(Price.asset_id == asset.id).order_by(desc(Price.timestamp)).limit(1)
-            price_res = await session.execute(price_stmt)
-            latest_price_obj = price_res.scalar_one_or_none()
-
-            latest_price = latest_price_obj.value if latest_price_obj else None
-            latest_timestamp = latest_price_obj.timestamp if latest_price_obj else None
             
-            asset_data.append((asset, latest_price, latest_timestamp))
-            
-        return asset_data
+        return assets
     except Exception as e:
         print(e)
         raise e

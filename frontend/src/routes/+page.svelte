@@ -84,7 +84,6 @@
             ]);
 
             // 0: assets, 1: summary, 2: history, 3: portfolios, 4: activities
-
             if (results[0].status === "fulfilled") {
                 assets = results[0].value;
             } else {

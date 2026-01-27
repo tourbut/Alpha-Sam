@@ -18,14 +18,21 @@ class AssetService:
         Position은 Transaction을 집계하여 동적으로 계산됨
         """
         # 1. Asset 목록 조회 (latest_price 포함)
-        assets_data = await crud_asset.get_assets(
+        assets = await crud_asset.get_assets(
             session=session, owner_id=user_id, portfolio_id=portfolio_id, skip=skip, limit=limit
         )
+
+        assets_data = []
         
+        for asset in assets:
+            # Latest price
+            current_price = await price_service.get_current_price(asset.symbol, use_cache=True)
+            
+            assets_data.append((asset, current_price))
         # 2. 관련 포트폴리오 식별
         # 조회된 자산들이 속한 포트폴리오 ID들을 수집
         relevant_portfolio_ids = set()
-        for asset, _, _ in assets_data:
+        for asset,_ in assets_data:
             if asset.portfolio_id:
                 relevant_portfolio_ids.add(asset.portfolio_id)
         
@@ -40,13 +47,12 @@ class AssetService:
         
         # 4. AssetRead 생성 (Position 정보와 결합)
         asset_reads = []
-        for asset, latest_price, latest_timestamp in assets_data:
+        for asset, latest_price in assets_data:
             asset_read = AssetRead.model_validate(asset)
             
             # Latest Price 설정
             if latest_price is not None:
                 asset_read.latest_price = float(latest_price) if hasattr(latest_price, '__float__') else latest_price
-                asset_read.latest_price_updated_at = latest_timestamp
             
             # Position 매핑 확인
             position_obj = position_map.get(asset.id)
@@ -81,7 +87,85 @@ class AssetService:
                 
             asset_reads.append(asset_read)
             
+            
+        # 5. 전체 조회(portfolio_id is None)인 경우 Symbol 기준 Aggregation 수행
+        if portfolio_id is None:
+            return self._aggregate_assets_by_symbol(asset_reads)
+
         return asset_reads
+
+    def _aggregate_assets_by_symbol(self, assets: List[AssetRead]) -> List[AssetRead]:
+        """
+        심볼을 기준으로 자산들을 병합(Aggregation)합니다.
+        - 수량, 평가액, 손익: 합산
+        - 평단가: 가중 평균
+        - 그 외 필드(ID 등): 첫 번째 자산의 값 사용
+        """
+        grouped: Dict[str, List[AssetRead]] = {}
+        for asset in assets:
+            if asset.symbol not in grouped:
+                grouped[asset.symbol] = []
+            grouped[asset.symbol].append(asset)
+        
+        aggregated_results = []
+        
+        for symbol, group in grouped.items():
+            if not group:
+                continue
+                
+            # 대표 자산 (첫 번째 요소)
+            representative = group[0]
+            
+            # 하나만 있으면 그대로 반환
+            if len(group) == 1:
+                aggregated_results.append(representative)
+                continue
+            
+            # 합산 변수 초기화
+            total_quantity = 0.0
+            total_valuation = 0.0
+            total_profit_loss = 0.0
+            total_cost_basis = 0.0 # 평단가 계산용 (avg_price * quantity)
+            
+            # Aggregation Loop
+            for item in group:
+                qty = item.quantity or 0.0
+                val = item.valuation or 0.0
+                pl = item.profit_loss or 0.0
+                avg = item.avg_price or 0.0
+                
+                total_quantity += qty
+                total_valuation += val
+                total_profit_loss += pl
+                total_cost_basis += (avg * qty)
+            
+            # 결과 객체 생성 (대표 객체 복사)
+            # Pydantic v2 copy() usage or constructing new
+            aggregated = representative.model_copy()
+            
+            aggregated.quantity = total_quantity
+            aggregated.valuation = total_valuation
+            aggregated.profit_loss = total_profit_loss
+            
+            # 평단가 (가중 평균)
+            if total_quantity > 0:
+                aggregated.avg_price = total_cost_basis / total_quantity
+            else:
+                aggregated.avg_price = 0.0
+                
+            # 단순 별칭도 업데이트
+            aggregated.buy_price = aggregated.avg_price
+            
+            # 수익률 재계산: (평가액 - 투자원금) / 투자원금 * 100
+            # 투자원금 = total_cost_basis
+            if total_cost_basis > 0:
+                aggregated.return_rate = ((total_valuation - total_cost_basis) / total_cost_basis) * 100
+            else:
+                aggregated.return_rate = 0.0
+            
+            aggregated_results.append(aggregated)
+            
+        return aggregated_results
 
     async def create_asset_with_autofill(
         self, session: AsyncSession, asset_in: AssetCreate, user_id: uuid.UUID

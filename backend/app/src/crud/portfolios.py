@@ -6,6 +6,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.src.models.portfolio import Portfolio, PortfolioVisibility
 from app.src.models.transaction import Transaction
 from app.src.models.position import Position
+from app.src.models.asset import Asset
 
 async def create_portfolio(
     *, session: AsyncSession, owner_id: uuid.UUID, name: str, description: Optional[str] = None
@@ -141,6 +142,7 @@ async def delete_portfolio(
     # Delete Transactions
     await session.execute(delete(Transaction).where(Transaction.portfolio_id == portfolio_id))
     
+    await session.execute(delete(Asset).where(Asset.portfolio_id == portfolio_id))
     # Delete Portfolio
     await session.delete(portfolio)
     await session.commit()

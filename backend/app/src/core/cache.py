@@ -2,7 +2,8 @@
 Redis 캐싱 설정 모듈
 """
 import json
-from typing import Optional
+from datetime import datetime
+from typing import Optional, Dict, Any, Union
 import redis.asyncio as redis
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -61,9 +62,44 @@ class CacheService:
         """
         self.ttl = ttl
     
+    async def get_with_metadata(self, key: str) -> Optional[Dict[str, Any]]:
+        """
+        값과 생성 시간을 함께 조회
+        
+        Args:
+            key: 캐시 키
+            
+        Returns:
+            {"data": value, "created_at": timestamp_str} 또는 None
+        """
+        client = await get_redis_client()
+        try:
+            val = await client.get(key)
+            if not val:
+                return None
+            
+            # JSON 파싱 시도 (Wrapper 패턴 확인)
+            try:
+                parsed = json.loads(val)
+                # 메타데이터 구조인지 확인
+                if isinstance(parsed, dict) and "data" in parsed:
+                    # created_at이 없으면 None으로 처리 (구조는 맞는데 필드가 없는 경우)
+                    if "created_at" not in parsed:
+                        parsed["created_at"] = None
+                    return parsed
+            except (json.JSONDecodeError, TypeError):
+                pass
+            
+            # 일반 문자열이거나 파싱 실패 시 레거시 데이터로 취급
+            return {"data": val, "created_at": None}
+                
+        except Exception as e:
+            print(f"Redis get_with_metadata error: {e}")
+            return None
+
     async def get(self, key: str) -> Optional[str]:
         """
-        캐시에서 값 조회
+        캐시에서 값 조회 (원본 데이터만 반환)
         
         Args:
             key: 캐시 키
@@ -71,17 +107,18 @@ class CacheService:
         Returns:
             캐시된 값 또는 None
         """
-        client = await get_redis_client()
         try:
-            return await client.get(key)
+            result = await self.get_with_metadata(key)
+            if result:
+                return result["data"]
+            return None
         except Exception as e:
-            # Redis 연결 실패 시 None 반환 (캐시 미스로 처리)
             print(f"Redis get error: {e}")
             return None
     
     async def set(self, key: str, value: str, ttl: Optional[int] = None) -> bool:
         """
-        캐시에 값 저장
+        캐시에 값 저장 (메타데이터 포함)
         
         Args:
             key: 캐시 키
@@ -94,7 +131,15 @@ class CacheService:
         client = await get_redis_client()
         try:
             ttl = ttl or self.ttl
-            await client.setex(key, ttl, value)
+            
+            # 메타데이터 감싸기
+            wrapped_data = {
+                "data": value,
+                "created_at": datetime.now().isoformat()
+            }
+            
+            # JSON 직렬화하여 저장
+            await client.setex(key, ttl, json.dumps(wrapped_data))
             return True
         except Exception as e:
             # Redis 연결 실패 시 False 반환 (캐시 실패로 처리)

@@ -97,5 +97,4 @@
 
   <Footer />
   <ChatWidget />
-  <AssetModal bind:open={openAssetModal} />
 </div>

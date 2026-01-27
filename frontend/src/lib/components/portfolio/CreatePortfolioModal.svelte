@@ -1,12 +1,5 @@
 <script lang="ts">
-    import {
-        Modal,
-        Label,
-        Input,
-        Button,
-        Textarea,
-        CloseButton,
-    } from "flowbite-svelte";
+    import { Modal, Label, Input, Button, Textarea } from "flowbite-svelte";
     import { portfolioStore } from "$lib/stores/portfolio.svelte";
     import {
         PlusOutline,
@@ -79,19 +72,13 @@
     }
 </script>
 
-<Modal bind:open size="lg" autoclose={false} class="w-auto mx-auto">
-    {#snippet header()}
-        <div class="flex justify-between items-center w-full">
-            <h3 class="text-xl font-semibold text-neutral-900 dark:text-white">
-                {initialData ? "Edit Portfolio" : "Create New Portfolio"}
-            </h3>
-            <CloseButton
-                name=""
-                onclick={() => (open = false)}
-                class="text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-            />
-        </div>
-    {/snippet}
+<Modal
+    bind:open
+    title={initialData ? "Edit Portfolio" : "Create New Portfolio"}
+    size="lg"
+    autoclose={false}
+    class="w-auto mx-auto"
+>
     <form
         class="flex flex-col space-y-6"
         onsubmit={(e) => {

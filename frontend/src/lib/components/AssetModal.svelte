@@ -72,6 +72,7 @@
     autoclose={false}
     size="lg"
     class="w-full"
+    closeBtnClass="hidden"
 >
     <form
         on:submit|preventDefault={handleSubmit}

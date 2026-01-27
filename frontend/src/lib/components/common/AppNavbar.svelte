@@ -60,7 +60,6 @@
             </Button>
         {:else}
             <div class="flex items-center gap-2">
-                <Button href="/login" size="xs">Login</Button>
                 <Button href="/signup" size="xs" color="alternative"
                     >Sign up</Button
                 >
@@ -93,7 +92,6 @@
                 Logout
             </NavLi>
         {:else}
-            <NavLi href="/login" class="md:hidden">Login</NavLi>
             <NavLi href="/signup" class="md:hidden">Sign up</NavLi>
         {/if}
     </NavUl>

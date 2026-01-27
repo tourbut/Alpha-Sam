@@ -89,6 +89,7 @@ interface PortfolioWithAssetsResponse {
     name: string;
     description?: string;
     created_at: string;
+    updated_at?: string;
     total_value: number;
     assets: Array<{
         symbol: string;
@@ -108,6 +109,7 @@ export const fetchPortfoliosWithAssets = async (): Promise<PortfolioWithAssets[]
         name: item.name,
         description: item.description,
         created_at: item.created_at,
+        updated_at: item.updated_at,
         totalValue: item.total_value,
         assets: item.assets
     }));

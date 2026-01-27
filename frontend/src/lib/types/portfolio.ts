@@ -46,6 +46,7 @@ export interface Portfolio {
     description?: string;
     currency: string;
     created_at: string;
+    updated_at?: string;
     visibility: PortfolioVisibility;
     share_token?: string;
     is_primary_for_leaderboard: boolean;
@@ -83,6 +84,7 @@ export interface PortfolioWithAssets {
     name: string;
     description?: string;
     created_at?: string;
+    updated_at?: string;
     totalValue: number;
     assets: PortfolioAsset[];
 }

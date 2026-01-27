@@ -49,7 +49,6 @@
                 await portfolioStore.editPortfolio(initialData.id, {
                     name,
                     description,
-                    currency,
                 });
             } else {
                 await portfolioStore.addPortfolio({

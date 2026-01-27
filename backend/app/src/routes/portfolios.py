@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.src.schemas.portfolio import PortfolioCreate, PortfolioRead, PortfolioResponse, PortfolioHistoryRead, PortfolioVisibilityUpdate, PortfolioSharedRead, PortfolioWithAssetsSummary
+from app.src.schemas.portfolio import PortfolioCreate, PortfolioRead, PortfolioResponse, PortfolioHistoryRead, PortfolioVisibilityUpdate, PortfolioSharedRead, PortfolioWithAssetsSummary, PortfolioUpdate
 from app.src.schemas.transaction import TransactionCreate, TransactionRead
 from app.src.schemas.position import PositionRead, AssetSummaryRead, PositionWithAsset
 from app.src.schemas.transaction import TransactionWithDetails
@@ -289,3 +289,45 @@ async def read_asset_transactions(
         tx_list.append(tx_detail)
     
     return tx_list
+
+@router.put("/{portfolio_id}", response_model=PortfolioRead)
+async def update_portfolio(
+    portfolio_id: uuid.UUID,
+    portfolio_in: PortfolioUpdate,
+    current_user: CurrentUser,
+    db: SessionDep_async
+):
+    """
+    포트폴리오 수정
+    """
+    # Verify ownership
+    portfolio = await crud_portfolio.get_portfolio(session=db, portfolio_id=portfolio_id, owner_id=current_user.id)
+    if not portfolio:
+        raise HTTPException(status_code=404, detail="Portfolio not found")
+        
+    updated_portfolio = await crud_portfolio.update_portfolio(
+        session=db, 
+        portfolio_id=portfolio_id, 
+        name=portfolio_in.name, 
+        description=portfolio_in.description
+    )
+    return updated_portfolio
+
+@router.delete("/{portfolio_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_portfolio(
+    portfolio_id: uuid.UUID,
+    current_user: CurrentUser,
+    db: SessionDep_async
+):
+    """
+    포트폴리오 삭제
+    """
+    # Verify ownership
+    portfolio = await crud_portfolio.get_portfolio(session=db, portfolio_id=portfolio_id, owner_id=current_user.id)
+    if not portfolio:
+        raise HTTPException(status_code=404, detail="Portfolio not found")
+        
+    success = await crud_portfolio.delete_portfolio(session=db, portfolio_id=portfolio_id)
+    if not success:
+        raise HTTPException(status_code=400, detail="Failed to delete portfolio")
+    return None

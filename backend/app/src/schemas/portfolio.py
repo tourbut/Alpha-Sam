@@ -18,6 +18,7 @@ class PortfolioRead(PortfolioBase):
     id: uuid.UUID
     owner_id: uuid.UUID
     created_at: datetime
+    updated_at: Optional[datetime] = None
     visibility: PortfolioVisibility
     share_token: Optional[uuid.UUID] = None
     
@@ -74,7 +75,11 @@ class PortfolioWithAssetsSummary(SQLModel):
     name: str
     description: Optional[str] = None
     created_at: datetime
+    updated_at: Optional[datetime] = None
     total_value: float = Field(default=0.0, description="총 평가금액")
     assets: List[PortfolioAssetSummary] = Field(default_factory=list, description="자산 구성 리스트")
     
     model_config = ConfigDict(from_attributes=True)
+class PortfolioUpdate(SQLModel):
+    name: Optional[str] = None
+    description: Optional[str] = None

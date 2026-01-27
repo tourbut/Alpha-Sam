@@ -75,7 +75,7 @@
             >
                 <MoreVertical class="w-5 h-5 text-neutral-500" />
             </Button>
-            <Dropdown placement="bottom-end">
+            <Dropdown placement="bottom-end" class="list-none">
                 <DropdownItem
                     onclick={(e) => {
                         e.stopPropagation();
@@ -109,6 +109,22 @@
             {portfolio.description}
         </p>
     {/if}
+
+    <!-- 날짜 정보 -->
+    <div
+        class="text-xs text-neutral-400 dark:text-neutral-500 mb-4 space-y-0.5"
+    >
+        {#if portfolio.created_at}
+            <div>
+                Created: {new Date(portfolio.created_at).toLocaleDateString()}
+            </div>
+        {/if}
+        {#if portfolio.updated_at}
+            <div>
+                Updated: {new Date(portfolio.updated_at).toLocaleDateString()}
+            </div>
+        {/if}
+    </div>
 
     <!-- Total Value 통계 영역 -->
     <div

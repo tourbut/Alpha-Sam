@@ -4,8 +4,20 @@
      * 포트폴리오 정보를 표시하는 카드 컴포넌트
      * 와이어프레임 기준: 아이콘 + 이름 + 뱃지 + Total Value + 차트 + 자산 분배 + 푸터
      */
-    import { Card, Button, Badge } from "flowbite-svelte";
-    import { Wallet, ArrowRight } from "lucide-svelte";
+    import {
+        Card,
+        Button,
+        Badge,
+        Dropdown,
+        DropdownItem,
+    } from "flowbite-svelte";
+    import {
+        Wallet,
+        ArrowRight,
+        MoreVertical,
+        Edit2,
+        Trash2,
+    } from "lucide-svelte";
     import AssetBreakdownList from "./AssetBreakdownList.svelte";
     import type { PortfolioAsset, PortfolioWithAssets } from "$lib/types";
 
@@ -15,12 +27,16 @@
         ChartComponent = null,
         onclick,
         onManageClick,
+        onedit,
+        ondelete,
     }: {
         portfolio: PortfolioWithAssets;
         isCurrent?: boolean;
         ChartComponent?: any;
         onclick?: () => void;
         onManageClick?: (e: MouseEvent) => void;
+        onedit?: () => void;
+        ondelete?: () => void;
     } = $props();
 </script>
 
@@ -48,6 +64,40 @@
                     <Badge color="purple" class="text-xs">Current</Badge>
                 {/if}
             </div>
+        </div>
+
+        <div class="relative">
+            <Button
+                color="light"
+                class="!p-2 -mr-2"
+                size="xs"
+                onclick={(e: MouseEvent) => e.stopPropagation()}
+            >
+                <MoreVertical class="w-5 h-5 text-neutral-500" />
+            </Button>
+            <Dropdown placement="bottom-end">
+                <DropdownItem
+                    onclick={(e) => {
+                        e.stopPropagation();
+                        onedit?.();
+                    }}
+                >
+                    <div class="flex items-center gap-2">
+                        <Edit2 class="w-4 h-4" /> Edit
+                    </div>
+                </DropdownItem>
+                <DropdownItem
+                    onclick={(e) => {
+                        e.stopPropagation();
+                        ondelete?.();
+                    }}
+                    class="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400"
+                >
+                    <div class="flex items-center gap-2">
+                        <Trash2 class="w-4 h-4" /> Delete
+                    </div>
+                </DropdownItem>
+            </Dropdown>
         </div>
     </div>
 

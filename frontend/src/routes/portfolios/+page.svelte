@@ -24,6 +24,7 @@
   let PortfolioPieChart: any = $state(null);
 
   let openCreateModal = $state(false);
+  let editingPortfolio = $state<PortfolioWithAssets | null>(null);
   let portfoliosWithAssets = $state<PortfolioWithAssets[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
@@ -62,10 +63,37 @@
   function handlePortfolioCreated() {
     portfolioStore.loadPortfolios();
     loadPortfoliosData();
+    editingPortfolio = null;
   }
 
   function viewPortfolio(id: string) {
     goto(`/portfolios/${id}`);
+  }
+
+  async function handleDeletePortfolio(id: string) {
+    if (
+      !confirm(
+        "정말로 이 포트폴리오를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      )
+    )
+      return;
+
+    try {
+      await portfolioStore.removePortfolio(id);
+      await loadPortfoliosData();
+    } catch (e) {
+      alert("포트폴리오 삭제에 실패했습니다.");
+    }
+  }
+
+  function handleEditPortfolio(portfolio: PortfolioWithAssets) {
+    editingPortfolio = portfolio;
+    openCreateModal = true;
+  }
+
+  function openCreateDialog() {
+    editingPortfolio = null;
+    openCreateModal = true;
   }
 </script>
 
@@ -86,11 +114,7 @@
         Manage your portfolios, assets, and transactions
       </p>
     </div>
-    <Button
-      class="btn-primary"
-      size="sm"
-      onclick={() => (openCreateModal = true)}
-    >
+    <Button class="btn-primary" size="sm" onclick={openCreateDialog}>
       <Plus class="w-4 h-4 mr-2" />
       Create Portfolio
     </Button>
@@ -139,6 +163,8 @@
           ChartComponent={PortfolioPieChart}
           onclick={() => viewPortfolio(portfolio.id)}
           onManageClick={() => viewPortfolio(portfolio.id)}
+          onedit={() => handleEditPortfolio(portfolio)}
+          ondelete={() => handleDeletePortfolio(portfolio.id)}
         />
       {:else}
         <!-- 빈 상태 UI -->
@@ -163,11 +189,7 @@
             >
               Create your first portfolio to start tracking your assets
             </p>
-            <Button
-              class="btn-primary"
-              size="sm"
-              onclick={() => (openCreateModal = true)}
-            >
+            <Button class="btn-primary" size="sm" onclick={openCreateDialog}>
               <Plus class="w-4 h-4 mr-2" />
               Create Portfolio
             </Button>
@@ -181,4 +203,5 @@
 <CreatePortfolioModal
   bind:open={openCreateModal}
   oncreated={handlePortfolioCreated}
+  initialData={editingPortfolio}
 />

@@ -1,4 +1,4 @@
-import { fetchPortfolios, fetchPortfolioPositions, createPortfolio, type Portfolio, type PortfolioCreate } from "$lib/apis/portfolio"
+import { fetchPortfolios, fetchPortfolioPositions, createPortfolio, updatePortfolio, deletePortfolio, type Portfolio, type PortfolioCreate } from "$lib/apis/portfolio"
 import { browser } from "$app/environment"
 
 class PortfolioStore {
@@ -34,6 +34,9 @@ class PortfolioStore {
                     // If already selected, reload positions
                     await this.loadPositions(this.selectedPortfolioId)
                 }
+            } else {
+                this.selectedPortfolioId = null
+                this.positions = []
             }
         } catch (e) {
             console.error("Failed to load portfolios", e)
@@ -71,6 +74,37 @@ class PortfolioStore {
             return newPortfolio
         } catch (e) {
             console.error("Failed to create portfolio", e)
+            throw e
+        } finally {
+            this.loading = false
+        }
+    }
+
+    async editPortfolio(id: string, data: PortfolioCreate) {
+        this.loading = true
+        try {
+            const updated = await updatePortfolio(id, data)
+            await this.loadPortfolios() // Reload list to reflect changes
+            return updated
+        } catch (e) {
+            console.error("Failed to update portfolio", e)
+            throw e
+        } finally {
+            this.loading = false
+        }
+    }
+
+    async removePortfolio(id: string) {
+        this.loading = true
+        try {
+            await deletePortfolio(id)
+            if (this.selectedPortfolioId === id) {
+                this.selectedPortfolioId = null
+                localStorage.removeItem("selectedPortfolioId")
+            }
+            await this.loadPortfolios()
+        } catch (e) {
+            console.error("Failed to delete portfolio", e)
             throw e
         } finally {
             this.loading = false

@@ -7,7 +7,6 @@
     import type { Transaction, Asset, CreateTransaction } from "$lib/types";
     import { auth } from "$lib/stores/auth.svelte";
     import { goto } from "$app/navigation";
-    import { goto } from "$app/navigation";
     import { PlusOutline, RefreshOutline } from "flowbite-svelte-icons";
     import { APP_NAME } from "$lib/constants";
 

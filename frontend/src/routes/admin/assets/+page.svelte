@@ -12,14 +12,17 @@
         Label,
         Input,
         Select,
-        Badge,
-        Indicator,
+        Card,
+        Spinner,
+        Alert,
     } from "flowbite-svelte";
     import {
-        PlusOutline,
-        TrashBinSolid,
-        ExclamationCircleSolid,
-    } from "flowbite-svelte-icons";
+        Plus,
+        Trash2,
+        PieChart,
+        Activity,
+        AlertCircle,
+    } from "lucide-svelte";
     import {
         get_admin_assets,
         create_admin_asset,
@@ -28,20 +31,20 @@
     } from "$lib/apis/admin";
     import type { AdminAsset, AdminAssetCreate } from "$lib/types";
 
-    let assets: AdminAsset[] = [];
-    let loading = false;
-    let error = "";
+    let assets: AdminAsset[] = $state([]);
+    let loading = $state(false);
+    let error = $state("");
 
     // Modal State
-    let formModal = false;
-    let deleteModal = false;
-    let selectedAsset: AdminAsset | null = null;
-    let newAsset: AdminAssetCreate = {
+    let formModal = $state(false);
+    let deleteModal = $state(false);
+    let selectedAsset: AdminAsset | null = $state(null);
+    let newAsset: AdminAssetCreate = $state({
         symbol: "",
         name: "",
         type: "STOCK",
         is_active: true,
-    };
+    });
 
     const typeOptions = [
         { value: "STOCK", name: "Stock" },
@@ -103,73 +106,164 @@
     });
 </script>
 
-<div class="space-y-4">
-    <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-bold dark:text-white">
-            System Assets Management
-        </h1>
-        <Button on:click={() => (formModal = true)}>
-            <PlusOutline class="w-3.5 h-3.5 mr-2" />
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1
+                class="text-3xl font-bold text-neutral-900 dark:text-neutral-100"
+            >
+                System Assets Management
+            </h1>
+            <p class="text-neutral-600 dark:text-neutral-400 mt-1">
+                Manage global assets for price collection and system
+                availability
+            </p>
+        </div>
+        <Button
+            class="btn-primary"
+            size="sm"
+            onclick={() => (formModal = true)}
+        >
+            <Plus class="w-4 h-4 mr-2" />
             Add Asset
         </Button>
     </div>
 
     {#if loading}
-        <p class="dark:text-gray-400">Loading...</p>
+        <div class="flex justify-center py-12">
+            <Spinner size="12" color="purple" />
+        </div>
     {:else if error}
-        <p class="text-red-500">{error}</p>
+        <div class="mb-4">
+            <Alert color="red">
+                <span class="font-medium">Error!</span>
+                {error}
+            </Alert>
+        </div>
+    {:else if assets.length > 0}
+        <Card>
+            <div class="overflow-x-auto">
+                <Table hoverable={true}>
+                    <TableHead>
+                        <TableHeadCell>Asset</TableHeadCell>
+                        <TableHeadCell>Type</TableHeadCell>
+                        <TableHeadCell>Status</TableHeadCell>
+                        <TableHeadCell class="text-right"
+                            >Last Update</TableHeadCell
+                        >
+                        <TableHeadCell class="text-center"
+                            >Actions</TableHeadCell
+                        >
+                    </TableHead>
+                    <TableBody>
+                        {#each assets as asset}
+                            <TableBodyRow>
+                                <TableBodyCell>
+                                    <div class="flex items-center gap-2">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center"
+                                        >
+                                            <PieChart
+                                                class="w-4 h-4 text-primary-600 dark:text-primary-400"
+                                            />
+                                        </div>
+                                        <div>
+                                            <div
+                                                class="font-semibold text-neutral-900 dark:text-neutral-100"
+                                            >
+                                                {asset.symbol}
+                                            </div>
+                                            <div
+                                                class="text-xs text-neutral-500 dark:text-neutral-400"
+                                            >
+                                                {asset.name}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </TableBodyCell>
+                                <TableBodyCell>
+                                    <span
+                                        class="text-sm font-medium text-gray-900 dark:text-gray-300"
+                                    >
+                                        {asset.type}
+                                    </span>
+                                </TableBodyCell>
+                                <TableBodyCell>
+                                    <Button
+                                        color={asset.is_active
+                                            ? "green"
+                                            : "red"}
+                                        size="xs"
+                                        outline
+                                        class="!p-1.5"
+                                        onclick={() => handleToggle(asset)}
+                                    >
+                                        <Activity class="w-3 h-3 mr-1" />
+                                        {asset.is_active
+                                            ? "Active"
+                                            : "Inactive"}
+                                    </Button>
+                                </TableBodyCell>
+                                <TableBodyCell class="text-right text-gray-500">
+                                    {new Date(
+                                        asset.updated_at,
+                                    ).toLocaleString()}
+                                </TableBodyCell>
+                                <TableBodyCell class="text-center">
+                                    <Button
+                                        color="red"
+                                        size="xs"
+                                        outline
+                                        onclick={() => openDeleteModal(asset)}
+                                    >
+                                        <Trash2 class="w-3 h-3" />
+                                    </Button>
+                                </TableBodyCell>
+                            </TableBodyRow>
+                        {/each}
+                    </TableBody>
+                </Table>
+            </div>
+        </Card>
     {:else}
-        <Table hoverable={true} shadow>
-            <TableHead>
-                <TableHeadCell>Symbol</TableHeadCell>
-                <TableHeadCell>Name</TableHeadCell>
-                <TableHeadCell>Type</TableHeadCell>
-                <TableHeadCell>Status</TableHeadCell>
-                <TableHeadCell>Last Update</TableHeadCell>
-                <TableHeadCell>Actions</TableHeadCell>
-            </TableHead>
-            <TableBody>
-                {#each assets as asset}
-                    <TableBodyRow>
-                        <TableBodyCell class="font-medium"
-                            >{asset.symbol}</TableBodyCell
-                        >
-                        <TableBodyCell>{asset.name}</TableBodyCell>
-                        <TableBodyCell>{asset.type}</TableBodyCell>
-                        <TableBodyCell>
-                            <Button
-                                color={asset.is_active ? "green" : "red"}
-                                size="xs"
-                                outline
-                                on:click={() => handleToggle(asset)}
-                            >
-                                {asset.is_active ? "Active" : "Inactive"}
-                            </Button>
-                        </TableBodyCell>
-                        <TableBodyCell
-                            >{new Date(
-                                asset.updated_at,
-                            ).toLocaleString()}</TableBodyCell
-                        >
-                        <TableBodyCell>
-                            <Button
-                                color="red"
-                                size="xs"
-                                on:click={() => openDeleteModal(asset)}
-                            >
-                                <TrashBinSolid class="w-3 h-3" />
-                            </Button>
-                        </TableBodyCell>
-                    </TableBodyRow>
-                {/each}
-            </TableBody>
-        </Table>
+        <Card class="text-center py-12">
+            <PieChart
+                class="w-16 h-16 mx-auto mb-4 text-neutral-300 dark:text-neutral-600"
+            />
+            <h3
+                class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2"
+            >
+                No assets configured
+            </h3>
+            <p class="text-neutral-600 dark:text-neutral-400 mb-4">
+                Add assets to start monitoring prices and availability
+            </p>
+            <Button
+                class="btn-primary"
+                size="sm"
+                onclick={() => (formModal = true)}
+            >
+                <Plus class="w-4 h-4 mr-2" />
+                Add Asset
+            </Button>
+        </Card>
     {/if}
 </div>
 
 <!-- Add Modal -->
-<Modal bind:open={formModal} title="Add New System Asset" autoclose={false}>
-    <form class="space-y-4" on:submit|preventDefault={handleAdd}>
+<Modal
+    bind:open={formModal}
+    title="Add New System Asset"
+    autoclose={false}
+    size="lg"
+>
+    <form
+        class="space-y-4"
+        onsubmit={(e) => {
+            e.preventDefault();
+            handleAdd();
+        }}
+    >
         <Label class="space-y-2">
             <span>Symbol (Ticker)</span>
             <Input
@@ -196,10 +290,10 @@
             <Select items={typeOptions} bind:value={newAsset.type} required />
         </Label>
         <div class="flex justify-end gap-2">
-            <Button color="alternative" on:click={() => (formModal = false)}
+            <Button color="alternative" onclick={() => (formModal = false)}
                 >Cancel</Button
             >
-            <Button type="submit">List Asset</Button>
+            <Button type="submit" class="btn-primary">List Asset</Button>
         </div>
     </form>
 </Modal>
@@ -207,16 +301,16 @@
 <!-- Delete Confirm Modal -->
 <Modal bind:open={deleteModal} size="xs" autoclose={false}>
     <div class="text-center">
-        <ExclamationCircleSolid
+        <AlertCircle
             class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200"
         />
         <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
             Are you sure you want to remove {selectedAsset?.symbol}?
         </h3>
-        <Button color="red" class="mr-2" on:click={handleDelete}
+        <Button color="red" class="mr-2" onclick={handleDelete}
             >Yes, I'm sure</Button
         >
-        <Button color="alternative" on:click={() => (deleteModal = false)}
+        <Button color="alternative" onclick={() => (deleteModal = false)}
             >No, cancel</Button
         >
     </div>

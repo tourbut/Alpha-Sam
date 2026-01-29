@@ -11,7 +11,7 @@ from app.src.models.user import User
 from app.src.models.portfolio import Portfolio
 from app.src.models.asset import Asset
 from app.src.models.transaction import Transaction
-from app.src.models.price import Price
+from app.src.models.prices_day import PriceDay
 import pytest_asyncio
 
 @pytest_asyncio.fixture

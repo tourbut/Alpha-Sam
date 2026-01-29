@@ -6,7 +6,7 @@ from sqlalchemy import Column, String, DateTime, func, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 if TYPE_CHECKING:
-    from app.src.models.price import PriceDay
+    from app.src.models.prices_day import PriceDay
     from app.src.models.transaction import Transaction
     from app.src.models.position import Position
     from app.src.models.portfolio import Portfolio

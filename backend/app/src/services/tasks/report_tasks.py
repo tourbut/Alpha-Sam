@@ -7,7 +7,7 @@ from app.celery_app import celery_app
 from app.src.core.db import AsyncSessionLocal
 from app.src.models.user import User
 from app.src.models.position import Position
-from app.src.models.price import Price
+from app.src.models.prices_day import PriceDay
 from app.src.services.portfolio_calculator import calculate_portfolio_summary
 from app.src.services.tasks.email_tasks import send_daily_report_email
 

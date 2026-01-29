@@ -1,7 +1,7 @@
 # import pytest (removed for standalone run)
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from app.src.models.price import Price
+from app.src.models.prices_day import PriceDay
 
 def test_price_timezone_aware():
     """

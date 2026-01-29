@@ -7,7 +7,6 @@
         get_portfolio_history as getPortfolioHistory,
         fetchPortfolios,
     } from "$lib/apis/portfolio";
-    import { refresh_prices as refreshPrices } from "$lib/apis/prices";
     import type {
         Asset,
         Position,
@@ -56,7 +55,6 @@
     async function handleRefresh() {
         refreshing = true;
         try {
-            await refreshPrices();
             await loadData();
         } catch (e) {
             console.error("Failed to refresh prices:", e);

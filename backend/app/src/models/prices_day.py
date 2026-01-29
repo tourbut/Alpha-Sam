@@ -3,10 +3,10 @@ PriceDay (일봉 시세) 모델
 yfinance의 일봉 데이터(OHLCV)를 저장
 """
 import uuid
-from datetime import datetime, date
+from datetime import datetime, date as date_type
 from typing import Optional
 from sqlmodel import SQLModel, Field, Relationship
-from sqlalchemy import Column, Date, Numeric, BigInteger, func, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Date, DateTime, Numeric, BigInteger, func, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 
@@ -38,7 +38,7 @@ class PriceDay(SQLModel, table=True):
         sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("assets.id"), nullable=False, index=True),
         description="자산 ID"
     )
-    date: date = Field(
+    date: date_type = Field(
         sa_column=Column(Date, nullable=False, index=True),
         description="기준 일자"
     )

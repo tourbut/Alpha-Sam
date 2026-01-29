@@ -5,7 +5,7 @@ from sqlalchemy import text
 
 from app.src.core.db import engine, init_db, settings
 from app.src.core.cache import close_redis_client
-from app.src.models import Asset, Price
+from app.src.models import Asset, PriceDay
 
 logger = logging.getLogger(__name__)
 

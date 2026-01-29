@@ -1,10 +1,12 @@
-import { fetchPortfolios, fetchPortfolioPositions, createPortfolio, updatePortfolio, deletePortfolio, type Portfolio, type PortfolioCreate } from "$lib/apis/portfolio"
+import { fetchPortfolios, fetchPortfolioPositions, fetchPortfolioSummary, createPortfolio, updatePortfolio, deletePortfolio, type Portfolio, type PortfolioCreate } from "$lib/apis/portfolio"
+import type { PortfolioSummary } from "$lib/types/portfolio" // Ensure type import
 import { browser } from "$app/environment"
 
 class PortfolioStore {
     portfolios = $state<Portfolio[]>([])
     selectedPortfolioId = $state<string | null>(null)
     positions = $state<any[]>([])
+    summary = $state<PortfolioSummary | null>(null)
     loading = $state(false)
 
     // Computed: Get select portfolio object
@@ -37,6 +39,7 @@ class PortfolioStore {
             } else {
                 this.selectedPortfolioId = null
                 this.positions = []
+                this.summary = null
             }
         } catch (e) {
             console.error("Failed to load portfolios", e)
@@ -56,10 +59,19 @@ class PortfolioStore {
     async loadPositions(id: string) {
         this.loading = true
         try {
-            this.positions = await fetchPortfolioPositions(id)
+            const data = await fetchPortfolioSummary(id)
+            this.summary = {
+                totalValuation: data.summary.total_value,
+                totalProfitLoss: data.summary.total_pl,
+                totalReturnRate: data.summary.total_pl_stats?.percent || 0,
+                totalInvested: data.summary.total_cost,
+                realizedProfitLoss: data.summary.realized_pl || 0
+            }
+            this.positions = data.positions
         } catch (e) {
-            console.error("Failed to load positions", e)
+            console.error("Failed to load portfolio summary/positions", e)
             this.positions = []
+            this.summary = null
         } finally {
             this.loading = false
         }

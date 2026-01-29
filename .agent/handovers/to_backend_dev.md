@@ -4,47 +4,31 @@
 - 2026-01-29
 
 ## 브랜치 (Version Control)
-- `feature/implement-priceday-model`
+- `feature/backend-realized-profit`
 
 ## 현재 상황 (Context)
-- 시세 데이터 관리 정책이 변경되었습니다.
-- 기존의 단순 `Price` (timestamp, value) 테이블은 제거하고, **yfinance의 일봉(Daily Candle) 데이터를 저장하는 `PriceDay` 테이블**로 대체합니다.
-- 실시간 현재가는 Redis를 통해 관리(기존 계획 유지)하되, 과거 이력 분석을 위해 DB에는 일별 OHLCV 데이터를 적재해야 합니다.
+- 포트폴리오 조회 시 현재 보유 자산에 대한 평가 손익(`valuation`, `profit_loss`)은 계산되고 있으나, 매도(SELL)를 통해 이미 확정된 **실현 손익(Realized Profit/Loss)**이 포함되지 않고 있습니다.
+- `PortfolioSummary`에 이를 포함하여 사용자가 전체 투자 성과를 볼 수 있게 해야 합니다.
 
 ## 해야 할 일 (Tasks)
-1. **모델 교체**:
-   - `backend/app/src/models/price.py`를 수정하여 `Price` 클래스를 `PriceDay`로 변경하세요.
-   - 테이블명: `prices_day`
-   - 컬럼 구성 (yfinance 데이터 형태 준수):
-     - `id`: UUID (PK)
-     - `asset_id`: UUID (FK -> Asset)
-     - `date`: Date (일봉 기준일)
-     - `open`: Numeric (시가)
-     - `high`: Numeric (고가)
-     - `low`: Numeric (저가)
-     - `close`: Numeric (종가)
-     - `volume`: BigInteger (거래량)
-     - `adjusted_close`: Numeric (수정 종가, Optional)
-   - 복합 Unique Constraint: `(asset_id, date)`
+1. **Schema 수정**:
+   - `backend/app/src/schemas/portfolio.py`의 `PortfolioSummary` 모델에 optional 필드 `realized_pl` (float)을 추가하세요.
 
-2. **모델 참조 수정**:
-   - `Asset` 모델(`backend/app/src/models/asset.py`)의 `prices` 관계를 `price_days` (또는 `daily_prices`)로 변경하고 `PriceDay`와 연결하세요.
-   - 기타 코드에서 `Price` 모델을 참조하던 부분을 정리하세요.
+2. **계산 로직 개선 (`portfolio_calculator.py`)**:
+   - `calculate_positions` 함수를 수정하여 `(positions, total_realized_pl)` 튜플을 반환하도록 변경하세요.
+   - 내부 루프에서 `SELL` 트랜잭션 처리 시 실현 손익을 계산하여 누적하세요.
+     - 공식: `realized_gain = (sell_price - avg_buy_price) * sell_quantity`
+     - 주의: `avg_price`는 매도 **이전** 시점의 평단가여야 합니다.
 
-3. **데이터 수집 로직 구현**:
-   - `PriceService`에 특정 자산의 일별 시세를 yfinance에서 가져와 `PriceDay` 테이블에 저장/업데이트하는 메서드(`sync_daily_prices`)를 추가하세요.
-   - `backend/app/src/services/tasks/price_tasks.py`에 하루 1회(예: 장 마감 후 또는 자정) 실행되는 Celery Task `update_daily_prices`를 추가하세요.
-
-4. **API 수정**:
-   - 시세 관련 API가 있다면 `PriceDay`를 조회하도록 수정하거나, 실시간 시세는 Redis를 계속 사용하도록 유지하세요.
-
-5. **마이그레이션**:
-   - `Price` 테이블 삭제 및 `PriceDay` 테이블 생성을 위한 Alembic 마이그레이션을 생성하고 실행하세요.
+3. **Service 연동 (`portfolio_service.py`)**:
+   - `PortfolioService.get_positions` 메서드는 현재 `List[PositionWithAsset]`만 반환하므로, 내부적으로 `calculate_positions`의 반환값을 언패킹하여 `realized_pl`은 무시하거나(하위 호환), 필요한 경우 메서드 시그니처를 변경하세요.
+   - **권장**: `get_positions`는 그대로 두고, `get_summary` 메서드 내에서 `realized_pl`을 활용하도록 로직을 수정하세요.
+   - `PortfolioService.get_summary`에서 `PortfolioSummary` 객체 생성 시 `realized_pl` 필드를 채워 반환하세요.
+   - (선택) `create_snapshot`에서도 이 값을 `PortfolioHistory.total_pl`에 반영할지 고려해보세요 (현재는 평가 손익만 저장 중일 수 있음).
 
 ## 기대 산출물 (Expected Outputs)
-- `PriceDay` 모델 및 `prices_day` 테이블 생성.
-- `Price` 테이블 삭제.
-- yfinance로부터 일봉 데이터를 수집하여 DB에 적재하는 기능 구현.
+- `GET /api/v1/portfolios/{id}/summary` 등의 응답에 `realized_pl` 데이터가 포함됨.
+- 매도 내역이 있는 포트폴리오의 경우 정확한 실현 손익이 계산됨.
 
 ## 참고 자료 (References)
-- yfinance data format: Date, Open, High, Low, Close, Volume
+- `backend/app/src/services/portfolio_calculator.py`: 핵심 비즈니스 로직

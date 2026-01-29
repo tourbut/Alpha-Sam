@@ -64,6 +64,10 @@ export const get_portfolio_history = api_router('portfolios', 'get', 'history');
 export const create_portfolio_snapshot = api_router('portfolios', 'post', 'snapshot');
 export const get_portfolio_summary = api_router('portfolios', 'get', 'summary');
 
+export const fetchPortfolioSummary = async (portfolioId: string): Promise<PortfolioResponse> => {
+    return await get_portfolio_summary({ portfolio_id: portfolioId });
+}
+
 export const updatePortfolioVisibility = async (id: string, visibility: PortfolioVisibility): Promise<Portfolio> => {
     return await _updateVisibility({ id, visibility });
 }

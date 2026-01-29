@@ -46,6 +46,7 @@ class PortfolioSummary(SQLModel):
     total_value: Optional[float] = Field(None, description="총 평가금액")
     total_cost: Optional[float] = Field(None, description="총 매수금액")
     total_pl: Optional[float] = Field(None, description="총 손익금액")
+    realized_pl: Optional[float] = Field(None, description="실현 손익")
     total_pl_stats: PortfolioStats = Field(default_factory=PortfolioStats, description="손익 통계")
 
 class PortfolioResponse(SQLModel):

@@ -6,6 +6,7 @@ export interface PortfolioSummary {
     totalProfitLoss: number;
     totalReturnRate: number;
     totalInvested: number;
+    realizedProfitLoss: number;
 }
 
 export interface PortfolioHistory {
@@ -25,6 +26,7 @@ export interface ApiPortfolioSummary {
     total_value: number;
     total_cost: number;
     total_pl: number;
+    realized_pl: number;
     total_pl_stats: PortfolioStats;
 }
 

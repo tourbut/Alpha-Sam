@@ -16,30 +16,21 @@ from sqlalchemy.orm import selectinload
 
 class PortfolioService:
     @staticmethod
-    async def get_positions(session: AsyncSession, portfolio_id: uuid.UUID) -> List[PositionWithAsset]:
+    async def _get_portfolio_core_data(session: AsyncSession, portfolio_id: uuid.UUID) -> tuple[List[PositionWithAsset], float]:
         """
-        Orchestration method to calculate positions.
-        1. Fetch Assets and Transactions via CRUD.
-        2. Pass them to Engine to calculate Positions.
+        Internal helper to fetch data, calculate positions and realized P/L, and enrich with prices.
+        Returns (positions, realized_pl)
         """
-        # 1. Fetch Data
-        # We need a method in crud_asset to get assets by portfolio?
-        # Assuming we can just select them here or add a helper in crud.
-        # But wait, to be strict, we should use CRUD.
-        # Let's use direct selection for now if CRUD lacks method, or better, add to CRUD.
-        # Check crud/assets.py content? Assuming basic CRUD.
-        # For Refactor, let's keep logic simple.
-        
-        # Fetch Assets
+        # 1. Fetch Assets
         from app.src.models.asset import Asset
         stmt_asset = select(Asset).where(Asset.portfolio_id == portfolio_id)
         result_asset = await session.execute(stmt_asset)
         assets = result_asset.scalars().all()
         
         if not assets:
-            return []
+            return [], 0.0
 
-        # Fetch Transactions
+        # 2. Fetch Transactions
         from app.src.models.transaction import Transaction
         stmt_tx = (
             select(Transaction)
@@ -49,17 +40,15 @@ class PortfolioService:
         result_tx = await session.execute(stmt_tx)
         transactions = result_tx.scalars().all()
         
-        # 2. Call Engine
-        positions = calculate_positions(assets=assets, transactions=transactions)
+        # 3. Call Engine
+        # Returns (positions, realized_pl)
+        positions, realized_pl = calculate_positions(assets=assets, transactions=transactions)
         
-        # 3. Enhance with Prices (Service Responsibility)
+        # 4. Enhance with Prices
         if positions:
             from app.src.services.price_service import price_service
             
             for position in positions:
-                # Use Redis-based PriceService
-                # Note: This might be N calls, but they are fast (Redis). 
-                # Optimization: Could verify if get_current_price can do bulk, but for now loop is fine.
                 symbol = position.asset_symbol
                 current_price = 0.0
                 if symbol:
@@ -77,6 +66,11 @@ class PortfolioService:
                 position.return_rate = metrics["return_rate"]
                 position.current_price = current_price
 
+        return positions, realized_pl
+
+    @staticmethod
+    async def get_positions(session: AsyncSession, portfolio_id: uuid.UUID) -> List[PositionWithAsset]:
+        positions, _ = await PortfolioService._get_portfolio_core_data(session, portfolio_id)
         return positions
 
     @staticmethod
@@ -94,10 +88,9 @@ class PortfolioService:
             return None
 
         # 1. Calculate Positions
-        positions = await PortfolioService.get_positions(session, portfolio.id)
+        positions, realized_pl = await PortfolioService._get_portfolio_core_data(session, portfolio.id)
         
         total_value = 0.0
-        total_cost = 0.0
         portfolio_return_rate = 0.0
         
         summary_input_data = []
@@ -112,7 +105,6 @@ class PortfolioService:
             
              summary_metrics = calculate_portfolio_summary(summary_input_data)
              total_value = summary_metrics["total_valuation"] or 0.0
-             total_cost = summary_metrics["total_invested"] or 0.0
              portfolio_return_rate = summary_metrics["portfolio_return_rate"] or 0.0
 
         # Owner nickname
@@ -150,7 +142,7 @@ class PortfolioService:
              await crud_portfolio_history.create_portfolio_history(session=session, history=history)
              return history
         
-        positions = await PortfolioService.get_positions(session, portfolio.id)
+        positions, realized_pl = await PortfolioService._get_portfolio_core_data(session, portfolio.id)
         
         summary_input_data = []
         for position in positions:
@@ -194,9 +186,11 @@ class PortfolioService:
             )
         
         all_positions_map: Dict[uuid.UUID, PositionWithAsset] = {}
+        total_realized_pl_all = 0.0
         
         for portfolio in portfolios:
-            positions = await PortfolioService.get_positions(session, portfolio.id)
+            positions, realized_pl = await PortfolioService._get_portfolio_core_data(session, portfolio.id)
+            total_realized_pl_all += realized_pl
             
             for pos in positions:
                 if pos.asset_id in all_positions_map:
@@ -239,6 +233,7 @@ class PortfolioService:
             total_value=summary_metrics["total_valuation"],
             total_cost=summary_metrics["total_invested"],
             total_pl=summary_metrics["total_profit_loss"],
+            realized_pl=total_realized_pl_all,
             total_pl_stats=PortfolioStats(
                 percent=summary_metrics["portfolio_return_rate"],
                 direction=direction
@@ -264,7 +259,7 @@ class PortfolioService:
         portfolio_responses = []
         
         for portfolio in portfolios:
-            positions = await PortfolioService.get_positions(session, portfolio.id)
+            positions, _ = await PortfolioService._get_portfolio_core_data(session, portfolio.id)
             
             total_value = 0.0
             asset_summaries = []

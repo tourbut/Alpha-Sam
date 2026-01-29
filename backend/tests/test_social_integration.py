@@ -5,7 +5,7 @@ from app.src.models.user import User
 from app.src.models.portfolio import Portfolio
 from app.src.models.social import UserFollow, LeaderboardPeriod, LeaderboardRank
 from app.src.models.asset import Asset
-from app.src.models.price import Price
+from app.src.models.prices_day import PriceDay
 from app.src.models.transaction import Transaction
 from app.src.services.leaderboard_service import leaderboard_service
 

@@ -2,7 +2,7 @@
 도메인 모델 패키지
 """
 from app.src.models.asset import Asset
-from app.src.models.price import PriceDay
+from app.src.models.prices_day import PriceDay
 
 from app.src.models.user import User
 from app.src.models.transaction import Transaction

@@ -1,8 +1,8 @@
-<script lang="ts">
   import { page } from "$app/state";
   import { portfolioStore } from "$lib/stores/portfolio.svelte";
   import { onMount } from "svelte";
-  import { fetchPortfolioPositions } from "$lib/apis/portfolio";
+  import { fetchPortfolioSummary } from "$lib/apis/portfolio";
+  import type { PortfolioSummary } from "$lib/types/portfolio";
   import {
     Button,
     Card,
@@ -15,7 +15,7 @@
     Spinner,
     Alert,
   } from "flowbite-svelte";
-  import { Plus, ArrowLeft, PieChart, Info } from "lucide-svelte";
+  import { Plus, ArrowLeft, PieChart, Info, DollarSign, TrendingUp, TrendingDown, Briefcase } from "lucide-svelte";
   import AssetModal from "$lib/components/AssetModal.svelte";
   import { goto } from "$app/navigation";
 
@@ -39,6 +39,7 @@
 
   // 명시적 타입 지정으로 never[] 추론 문제 해결
   let assets: AssetRow[] = $state([]);
+  let summary: PortfolioSummary | null = $state(null);
   let loading = $state(false);
   let error: string | null = $state(null);
 
@@ -61,9 +62,18 @@
     loading = true;
     error = null;
     try {
-      const positions = await fetchPortfolioPositions(portfolioId);
+      const data = await fetchPortfolioSummary(portfolioId);
+      
+      summary = {
+          totalValuation: data.summary.total_value,
+          totalProfitLoss: data.summary.total_pl,
+          totalReturnRate: data.summary.total_pl_stats?.percent || 0,
+          totalInvested: data.summary.total_cost,
+          realizedProfitLoss: data.summary.realized_pl || 0
+      };
+
       // Map API response (snake_case) to UI format (camelCase)
-      assets = positions.map((p: any) => ({
+      assets = data.positions.map((p: any) => ({
         id: p.asset_id,
         symbol: p.asset_symbol,
         name: p.asset_name,
@@ -132,8 +142,59 @@
       <span class="font-medium">Error!</span>
       {error}
     </Alert>
-  {:else if assets.length > 0}
-    <Card>
+  {:else}
+    <!-- Summary Section -->
+     {#if summary}
+     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card class="p-4" size="md">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-neutral-500">Total Value</span>
+                <Briefcase class="w-4 h-4 text-primary-500" />
+            </div>
+            <div class="text-2xl font-bold">${summary.totalValuation.toLocaleString()}</div>
+        </Card>
+        
+        <Card class="p-4" size="md">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-neutral-500">Total Profit/Loss</span>
+                {#if summary.totalProfitLoss >= 0}
+                    <TrendingUp class="w-4 h-4 text-green-500" />
+                {:else}
+                    <TrendingDown class="w-4 h-4 text-red-500" />
+                {/if}
+            </div>
+            <div class="text-2xl font-bold {summary.totalProfitLoss >= 0 ? 'text-green-600' : 'text-red-600'}">
+                {summary.totalProfitLoss >= 0 ? '+' : ''}${summary.totalProfitLoss.toLocaleString()}
+                <span class="text-sm font-normal text-neutral-500 ml-1">
+                    ({summary.totalReturnRate.toFixed(2)}%)
+                </span>
+            </div>
+        </Card>
+
+        <Card class="p-4" size="md">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-neutral-500">Realized Profit</span>
+                <DollarSign class="w-4 h-4 text-blue-500" />
+            </div>
+            <div class="text-2xl font-bold {summary.realizedProfitLoss >= 0 ? 'text-blue-600' : 'text-red-600'}">
+                {summary.realizedProfitLoss >= 0 ? '+' : ''}${summary.realizedProfitLoss.toLocaleString()}
+            </div>
+        </Card>
+
+        <Card class="p-4" size="md">
+             <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-neutral-500">Total Invested</span>
+                <div class="w-4 h-4 text-neutral-400">IV</div>
+            </div>
+            <div class="text-2xl font-bold text-neutral-700 dark:text-neutral-300">
+                ${summary.totalInvested.toLocaleString()}
+            </div>
+        </Card>
+     </div>
+     {/if}
+
+     {#if assets.length > 0}
+    <Card class="mt-6">
       <div class="overflow-x-auto">
         <Table hoverable={true}>
           <TableHead>

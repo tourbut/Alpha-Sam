@@ -12,7 +12,7 @@ from app.src.deps import SessionDep_async, CurrentUser
 from app.src.crud import portfolio_histories as crud_portfolio_history
 from app.src.crud import portfolios as crud_portfolio
 from app.src.crud import transactions as crud_transaction
-from app.src.models.price import Price
+from app.src.models.prices_day import PriceDay
 from sqlalchemy import select, desc
 
 router = APIRouter(tags=["portfolios"])

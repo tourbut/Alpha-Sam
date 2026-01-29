@@ -215,7 +215,7 @@ class PriceService:
         """
         Fetch daily OHLCV from yfinance and save/update PriceDay
         """
-        from app.src.models.price import PriceDay
+        from app.src.models.prices_day import PriceDay
         from sqlalchemy import select
         from datetime import date
         

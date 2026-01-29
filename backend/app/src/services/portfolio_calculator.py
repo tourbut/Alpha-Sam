@@ -129,10 +129,13 @@ def calculate_positions(
     assets: List,
     transactions: List,
     price_provider_func = None # Optional: if we want to inject price lookup, or pass prices map
-) -> List[PositionWithAsset]:
+) -> tuple[List[PositionWithAsset], float]:
     """
     Asset과 Transaction 리스트를 받아 Postion 리스트를 계산 (Pure Logic).
     DB Session 의존성 없음.
+    
+    Returns:
+        (positions, total_realized_pl)
     """
     # 3. Asset별로 Transaction 그룹화
     asset_transactions: Dict[uuid.UUID, List] = {asset.id: [] for asset in assets}
@@ -142,6 +145,7 @@ def calculate_positions(
             asset_transactions[tx.asset_id].append(tx)
     
     positions: List[PositionWithAsset] = []
+    total_realized_pl = Decimal("0")
     
     for asset in assets:
         txs = asset_transactions.get(asset.id, [])
@@ -158,13 +162,21 @@ def calculate_positions(
                 total_cost += (qty * price)
             elif tx.type == "SELL":
                 # SELL: 수량 감소, 평단가 유지
+                # 실현 손익 계산: (매도단가 - 평단가) * 매도수량
+                avg_price = (total_cost / current_qty) if current_qty > 0 else Decimal("0")
+                
+                # 평단가가 0이면 수익 계산이 애매하지만, 비용이 0이었다면 전액 수익으로 볼 수 있음
+                realized_gain = (price - avg_price) * qty
+                total_realized_pl += realized_gain
+                
                 if current_qty > 0:
-                    avg_price = total_cost / current_qty
                     current_qty -= qty
                     # 남은 수량에 대한 total_cost 재계산
                     total_cost = current_qty * avg_price
                 else:
                     current_qty -= qty
+                    # Short position logic handled basically here if negative allowed, 
+                    # but barring that, assuming logic holds.
             
             # 음수 수량 방지
             if current_qty < 0:
@@ -195,4 +207,4 @@ def calculate_positions(
         )
         positions.append(position)
     
-    return positions
+    return positions, float(total_realized_pl)

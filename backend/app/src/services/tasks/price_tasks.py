@@ -4,6 +4,7 @@
 """
 import asyncio
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlmodel import SQLModel
@@ -39,7 +40,7 @@ async def _update_all_prices_async() -> int:
             new_price = Price(
                 asset_id=asset.id,
                 value=current_price,
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(ZoneInfo("Asia/Seoul"))
             )
             
             session.add(new_price)
@@ -91,7 +92,7 @@ def update_all_prices() -> dict:
                     new_price = Price(
                         asset_id=asset.id,
                         value=current_price,
-                        timestamp=datetime.utcnow()
+                        timestamp=datetime.now(ZoneInfo("Asia/Seoul"))
                     )
                     
                     session.add(new_price)
@@ -110,13 +111,13 @@ def update_all_prices() -> dict:
         return {
             "status": "success",
             "updated_count": updated_count,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(ZoneInfo("Asia/Seoul")).isoformat()
         }
     except Exception as e:
         return {
             "status": "error",
             "error": str(e),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(ZoneInfo("Asia/Seoul")).isoformat()
         }
 
 
@@ -149,7 +150,7 @@ def collect_market_prices() -> dict:
         return {
             "status": "success",
             "results": results,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(ZoneInfo("Asia/Seoul")).isoformat()
         }
     except Exception as e:
         return {"status": "error", "error": str(e)}

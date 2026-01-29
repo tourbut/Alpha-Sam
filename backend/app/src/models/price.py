@@ -4,6 +4,7 @@ Price (시세) 모델
 """
 import uuid
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from typing import Optional
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import Column, DateTime, Numeric, func, ForeignKey
@@ -36,10 +37,11 @@ class Price(SQLModel, table=True):
         description="현재 가격"
     )
     timestamp: datetime = Field(
-        description="시세 기준 시각"
+        description="시세 기준 시각",
+        default_factory=lambda: datetime.now(ZoneInfo("Asia/Seoul"))
     )
     created_at: datetime = Field(
-        default_factory=datetime.utcnow,
+        default_factory=lambda: datetime.now(ZoneInfo("Asia/Seoul")),
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
     

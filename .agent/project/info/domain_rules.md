@@ -35,7 +35,7 @@
   - 동일 포트폴리오 내에서 동일 심볼의 중복 자산 등록은 비즈니스 로직에 따라 제한될 수 있다.
 - **Relationships**:
   - `portfolio`: Portfolio (N:1)
-  - `prices`: 시세 이력 (1:N)
+  - `price_days`: 일봉 시세 이력 (1:N)
   - `transactions`: 거래 내역 (1:N)
 
 ### Portfolio (포트폴리오)
@@ -70,6 +70,25 @@
   - Transaction 추가/수정/삭제 시 귀속된 Portfolio의 해당 Asset Position을 재계산해야 한다.
 - **Relationships**:
   - `portfolio`: Portfolio (N:1)
+  - `asset`: Asset (N:1)
+
+### PriceDay (일봉 시세)
+- **Role**: 자산의 일별 시세(OHLCV) 이력 저장. 차트 및 과거 수익률 분석용.
+- **Attributes**:
+  - `id`: ID (Primary Key, UUID v4)
+  - `asset_id`: 자산 FK (UUID).
+  - `date`: 기준 일자 (Date).
+  - `open`: 시가 (Numeric).
+  - `high`: 고가 (Numeric).
+  - `low`: 저가 (Numeric).
+  - `close`: 종가 (Numeric).
+  - `volume`: 거래량 (BigInteger).
+  - `adjusted_close`: 수정 종가 (Numeric, Optional).
+  - `created_at`: 레코드 생성 시각.
+- **Rules**:
+  - `(asset_id, date)` 조합은 유일해야 한다 (Unique Constraint).
+  - yfinance 등 외부 소스에서 마감 후 수집한다.
+- **Relationships**:
   - `asset`: Asset (N:1)
 
 ### NotificationSettings (알림 설정)
@@ -165,5 +184,5 @@ erDiagram
     Portfolio ||--o{ Asset : contains
     Portfolio ||--o{ Transaction : contains
     Asset ||--o{ Transaction : referenced_by
-    Asset ||--o{ Price : has
+    Asset ||--o{ PriceDay : has
 ```

@@ -52,7 +52,7 @@ graph TD
     subgraph Fallback Logic
     E -.-> |Cache Miss| F{Handle Miss}
     F --> |Dev| Return Mock Data
-    F --> |Prod| Return Error / Last Known DB Value
+    F --> |Prod| Return Error / Recalculate from PriceDay (if applicable)
     end
 ```
 

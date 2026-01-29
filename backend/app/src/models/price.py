@@ -1,28 +1,34 @@
 """
-Price (시세) 모델
-외부 데이터 소스에서 가져오는 현재 단가 정보
+PriceDay (일봉 시세) 모델
+yfinance의 일봉 데이터(OHLCV)를 저장
 """
 import uuid
-from datetime import datetime
-from zoneinfo import ZoneInfo
+from datetime import datetime, date
 from typing import Optional
 from sqlmodel import SQLModel, Field, Relationship
-from sqlalchemy import Column, DateTime, Numeric, func, ForeignKey
+from sqlalchemy import Column, Date, Numeric, BigInteger, func, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 
-class Price(SQLModel, table=True):
+class PriceDay(SQLModel, table=True):
     """
-    시세 정보 모델
+    일봉 시세 정보 모델 (OHLCV)
     
     Attributes:
-        id: 시세 고유 ID (자동 생성)
-        asset_id: 자산 ID (Asset 참조)
-        value: 현재 가격
-        timestamp: 시세 기준 시각
-        created_at: 레코드 생성 시각
+        id: 고유 ID
+        asset_id: 자산 ID
+        date: 기준 일자
+        open: 시가
+        high: 고가
+        low: 저가
+        close: 종가
+        volume: 거래량
+        adjusted_close: 수정 종가
     """
-    __tablename__ = "prices"
+    __tablename__ = "prices_day"
+    __table_args__ = (
+        UniqueConstraint("asset_id", "date", name="uq_prices_day_asset_date"),
+    )
     
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4,
@@ -32,21 +38,39 @@ class Price(SQLModel, table=True):
         sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("assets.id"), nullable=False, index=True),
         description="자산 ID"
     )
-    value: float = Field(
-        sa_column=Column(Numeric(precision=20, scale=8)),
-        description="현재 가격"
+    date: date = Field(
+        sa_column=Column(Date, nullable=False, index=True),
+        description="기준 일자"
     )
-    timestamp: datetime = Field(
-        description="시세 기준 시각",
-        default_factory=lambda: datetime.now(ZoneInfo("Asia/Seoul"))
+    open: float = Field(
+        sa_column=Column(Numeric(precision=20, scale=8)),
+        description="시가"
+    )
+    high: float = Field(
+        sa_column=Column(Numeric(precision=20, scale=8)),
+        description="고가"
+    )
+    low: float = Field(
+        sa_column=Column(Numeric(precision=20, scale=8)),
+        description="저가"
+    )
+    close: float = Field(
+        sa_column=Column(Numeric(precision=20, scale=8)),
+        description="종가"
+    )
+    volume: int = Field(
+        sa_column=Column(BigInteger),
+        description="거래량"
+    )
+    adjusted_close: Optional[float] = Field(
+        default=None,
+        sa_column=Column(Numeric(precision=20, scale=8)),
+        description="수정 종가"
     )
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(ZoneInfo("Asia/Seoul")),
+        default_factory=datetime.utcnow,
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
     
     # Relationship
-    asset: Optional["Asset"] = Relationship(back_populates="prices")
-
-
-
+    asset: Optional["Asset"] = Relationship(back_populates="price_days")

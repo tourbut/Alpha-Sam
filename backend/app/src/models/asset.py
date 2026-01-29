@@ -6,7 +6,7 @@ from sqlalchemy import Column, String, DateTime, func, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 if TYPE_CHECKING:
-    from app.src.models.price import Price
+    from app.src.models.price import PriceDay
     from app.src.models.transaction import Transaction
     from app.src.models.position import Position
     from app.src.models.portfolio import Portfolio
@@ -63,6 +63,6 @@ class Asset(SQLModel, table=True):
     
     # Relationships
     portfolio: Optional["Portfolio"] = Relationship(back_populates="assets")
-    prices: List["Price"] = Relationship(back_populates="asset")
+    price_days: List["PriceDay"] = Relationship(back_populates="asset")
     transactions: List["Transaction"] = Relationship(back_populates="asset")
     positions: List["Position"] = Relationship(back_populates="asset")

@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, or_
 
 from app.src.models.asset import Asset
-from app.src.models.price import Price
+
 
 from app.src.schemas.asset import AssetCreate
 

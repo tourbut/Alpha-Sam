@@ -4,7 +4,7 @@ from sqlalchemy import select
 from typing import Dict
 
 from app.src.models.asset import Asset
-from app.src.models.price import Price
+
 from app.src.services.price_service import price_service
 from app.src.deps import SessionDep_async
 
@@ -30,16 +30,8 @@ async def refresh_prices(
             # 캐시 무효화
             await price_service.invalidate_cache(asset.symbol)
             
-            # 캐시를 사용하지 않고 최신 가격 조회
+            # 캐시를 사용하지 않고 최신 가격 조회 (Redis 갱신됨)
             current_price = await price_service.get_current_price(asset.symbol, use_cache=False)
-            
-            new_price = Price(
-                asset_id=asset.id,
-                value=current_price,
-                timestamp=datetime.utcnow()
-            )
-
-            session.add(new_price)
             updated_count += 1
         
         await session.commit()

@@ -11,7 +11,7 @@ from sqlmodel import SQLModel
 
 from app.celery_app import celery_app
 from app.src.models.asset import Asset
-from app.src.models.price import Price
+# Price model removed
 from app.src.services.price_service import price_service
 from app.src.core.cache import cache_service
 from app.src.core.db import engine, AsyncSessionLocal
@@ -35,15 +35,10 @@ async def _update_all_prices_async() -> int:
         # 2. 각 자산별 시세 조회 및 저장
         for asset in assets:
             # [Refactor] 외부 API 호출을 생략하고 Redis에서만 최신 가격 조회
+            # get_current_price internals will update Cache if needed
             current_price = await price_service.get_current_price(asset.symbol)
             
-            new_price = Price(
-                asset_id=asset.id,
-                value=current_price,
-                timestamp=datetime.now(ZoneInfo("Asia/Seoul"))
-            )
-            
-            session.add(new_price)
+            # DB Save (Price) Removed - Realtime only in Redis
             updated_count += 1
             
             # Check for Price Alerts
@@ -89,13 +84,7 @@ def update_all_prices() -> dict:
                     # [Refactor] 외부 API 호출을 생략하고 Redis에서만 최신 가격 조회
                     current_price = await price_service.get_current_price(asset.symbol)
                     
-                    new_price = Price(
-                        asset_id=asset.id,
-                        value=current_price,
-                        timestamp=datetime.now(ZoneInfo("Asia/Seoul"))
-                    )
-                    
-                    session.add(new_price)
+                    # DB Save Removed
                     updated_count += 1
                     
                     # Check for Price Alerts
@@ -150,6 +139,54 @@ def collect_market_prices() -> dict:
         return {
             "status": "success",
             "results": results,
+            "timestamp": datetime.now(ZoneInfo("Asia/Seoul")).isoformat()
+        }
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+
+@celery_app.task(name="app.src.services.tasks.price_tasks.update_daily_prices")
+def update_daily_prices() -> dict:
+    """
+    일봉 시세(OHLCV)를 업데이트하는 Celery 태스크
+    하루 1회 실행 권장 (예: 00:30 UTC)
+    """
+    from sqlalchemy.pool import NullPool
+    from app.src.core.db import settings
+    
+    async def run_daily_update():
+        task_engine = create_async_engine(
+            settings.database_url,
+            poolclass=NullPool,
+        )
+        TaskSessionLocal = async_sessionmaker(task_engine, class_=AsyncSession, expire_on_commit=False)
+        
+        try:
+            async with TaskSessionLocal() as session:
+                # 1. 모든 자산 조회
+                result = await session.execute(select(Asset))
+                assets = result.scalars().all()
+                
+                updated_count = 0
+                
+                # 2. 각 자산별 일봉 데이터 동기화
+                for asset in assets:
+                    try:
+                        count = await price_service.sync_daily_prices(session, asset.id, asset.symbol)
+                        updated_count += count
+                    except Exception as e:
+                        print(f"Failed to sync daily prices for {asset.symbol}: {e}")
+                
+                await session.commit()
+                return updated_count
+        finally:
+            await task_engine.dispose()
+
+    try:
+        updated_count = asyncio.run(run_daily_update())
+        return {
+            "status": "success",
+            "updated_count": updated_count,
             "timestamp": datetime.now(ZoneInfo("Asia/Seoul")).isoformat()
         }
     except Exception as e:

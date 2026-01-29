@@ -2,7 +2,7 @@ from typing import List, Dict, Optional, Any
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
-from app.src.models.price import Price
+
 from app.src.models.portfolio import Portfolio, PortfolioVisibility
 from app.src.models.portfolio_history import PortfolioHistory
 from app.src.schemas.position import PositionWithAsset
@@ -54,11 +54,16 @@ class PortfolioService:
         
         # 3. Enhance with Prices (Service Responsibility)
         if positions:
-            asset_ids = [p.asset_id for p in positions]
-            price_map = await PortfolioService._get_latest_prices(session, asset_ids)
+            from app.src.services.price_service import price_service
             
             for position in positions:
-                current_price = price_map.get(position.asset_id)
+                # Use Redis-based PriceService
+                # Note: This might be N calls, but they are fast (Redis). 
+                # Optimization: Could verify if get_current_price can do bulk, but for now loop is fine.
+                symbol = position.asset_symbol
+                current_price = 0.0
+                if symbol:
+                    current_price = await price_service.get_current_price(symbol)
                 
                 # Re-calculate metrics with price
                 metrics = calculate_position_metrics(
@@ -245,21 +250,7 @@ class PortfolioService:
             positions=final_positions
         )
 
-    @staticmethod
-    async def _get_latest_prices(session: AsyncSession, asset_ids: List[uuid.UUID]) -> Dict[uuid.UUID, float]:
-        if not asset_ids:
-            return {}
-            
-        stmt = (
-            select(Price)
-            .distinct(Price.asset_id)
-            .where(Price.asset_id.in_(asset_ids))
-            .order_by(Price.asset_id, desc(Price.timestamp))
-        )
-        result = await session.execute(stmt)
-        latest_prices = result.scalars().all()
-        
-        return {price.asset_id: float(price.value) for price in latest_prices}
+
 
     @staticmethod
     async def get_portfolios_with_assets(session: AsyncSession, user_id: uuid.UUID) -> List[Dict[str, Any]]:

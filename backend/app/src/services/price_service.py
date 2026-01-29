@@ -211,4 +211,74 @@ class PriceService:
                     timestamp=datetime.utcnow().isoformat()
                 )
 
+    async def sync_daily_prices(self, session: AsyncSession, asset_id: uuid.UUID, symbol: str) -> int:
+        """
+        Fetch daily OHLCV from yfinance and save/update PriceDay
+        """
+        from app.src.models.price import PriceDay
+        from sqlalchemy import select
+        from datetime import date
+        
+        # 1. Fetch history from yfinance (last 5 days to be safe)
+        # Note: _fetch_history is a helper
+        history = await self._fetch_history_from_yfinance(symbol, period="5d")
+        
+        if history is None or history.empty:
+            return 0
+        
+        updated_count = 0
+        
+        # 2. Iterate and upsert
+        for idx, row in history.iterrows():
+            record_date = idx.date()
+            
+            # Check if exists
+            stmt = select(PriceDay).where(
+                PriceDay.asset_id == asset_id,
+                PriceDay.date == record_date
+            )
+            result = await session.execute(stmt)
+            existing = result.scalars().first()
+            
+            if existing:
+                # Update if needed (e.g. adjusted close changed)
+                if (existing.close != row['Close'] or 
+                    existing.volume != row['Volume']):
+                    existing.open = row['Open']
+                    existing.high = row['High']
+                    existing.low = row['Low']
+                    existing.close = row['Close']
+                    existing.volume = int(row['Volume'])
+                    updated_count += 1
+            else:
+                # Create
+                new_price_day = PriceDay(
+                    asset_id=asset_id,
+                    date=record_date,
+                    open=row['Open'],
+                    high=row['High'],
+                    low=row['Low'],
+                    close=row['Close'],
+                    volume=int(row['Volume'])
+                    # adjusted_close is not always available in standard history call depending on settings,
+                    # but yfinance 'history' usually has 'Close' as adjusted if 'auto_adjust=True' (defualt).
+                    # We will map 'Close' to close. If we want adj close specifically, we need to check columns.
+                )
+                session.add(new_price_day)
+                updated_count += 1
+        
+        return updated_count
+
+    async def _fetch_history_from_yfinance(self, symbol: str, period: str = "5d"):
+         import pandas as pd
+         query_symbol = symbol
+         if symbol in ["BTC", "ETH", "SOL", "XRP", "DOGE", "ADA", "DOT", "LINK", "LTC", "BCH", "EOS", "XLM", "TRX", "XMR"]:
+            query_symbol = f"{symbol}-USD"
+            
+         def fetch():
+            ticker = yf.Ticker(query_symbol)
+            return ticker.history(period=period)
+            
+         return await asyncio.to_thread(fetch)
+
 price_service = PriceService()

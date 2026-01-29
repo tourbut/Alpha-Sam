@@ -13,6 +13,13 @@ RUN npm prune --production
 # Final stage
 FROM node:20-slim
 
+# Install tzdata for timezone support
+RUN apt-get update && apt-get install -y \
+    tzdata \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV TZ=Asia/Seoul
+
 WORKDIR /app
 
 # Copy built assets and dependencies

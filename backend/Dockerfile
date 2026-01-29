@@ -30,7 +30,11 @@ WORKDIR /app
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     curl \
+    tzdata \
     && rm -rf /var/lib/apt/lists/*
+
+# Set Timezone
+ENV TZ=Asia/Seoul
 
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv

@@ -7,7 +7,11 @@ WORKDIR /app
 # 시스템 의존성 설치
 RUN apt-get update && apt-get install -y \
     curl \
+    tzdata \
     && rm -rf /var/lib/apt/lists/*
+
+# Set Timezone
+ENV TZ=Asia/Seoul
 
 # uv 설치
 RUN pip install --no-cache-dir uv

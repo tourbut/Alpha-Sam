@@ -1,6 +1,13 @@
 # Node.js Current LTS 이미지 기반
 FROM node:20-slim
 
+# Install tzdata for timezone support
+RUN apt-get update && apt-get install -y \
+    tzdata \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV TZ=Asia/Seoul
+
 # 작업 디렉토리 설정
 WORKDIR /app
 

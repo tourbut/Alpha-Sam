@@ -1,4 +1,4 @@
-# System Architecture: Global Asset Management
+/# System Architecture: Global Asset Management
 
 ## Overview
 Alpha-Sam 프로젝트에서 `USD/KRW` 환율, 주가 지수 등 **전역적으로 공유되는 자산(Global Assets)**을 효율적으로 관리하기 위한 아키텍처를 정의합니다.

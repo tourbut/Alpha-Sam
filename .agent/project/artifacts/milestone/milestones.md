@@ -49,14 +49,14 @@
 - **Status**: Planning
 - **Themes**: Admin, Automation, Data Accuracy.
 - **Key Deliverables**:
-  1. **Admin Asset Management**: 관리자 전용 종목 관리 UI 및 API.
+  1. **Admin Asset Management**: 관리자 전용 종목 관리 UI 및 API. (Completed)
   2. **Batch Price Collector**: Celery Beat 기반 1분 주기 시세 자동 수집.
-  3. **System Asset Source of Truth**: `AdminAsset` 테이블을 통한 중앙화된 시세 관리.
+  3. **System Asset Source of Truth**: `AdminAsset` 테이블을 통한 중앙화된 시세 관리. (Completed)
 
 ## 🚀 v2.0.0: Architecture Redesign (In Progress)
 - **Status**: Planning
 - **Themes**: Scalability, Security, Data Integrity.
 - **Key Deliverables**:
-  1. **UUID Transition**: 모든 ID 체계를 Integer에서 UUID v4로 전환.
+  1. **UUID Transition**: 모든 ID 체계를 Integer에서 UUID v4로 전환. (Completed)
   2. **Portfolio-Asset Relationship**: `Asset`이 `Portfolio`에 직접 귀속되도록 스키마 변경.
   3. **Data Migration**: 기존 데이터의 무결성을 유지하며 UUID로 변환하는 마이그레이션 수행.

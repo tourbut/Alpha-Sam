@@ -74,26 +74,51 @@ class PriceService:
         Internal method to fetch price using yfinance (blocking call wrapped in executor)
         """
         # Symbol Mapping for Crypto
-        query_symbol = symbol
+        query_symbol = symbol.strip() # Safety strip
         if symbol in ["BTC", "ETH", "SOL", "XRP", "DOGE", "ADA", "DOT", "LINK", "LTC", "BCH", "EOS", "XLM", "TRX", "XMR"]:
             query_symbol = f"{symbol}-USD"
         
+        # Explicit mapping for Exchange Rates
+        if query_symbol == "USD/KRW":
+            query_symbol = "KRW=X"
+
         def fetch():
             ticker = yf.Ticker(query_symbol)
-            # 'fast_info' is faster than 'history' in newer yfinance versions
             try:
-                 return ticker.fast_info['last_price']
-            except (KeyError, AttributeError, Exception):
-                 # Fallback to history
-                 try:
-                     hist = ticker.history(period="1d")
-                     if not hist.empty:
-                         return hist['Close'].iloc[-1]
-                 except Exception:
-                     pass
-                 return 0.0
+                # 'fast_info' is faster than 'history' in newer yfinance versions
+                price = ticker.fast_info['last_price']
+                if price and price > 0:
+                    return price
+            except (KeyError, AttributeError, Exception) as e:
+                logger.debug(f"fast_info failed for {query_symbol}: {e}")
+            
+            # Fallback to history
+            try:
+                # For Exchange Rates (=X), sometimes 1d is needed, ensure we get data
+                hist = ticker.history(period="1d")
+                if not hist.empty:
+                    return hist['Close'].iloc[-1]
+            except Exception as e:
+                logger.error(f"History fetch failed for {query_symbol}: {e}")
+            
+            return 0.0
 
-        return await asyncio.to_thread(fetch)
+        price = await asyncio.to_thread(fetch)
+        
+        # Debug Log to trace execution
+        if price == 0.0:
+            logger.info(f"YFinance failed for '{symbol}' (mapped: '{query_symbol}'). Checking fallback condition...")
+
+        # Final Fallback for Exchange Rates if yfinance failed
+        # Check against original symbol OR mapped symbol
+        if price == 0.0 and (symbol == "KRW=X" or symbol == "USD/KRW" or query_symbol == "KRW=X"):
+             logger.info(f"Triggering fallback for '{symbol}' (mapped: '{query_symbol}')")
+             fallback_price = await self._fetch_exchange_rate_fallback("USD/KRW") # Always use consistent symbol for fallback
+             logger.info(f"Fallback result for '{symbol}': {fallback_price}")
+             if fallback_price > 0:
+                 return fallback_price
+        
+        return price
 
     async def invalidate_cache(self, symbol: Optional[str] = None) -> int:
         """
@@ -191,14 +216,16 @@ class PriceService:
         users = result.scalars().all()
 
         for user in users:
-            # 해당 사용자가 이 자산을 보유하고 있는지 확인 (선택 사항, 여기서는 보유 중인 경우만 알림)
+            # 해당 사용자가 이 자산을 보유하고 있는지 확인
             from app.src.models.position import Position
             from app.src.models.asset import Asset
+            from app.src.models.portfolio import Portfolio
             
             check_stmt = (
                 select(Position)
+                .join(Portfolio, Position.portfolio_id == Portfolio.id)
                 .join(Asset, Position.asset_id == Asset.id)
-                .where(Position.owner_id == user.id)
+                .where(Portfolio.owner_id == user.id)
                 .where(Asset.symbol == asset_symbol)
             )
             check_result = await session.execute(check_stmt)
@@ -210,6 +237,47 @@ class PriceService:
                     price=current_price,
                     timestamp=datetime.utcnow().isoformat()
                 )
+
+    async def _fetch_exchange_rate_fallback(self, symbol: str) -> float:
+        """
+        Fetch Exchange Rate (USD/KRW) from Naver Finance as fallback
+        """
+        import aiohttp
+        from bs4 import BeautifulSoup
+        
+        target_url = None
+        if symbol == "KRW=X" or symbol == "USD/KRW":
+            target_url = "https://finance.naver.com/marketindex/exchangeDetail.naver?marketindexCd=FX_USDKRW"
+            
+        if not target_url:
+            return 0.0
+
+        try:
+            timeout = aiohttp.ClientTimeout(total=5)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(target_url) as response:
+                    if response.status == 200:
+                        html = await response.text()
+                        soup = BeautifulSoup(html, "html.parser")
+                        # Naver Finance selector for price - legacy image structure
+                        # Structure: div.head_info (or div.today) > p.no_today
+                        price_container = soup.select_one("div.today p.no_today")
+                        if price_container:
+                            # Text will be something like "1,436.00원" or "1,436.00"
+                            # There are nested em/spans, but .text gets all of them combined
+                            raw_text = price_container.get_text(strip=True)
+                            # Remove "No" (sometimes class names leak?), "up", "down", commas, "원"
+                            # Actually just extract the first floating point number
+                            import re
+                            match = re.search(r"([0-9,.]+)", raw_text)
+                            if match:
+                                price_str = match.group(1).replace(",", "")
+                                return float(price_str)
+        except Exception as e:
+            logger.error(f"Fallback fetch failed for {symbol}: {e}")
+            
+        return 0.0
+
 
     async def sync_daily_prices(self, session: AsyncSession, asset_id: uuid.UUID, symbol: str) -> int:
         """

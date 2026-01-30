@@ -164,6 +164,13 @@ class CacheService:
             print(f"Redis delete error: {e}")
             return False
     
+    async def close(self):
+        """
+        Close the underlying Redis client connection.
+        Useful for cleaning up in environments with ephemeral event loops (e.g. Celery).
+        """
+        await close_redis_client()
+
     async def delete_pattern(self, pattern: str) -> int:
         """
         패턴에 맞는 모든 키 삭제

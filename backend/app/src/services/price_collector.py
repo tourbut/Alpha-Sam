@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import yfinance as yf
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.src.models.admin import AdminAsset
@@ -45,10 +44,12 @@ class PriceCollectorService:
         # 4. 각 자산별 시세 수집
         for symbol in target_symbols:
             try:
-                price = await self._fetch_single_price(symbol)
+                # Use centralized PriceService to fetch and cache prices
+                # use_cache=False forces fetch from source (update)
+                from app.src.services.price_service import price_service
+                price = await price_service.get_current_price(symbol, use_cache=False)
+                
                 if price > 0:
-                    # Redis Cache Key: "price:{SYMBOL}"
-                    await cache_service.set(f"price:{symbol}", str(price), ttl=600) # 10분 TTL matching Redis expiration policy
                     results["success"] += 1
                 else:
                     logger.warning(f"Failed to fetch price for {symbol}")
@@ -59,18 +60,6 @@ class PriceCollectorService:
                 
         return results
 
-    async def _fetch_single_price(self, symbol: str) -> float:
-        def fetch():
-            ticker = yf.Ticker(symbol)
-            try:
-                return ticker.fast_info['last_price']
-            except:
-                try:
-                    hist = ticker.history(period="1d")
-                    return hist['Close'].iloc[-1] if not hist.empty else 0.0
-                except:
-                    return 0.0
-        
-        return await asyncio.to_thread(fetch)
+
 
 price_collector = PriceCollectorService()

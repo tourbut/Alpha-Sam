@@ -94,6 +94,8 @@ def update_all_prices() -> dict:
                 return updated_count
         finally:
              await task_engine.dispose()
+             # Close Redis client to prevent "Event loop is closed" error in next run
+             await cache_service.close()
 
     try:
         updated_count = asyncio.run(run_update())
@@ -103,9 +105,11 @@ def update_all_prices() -> dict:
             "timestamp": datetime.now(ZoneInfo("Asia/Seoul")).isoformat()
         }
     except Exception as e:
+        import traceback
         return {
             "status": "error",
             "error": str(e),
+            "traceback": traceback.format_exc(),
             "timestamp": datetime.now(ZoneInfo("Asia/Seoul")).isoformat()
         }
 
@@ -133,6 +137,7 @@ def collect_market_prices() -> dict:
                 return await price_collector.collect_active_assets(session)
         finally:
             await task_engine.dispose()
+            await cache_service.close()
 
     try:
         results = asyncio.run(run_collect())
@@ -142,7 +147,8 @@ def collect_market_prices() -> dict:
             "timestamp": datetime.now(ZoneInfo("Asia/Seoul")).isoformat()
         }
     except Exception as e:
-        return {"status": "error", "error": str(e)}
+        import traceback
+        return {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
 
 
 @celery_app.task(name="app.src.services.tasks.price_tasks.update_daily_prices")

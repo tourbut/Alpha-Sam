@@ -51,6 +51,7 @@
         { value: "CRYPTO", name: "Crypto" },
         { value: "FOREX", name: "Forex" },
         { value: "INDEX", name: "Index" },
+        { value: "EXCHANGE_RATE", name: "Exchange Rate" },
     ];
 
     async function loadAssets() {
@@ -273,7 +274,7 @@
                 required
             />
             <p class="text-xs text-gray-500">
-                For Crypto, use Yahoo Finance format (e.g. BTC-USD)
+                For Crypto: BTC-USD, For Exchange Rate: KRW=X (USD/KRW)
             </p>
         </Label>
         <Label class="space-y-2">

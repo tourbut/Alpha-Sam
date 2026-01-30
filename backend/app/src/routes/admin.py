@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.src.schemas.admin_asset import AdminAssetCreate, AdminAssetRead
 from app.src.models.admin import AdminAsset
 from app.src.crud.crud_admin_asset import admin_asset
+from app.src.services.system_portfolio_service import system_portfolio_service
 from app.src.core.db import get_session
 from app.src.deps import get_current_superuser
 
@@ -41,6 +42,17 @@ async def create_admin_asset(
         )
     
     asset = await admin_asset.create(session, asset_in)
+    
+    # Sync to System Portfolio if needed (e.g. Exchange Rates)
+    try:
+        await system_portfolio_service.sync_admin_asset_to_system(session, asset)
+        await session.commit()
+    except Exception as e:
+        # Log error but don't fail the request? Or fail? 
+        # Better to log and continue, or fail if critical?
+        # Let's log for now as it's a side effect.
+        print(f"Failed to sync system asset: {e}")
+        
     return asset
 
 @router.delete("/assets/{asset_id}", response_model=AdminAssetRead)

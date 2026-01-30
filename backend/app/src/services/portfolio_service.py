@@ -292,6 +292,7 @@ class PortfolioService:
             portfolio_with_assets = PortfolioWithAssetsSummary(
                 id=portfolio.id,
                 name=portfolio.name,
+                currency=portfolio.currency,
                 description=portfolio.description,
                 created_at=portfolio.created_at,
                 total_value=round(total_value, 2),

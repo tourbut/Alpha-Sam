@@ -7,6 +7,7 @@ from app.src.models.portfolio import Portfolio, PortfolioVisibility
 from app.src.models.transaction import Transaction
 from app.src.models.position import Position
 from app.src.models.asset import Asset
+from app.src.schemas.portfolio import PortfolioUpdate
 
 async def create_portfolio(
     *, session: AsyncSession, owner_id: uuid.UUID, name: str, description: Optional[str] = None
@@ -95,24 +96,23 @@ async def add_transaction(
     return tx
 
 async def update_portfolio(
-    *, session: AsyncSession, portfolio_id: uuid.UUID, name: Optional[str] = None, description: Optional[str] = None
+    *, session: AsyncSession, portfolio_id: uuid.UUID, portfolio_in: PortfolioUpdate
 ) -> Optional[Portfolio]:
-    stmt = select(Portfolio).where(Portfolio.id == portfolio_id)
-    result = await session.execute(stmt)
-    portfolio = result.scalar_one_or_none()
-    
-    if not portfolio:
-        return None
-    
-    if name is not None:
-        portfolio.name = name
-    if description is not None:
-        portfolio.description = description
+    try:
+        portfolio = await session.get(Portfolio, portfolio_id)
+        if not portfolio:
+            return None
         
-    session.add(portfolio)
-    await session.commit()
-    await session.refresh(portfolio)
-    return portfolio
+        update_dict = portfolio_in.model_dump(exclude_unset=True)
+        portfolio.sqlmodel_update(update_dict)
+        
+        session.add(portfolio)
+        await session.commit()
+        await session.refresh(portfolio)
+        return portfolio
+    except Exception as e:
+        await session.rollback()
+        raise e
 
 async def delete_portfolio(
     *, session: AsyncSession, portfolio_id: uuid.UUID

@@ -300,16 +300,10 @@ async def update_portfolio(
     """
     포트폴리오 수정
     """
-    # Verify ownership
-    portfolio = await crud_portfolio.get_portfolio(session=db, portfolio_id=portfolio_id, owner_id=current_user.id)
-    if not portfolio:
-        raise HTTPException(status_code=404, detail="Portfolio not found")
-        
     updated_portfolio = await crud_portfolio.update_portfolio(
         session=db, 
         portfolio_id=portfolio_id, 
-        name=portfolio_in.name, 
-        description=portfolio_in.description
+        portfolio_in=portfolio_in
     )
     return updated_portfolio
 

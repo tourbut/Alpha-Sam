@@ -92,6 +92,7 @@ interface PortfolioWithAssetsResponse {
     id: string;
     name: string;
     description?: string;
+    currency: string;
     created_at: string;
     updated_at?: string;
     total_value: number;
@@ -112,6 +113,7 @@ export const fetchPortfoliosWithAssets = async (): Promise<PortfolioWithAssets[]
         id: item.id,
         name: item.name,
         description: item.description,
+        currency: item.currency,
         created_at: item.created_at,
         updated_at: item.updated_at,
         totalValue: item.total_value,

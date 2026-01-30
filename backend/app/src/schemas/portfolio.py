@@ -75,6 +75,7 @@ class PortfolioWithAssetsSummary(SQLModel):
     id: uuid.UUID
     name: str
     description: Optional[str] = None
+    currency: str = Field(default="USD")
     created_at: datetime
     updated_at: Optional[datetime] = None
     total_value: float = Field(default=0.0, description="총 평가금액")
@@ -84,3 +85,4 @@ class PortfolioWithAssetsSummary(SQLModel):
 class PortfolioUpdate(SQLModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    currency: Optional[str] = None

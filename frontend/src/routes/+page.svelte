@@ -42,6 +42,7 @@
         total_value: 0,
         total_cost: 0,
         total_pl: 0,
+        realized_pl: 0,
         total_pl_stats: { percent: 0, direction: "flat" },
     };
     let history: PortfolioHistory[] = [];

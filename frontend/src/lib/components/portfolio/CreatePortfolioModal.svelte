@@ -1,5 +1,12 @@
 <script lang="ts">
-    import { Modal, Label, Input, Button, Textarea } from "flowbite-svelte";
+    import {
+        Modal,
+        Label,
+        Input,
+        Button,
+        Textarea,
+        Select,
+    } from "flowbite-svelte";
     import { portfolioStore } from "$lib/stores/portfolio.svelte";
     import {
         PlusOutline,
@@ -26,6 +33,15 @@
     let name = $state("");
     let description = $state("");
     let currency = $state("USD");
+
+    const currencies = [
+        { value: "USD", name: "(US) Dollar" },
+        { value: "KRW", name: "(Korean) Won" },
+        { value: "EUR", name: "(Euro) Euro" },
+        { value: "JPY", name: "(Japan) Yen" },
+        { value: "CNY", name: "(China) Yuan" },
+        { value: "GBP", name: "(UK) Pound" },
+    ];
     let loading = $state(false);
 
     // Watch for open/initialData changes to reset/fill form
@@ -106,7 +122,11 @@
         </Label>
         <Label class="space-y-2">
             <span>Currency</span>
-            <Input type="text" name="currency" bind:value={currency} disabled />
+            <Select
+                items={currencies}
+                bind:value={currency}
+                placeholder="Select Currency"
+            />
         </Label>
         <Button type="submit" class="w-full btn-primary" disabled={loading}>
             {#if loading}

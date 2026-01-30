@@ -21,6 +21,7 @@ export function calculatePortfolioSummary(positions: Position[]): PortfolioSumma
         totalProfitLoss,
         totalReturnRate,
         totalInvested,
+        realizedProfitLoss: 0,
     };
 }
 

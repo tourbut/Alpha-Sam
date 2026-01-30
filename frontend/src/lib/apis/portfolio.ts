@@ -1,5 +1,5 @@
 import { api_router } from "$lib/fastapi"
-import { type Portfolio, type PortfolioShared, type PortfolioWithAssets, PortfolioVisibility } from "$lib/types";
+import { type Portfolio, type PortfolioShared, type PortfolioWithAssets, PortfolioVisibility, type PortfolioResponse } from "$lib/types";
 
 export type { Portfolio, PortfolioShared, PortfolioWithAssets };
 export { PortfolioVisibility };

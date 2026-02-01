@@ -21,6 +21,12 @@ export interface AssetCreate {
     category: string;
 }
 
+export interface AssetUpdate {
+    symbol?: string;
+    name?: string;
+    category?: string;
+}
+
 export interface SymbolSearchResult {
     symbol: string;
     longname?: string;

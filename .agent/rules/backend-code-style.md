@@ -118,6 +118,25 @@ async def create_item(*, session: AsyncSession, item_in: item_schema.CreateItem)
         print(e)
         await session.rollback() # 롤백 필수
         raise e
+
+# 수정 (Update)
+async def update_item(*, session: AsyncSession, item_in: item_schema.UpdateItem) -> chatbot_schema.GetChatBot:
+    try:
+        item = await session.get(Item, item_in.id)
+        if not item:
+            raise ValueError("Chatbot not found")
+
+        update_dict = item_in.model_dump(exclude_unset=True)
+        item.sqlmodel_update(update_dict)
+        session.add(chatbot)
+        await session.commit()
+        await session.refresh(chatbot)
+        return chatbot
+    
+    except Exception as e:
+        print(e)
+        await session.rollback()
+        raise e
 ```
 
 ---
@@ -172,4 +191,3 @@ async def get_items(
     items = await item_crud.get_items(session=session, user_id=current_user.id)
     return items
 ```
-

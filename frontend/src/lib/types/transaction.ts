@@ -15,6 +15,13 @@ export interface CreateTransaction {
     price: number;
 }
 
+export interface TransactionUpdate {
+    type?: "BUY" | "SELL";
+    quantity?: number;
+    price?: number;
+    executed_at?: string;
+}
+
 export interface AssetTransaction {
     id: string;
     type: "buy" | "sell";

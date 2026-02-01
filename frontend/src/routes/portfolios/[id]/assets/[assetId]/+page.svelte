@@ -12,15 +12,17 @@
     Spinner,
     Alert,
   } from "flowbite-svelte";
-  import { Plus, ArrowLeft, DollarSign } from "lucide-svelte";
+  import { Plus, ArrowLeft, DollarSign, Edit } from "lucide-svelte";
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
   import {
     fetchPortfolioAsset,
     fetchPortfolioAssetTransactions,
   } from "$lib/apis/portfolio";
-  import type { AssetSummary, AssetTransaction } from "$lib/types";
+  import type { AssetSummary, AssetTransaction, Asset } from "$lib/types";
   import TransactionFormModal from "$lib/components/transaction/TransactionFormModal.svelte";
+  import EditAssetModal from "$lib/components/EditAssetModal.svelte";
+  import EditTransactionModal from "$lib/components/transaction/EditTransactionModal.svelte";
 
   let portfolioId = $derived(page.params.id);
   let assetId = $derived(page.params.assetId);
@@ -32,6 +34,9 @@
 
   // Modal State
   let showModal = $state(false);
+  let showEditAssetModal = $state(false);
+  let showEditTransactionModal = $state(false);
+  let selectedTransaction: AssetTransaction | null = $state(null);
 
   onMount(async () => {
     await loadData();
@@ -103,10 +108,20 @@
           Transaction history and performance
         </p>
       </div>
-      <Button class="btn-primary" size="sm" onclick={openAddTransaction}>
-        <Plus class="w-4 h-4 mr-2" />
-        Add Transaction
-      </Button>
+      <div class="flex gap-2">
+        <Button
+          color="alternative"
+          size="sm"
+          onclick={() => (showEditAssetModal = true)}
+        >
+          <Edit class="w-4 h-4 mr-2" />
+          Edit Asset
+        </Button>
+        <Button class="btn-primary" size="sm" onclick={openAddTransaction}>
+          <Plus class="w-4 h-4 mr-2" />
+          Add Transaction
+        </Button>
+      </div>
     </div>
 
     <!-- Asset Summary -->
@@ -152,6 +167,7 @@
               <TableHeadCell>Price</TableHeadCell>
               <TableHeadCell>Total</TableHeadCell>
               <TableHeadCell>Fee</TableHeadCell>
+              <TableHeadCell>Action</TableHeadCell>
             </TableHead>
             <TableBody>
               {#each transactions as tx}
@@ -174,6 +190,17 @@
                     ${tx.total.toLocaleString()}
                   </TableBodyCell>
                   <TableBodyCell>{tx.fee ? `$${tx.fee}` : "-"}</TableBodyCell>
+                  <TableBodyCell>
+                    <button
+                      class="text-neutral-500 hover:text-primary-600"
+                      onclick={() => {
+                        selectedTransaction = tx;
+                        showEditTransactionModal = true;
+                      }}
+                    >
+                      <Edit class="w-4 h-4" />
+                    </button>
+                  </TableBodyCell>
                 </TableBodyRow>
               {/each}
             </TableBody>
@@ -213,4 +240,24 @@
   assetSymbol={asset?.symbol || ""}
   {portfolioId}
   oncreated={loadData}
+/>
+
+{#if asset}
+  <EditAssetModal
+    bind:open={showEditAssetModal}
+    asset={{
+      id: asset.asset_id,
+      symbol: asset.symbol,
+      name: asset.name,
+      category: "Stock",
+    }}
+    onupdated={loadData}
+  />
+{/if}
+
+<EditTransactionModal
+  bind:open={showEditTransactionModal}
+  transaction={selectedTransaction}
+  assetSymbol={asset?.symbol || ""}
+  onupdated={loadData}
 />

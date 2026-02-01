@@ -162,37 +162,15 @@ async def create_transaction(
     """
     거래 내역 추가 (및 포지션 자동 갱신)
     """
-    # Verify ownership
-    portfolio = await crud_portfolio.get_portfolio(session=db, portfolio_id=portfolio_id, owner_id=current_user.id)
-    if not portfolio:
-        raise HTTPException(status_code=404, detail="Portfolio not found")
+    # Force portfolio_id from path to ensure consistency
+    tx_in.portfolio_id = portfolio_id
     
-    # executed_at 필드 처리
-    # TODO: Move this parsing/validation to Schema Validator if possible, but fine here for now as Controller logic
-    if tx_in.executed_at:
-        try:
-            if 'T' not in tx_in.executed_at:
-                executed_at = datetime.fromisoformat(tx_in.executed_at + "T00:00:00")
-            else:
-                executed_at = datetime.fromisoformat(tx_in.executed_at)
-        except Exception:
-            executed_at = datetime.utcnow()
-    else:
-        executed_at = datetime.utcnow()
-    
-    try:
-        tx = await crud_portfolio.add_transaction(
-            session=db,
-            portfolio_id=portfolio_id,
-            asset_id=tx_in.asset_id,
-            type=tx_in.type,
-            quantity=tx_in.quantity,
-            price=tx_in.price,
-            executed_at=executed_at
-        )
-        return tx
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    # Delegate to CRUD (handles ownership check and creation)
+    return await crud_transaction.create_transaction(
+        session=db,
+        transaction_in=tx_in,
+        owner_id=current_user.id
+    )
 
 @router.get("/{portfolio_id}/assets/{asset_id}", response_model=AssetSummaryRead)
 async def read_portfolio_asset_summary(
@@ -245,34 +223,19 @@ async def read_asset_transactions(
     """
     특정 포트폴리오 내 개별 자산의 거래 내역 조회
     """
-    # 1. 포트폴리오 소유권 확인
+    # 1. 포트폴리오 소유권 확인 (Optional since crud checks it, but good for explicit 404)
     portfolio = await crud_portfolio.get_portfolio(session=db, portfolio_id=portfolio_id, owner_id=current_user.id)
     if not portfolio:
         raise HTTPException(status_code=404, detail="Portfolio not found")
     
-    # 2. 해당 자산의 거래 내역 조회 (Direct DB call removal -> Use CRUD or new helper)
-    # Refactoring inline SQL to CRUD/Service call
-    # Currently `crud_transaction` might basically do this or we can add a filter method.
-    # Let's check `crud/transactions.py` content?
-    # For now, replacing raw sql with a simple select here is arguably still "DataAccess in Controller"
-    # Ideally should call `crud_transaction.get_by_portfolio_and_asset(...)`
-    
-    # Temporary fix: Keep SQL but clean up structure, OR add method to crud_transaction.
-    # To be strict, let's allow small select here OR move to crud.
-    # Moving to crud_transaction is best.
-    pass 
-    # Logic implementation block below
-    
-    stmt = (
-        select(crud_transaction.Transaction)
-        .where(
-            crud_transaction.Transaction.portfolio_id == portfolio_id,
-            crud_transaction.Transaction.asset_id == asset_id
-        )
-        .order_by(desc(crud_transaction.Transaction.executed_at))
+    # 2. CRUD를 통해 거래 내역 조회
+    transactions = await crud_transaction.get_transactions(
+        session=db,
+        owner_id=current_user.id,
+        portfolio_id=portfolio_id,
+        asset_id=asset_id,
+        limit=1000 # Enough for detail view
     )
-    result = await db.execute(stmt)
-    transactions = result.scalars().all()
     
     # 3. 응답 형식으로 변환
     tx_list = []

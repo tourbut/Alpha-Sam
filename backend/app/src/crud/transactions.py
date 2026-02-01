@@ -5,7 +5,7 @@ from sqlalchemy import select, desc
 from sqlalchemy.orm import selectinload
 from app.src.models.transaction import Transaction
 from app.src.models.portfolio import Portfolio
-from app.src.schemas.transaction import TransactionCreate
+from app.src.schemas.transaction import TransactionCreate, TransactionUpdate
 from app.src.models.asset import Asset
 from fastapi import HTTPException
 
@@ -109,4 +109,37 @@ async def get_recent_transactions(
         return result.scalars().all()
     except Exception as e:
         print(e)
+        raise e
+
+async def update_transaction(
+    *, session: AsyncSession, transaction_id: uuid.UUID, transaction_in: TransactionUpdate, owner_id: uuid.UUID
+) -> Optional[Transaction]:
+    """
+    거래 내역 수정
+    - Transaction 자체 유무 확인
+    - Transaction -> Portfolio -> Owner 확인
+    """
+    try:
+        # Load transaction with portfolio to check owner
+        stmt = select(Transaction).options(selectinload(Transaction.portfolio)).where(Transaction.id == transaction_id)
+        result = await session.execute(stmt)
+        transaction = result.scalar_one_or_none()
+        
+        if not transaction:
+            return None
+            
+        if not transaction.portfolio or transaction.portfolio.owner_id != owner_id:
+            return None
+            
+        update_data = transaction_in.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(transaction, key, value)
+            
+        session.add(transaction)
+        await session.commit()
+        await session.refresh(transaction)
+        return transaction
+    except Exception as e:
+        print(e)
+        await session.rollback()
         raise e

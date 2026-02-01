@@ -101,3 +101,24 @@ async def get_recent_assets(
     except Exception as e:
         print(e)
         raise e
+
+async def update_asset(
+    *, session: AsyncSession, asset_id: uuid.UUID, asset_in: AssetUpdate, owner_id: uuid.UUID
+) -> Optional[Asset]:
+    try:
+        asset = await session.get(Asset, asset_id)
+        if not asset or asset.owner_id != owner_id:
+            return None
+        
+        update_data = asset_in.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(asset, key, value)
+            
+        session.add(asset)
+        await session.commit()
+        await session.refresh(asset)
+        return asset
+    except Exception as e:
+        print(e)
+        await session.rollback()
+        raise e

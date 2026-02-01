@@ -12,6 +12,12 @@ class TransactionCreate(SQLModel):
     price: float = Field(gt=0, description="거래 단가")
     executed_at: Optional[datetime] = Field(None, description="거래 실행 일시")
 
+class TransactionUpdate(SQLModel):
+    type: Optional[Literal["BUY", "SELL"]] = None
+    quantity: Optional[float] = Field(None, gt=0, description="거래 수량")
+    price: Optional[float] = Field(None, gt=0, description="거래 단가")
+    executed_at: Optional[datetime] = Field(None, description="거래 실행 일시")
+
 class TransactionRead(SQLModel):
     id: uuid.UUID
     asset_id: uuid.UUID

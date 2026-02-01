@@ -120,6 +120,7 @@ def run_verification():
         # 5. Create Transaction
         print("5. Creating Transaction...")
         status, resp = request("POST", f"/portfolios/{portfolio_id}/transactions", data={
+            "portfolio_id": portfolio_id,
             "asset_id": asset_id,
             "type": "BUY",
             "quantity": 10.0,

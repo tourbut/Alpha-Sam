@@ -7,7 +7,7 @@ from sqlalchemy import select, desc, or_
 from app.src.models.asset import Asset
 
 
-from app.src.schemas.asset import AssetCreate
+from app.src.schemas.asset import AssetCreate, AssetUpdate
 
 async def get_assets(
     *, session: AsyncSession, owner_id: uuid.UUID, portfolio_id: Optional[uuid.UUID] = None, skip: int = 0, limit: int = 100

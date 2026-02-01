@@ -14,6 +14,7 @@ class AssetCreate(SQLModel):
     symbol: str = Field(..., description="자산 심볼")
     name: Optional[str] = Field(None, description="자산 이름 (미입력 시 자동 검색 시도)")
     category: Optional[str] = Field(None, description="자산 카테고리")
+    owner_id: Optional[uuid.UUID] = Field(None, description="소유자 ID")
 class AssetUpdate(SQLModel):
     symbol: Optional[str] = Field(None, description="자산 심볼")
     name: Optional[str] = Field(None, description="자산 이름")

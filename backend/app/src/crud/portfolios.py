@@ -5,7 +5,6 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.src.models.portfolio import Portfolio, PortfolioVisibility
 from app.src.models.transaction import Transaction
-from app.src.models.position import Position
 from app.src.models.asset import Asset
 from app.src.schemas.portfolio import PortfolioUpdate
 
@@ -114,11 +113,8 @@ async def delete_portfolio(
         if not portfolio:
             return False
             
-        # Manual Cascade Delete: Positions first, then Transactions, then Portfolio (and Assets)
+        # Manual Cascade Delete: Transactions first, then Portfolio (and Assets)
         from sqlmodel import delete
-        
-        # Delete Positions
-        await session.execute(delete(Position).where(Position.portfolio_id == portfolio_id))
         
         # Delete Transactions
         await session.execute(delete(Transaction).where(Transaction.portfolio_id == portfolio_id))

@@ -120,6 +120,8 @@ class PortfolioService:
             positions=positions,
             visibility=portfolio.visibility
         )
+    @staticmethod
+    async def get_summary(session: AsyncSession, user_id: uuid.UUID, portfolio_id: Optional[uuid.UUID] = None) -> PortfolioResponse:
         portfolios = []
         if portfolio_id:
             portfolio = await crud_portfolio.get_portfolio(session=session, portfolio_id=portfolio_id)

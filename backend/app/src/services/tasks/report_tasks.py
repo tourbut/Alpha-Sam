@@ -6,7 +6,6 @@ from sqlalchemy import select, desc
 from app.celery_app import celery_app
 from app.src.core.db import AsyncSessionLocal
 from app.src.models.user import User
-from app.src.models.position import Position
 from app.src.models.prices_day import PriceDay
 from app.src.services.portfolio_calculator import calculate_portfolio_summary
 from app.src.services.tasks.email_tasks import send_daily_report_email
@@ -38,42 +37,19 @@ async def _process_daily_reports():
                     logger.info(f"Skipping daily report for user {user.id} (disabled in settings)")
                     continue
 
-                # 2. 사용자별 포지션 조회
-                pos_stmt = select(Position).where(Position.owner_id == user.id)
-                pos_result = await session.execute(pos_stmt)
-                positions = pos_result.scalars().all()
+                from app.src.services.portfolio_service import PortfolioService
+                portfolio_response = await PortfolioService.get_summary(session, user_id=user.id)
                 
-                if not positions:
+                if not portfolio_response or not portfolio_response.positions:
                     continue
                 
-                # 3. 데이터 준비 (현재가 조회 및 형식 변환)
-                summary_input_data = []
-                for position in positions:
-                    # 최신 시세 조회 (최적화를 위해 Batch 조회가 좋지만 일단 루프)
-                    price_stmt = (
-                        select(Price)
-                        .where(Price.asset_id == position.asset_id)
-                        .order_by(desc(Price.timestamp))
-                        .limit(1)
-                    )
-                    price_result = await session.execute(price_stmt)
-                    latest_price_obj = price_result.scalar_one_or_none()
-                    current_price = latest_price_obj.value if latest_price_obj else None
-                    
-                    summary_input_data.append({
-                        "quantity": float(position.quantity),
-                        "buy_price": float(position.buy_price),
-                        "current_price": current_price
-                    })
-                
-                # 4. 수익률 계산
-                metrics = calculate_portfolio_summary(summary_input_data)
+                metrics = portfolio_response.summary
                 
                 report_data = {
                     "date_str": today_str,
-                    "total_valuation": round(metrics["total_valuation"] or 0.0, 2),
-                    "total_profit_loss": round(metrics["total_profit_loss"] or 0.0, 2),
-                    "return_rate": metrics["portfolio_return_rate"] or 0.0
+                    "total_valuation": round(metrics.total_value, 2),
+                    "total_profit_loss": round(metrics.total_pl, 2),
+                    "return_rate": metrics.total_pl_stats.percent
                 }
                 
                 # 5. 이메일 태스크 발행

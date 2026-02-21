@@ -7,17 +7,18 @@
 - `develop`
 
 ## 현재 상황 (Context)
-- 아키텍처 대규모 개편(UUID 전환 등) 이후, 기능 안정성 확보를 위해 백엔드 코드의 전반적인 점검과 API 테스트가 필요한 상황입니다.
+- Architect가 `Position` 모델(DB 테이블)을 제거하는 작업을 완료했습니다. 이제 포지션 정보는 `Transaction` 내역 기반으로 런타임에 동적 계산됩니다.
+- 현재 루트 하위 `tests/`와 `app/tests/` 등에 동일한 이름의 테스트 파일들이 존재하여 Pytest가 테스트 모듈을 수집(Collection)하는 과정에서 Import Mismatch 오류가 발생하며 멈추는 상태입니다.
 
 ## 해야 할 일 (Tasks)
-1. 전체 API 엔드포인트 파이썬 코드 컨벤션 및 로직 리뷰 수행 (불필요한 레거시 코드 정리, 타입 힌트 및 예외 처리 강화).
-2. 멀티 포트폴리오 및 자산, PnL 계산 등 핵심 도메인 로직에 대한 단위 테스트(`pytest`) 구동 및 실패 내역 원인파악 후 수정.
-3. Architect의 점검 리포트가 발행될 경우, 해당 권고안을 반영하여 구조 리팩토링 진행.
+1. 중복된 이름의 테스트 파일들(`test_assets_listing.py`, `test_social_integration.py` 등)의 이름을 변경하거나 폴더 구조를 정리하여 Pytest Collection Error를 해결하세요.
+2. `Position` 모델이 제거되었으므로, 관련하여 깨지는 테스트나 잘못된 의존성이 남아있다면 코드를 수정하세요.
+3. `TransactionService`에서 Buy/Sell 트랜잭션 발생 시 Computed Position이 정확하게 계산되는지 검증하는 통합 테스트를 추가 및 점검하세요.
+4. 로컬에서 `pytest`를 실행하여 모든 테스트가 100% 통과하는지 확인하세요.
 
 ## 기대 산출물 (Expected Outputs)
-- 백엔드 테스트 스위트(`pytest`) 에러 없이 전체 통과.
-- 잠재적 에러 상황 방지를 위한 방어 로직 추가 및 리팩토링 커밋.
+- Pytest Collection Error가 해결된 깔끔한 테스트 폴더 구조.
+- `pytest`가 실패 없이 모두 통과 (`tests/` 폴더 내 모든 테스트 성공).
 
 ## 참고 자료 (References)
-- `.agent/project/info/domain_rules.md`
-- `.agent/handovers/to_architect.md` (진행 및 완료 상황 참조)
+- `.agent/project/artifacts/architecture/inspection_report_20260221.md`

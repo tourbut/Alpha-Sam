@@ -216,15 +216,13 @@ class PriceService:
         users = result.scalars().all()
 
         for user in users:
-            # 해당 사용자가 이 자산을 보유하고 있는지 확인
-            from app.src.models.position import Position
+            # 해당 사용자가 이 자산을 등록해두었는지 확인
             from app.src.models.asset import Asset
             from app.src.models.portfolio import Portfolio
             
             check_stmt = (
-                select(Position)
-                .join(Portfolio, Position.portfolio_id == Portfolio.id)
-                .join(Asset, Position.asset_id == Asset.id)
+                select(Asset)
+                .join(Portfolio, Asset.portfolio_id == Portfolio.id)
                 .where(Portfolio.owner_id == user.id)
                 .where(Asset.symbol == asset_symbol)
             )

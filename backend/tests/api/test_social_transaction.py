@@ -8,7 +8,6 @@ from app.main import app
 from app.src.core.db import get_session
 from app.src.deps import get_current_user
 
-from app.src.models.position import Position
 from app.src.models.portfolio import Portfolio
 from app.src.models.asset import Asset
 from app.src.models.user import User
@@ -60,43 +59,39 @@ async def test_create_transaction_updates_position(
     override_deps
 ):
     """
-    Test that creating a BUY transaction correctly creates/updates a Position via Hybrid Approach.
+    Test that creating a BUY transaction correctly creates positions calculated dynamically via the API.
     """
     user, portfolio, asset = setup_data
     
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         # 1. Create BUY Transaction
         payload = {
-            "portfolio_id": portfolio.id,
-            "asset_id": asset.id,
+            "portfolio_id": str(portfolio.id),
+            "asset_id": str(asset.id),
             "type": "BUY",
             "quantity": 10.0,
             "price": 100.0, # Total Value 1000, Avg Price 100
             "executed_at": "2026-01-01T00:00:00Z"
         }
         
-        response = await ac.post("/api/v1/transactions", json=payload)
+        response = await ac.post("/api/v1/transactions/", json=payload)
         assert response.status_code == 200, response.text
         data = response.json()
-        assert data["quantity"] == 10.0
+        assert float(data["quantity"]) == 10.0
         
-        # 2. Verify Position Created
-        # Run query directly on Session
-        stmt = select(Position).where(
-            Position.portfolio_id == portfolio.id,
-            Position.asset_id == asset.id
-        )
-        result = await test_session.execute(stmt)
-        position = result.scalar_one_or_none()
-        
-        assert position is not None
-        assert float(position.quantity) == 10.0
-        assert float(position.avg_price) == 100.0
+        # 2. Verify Computed Position via API
+        response2 = await ac.get(f"/api/v1/portfolios/{portfolio.id}/positions")
+        assert response2.status_code == 200, response2.text
+        positions = response2.json()
+        assert len(positions) == 1
+        pos = positions[0]
+        assert float(pos["quantity"]) == 10.0
+        assert float(pos["avg_price"]) == 100.0
         
         # 3. Create Another BUY Update (Average Price Check)
         payload2 = {
-            "portfolio_id": portfolio.id,
-            "asset_id": asset.id,
+            "portfolio_id": str(portfolio.id),
+            "asset_id": str(asset.id),
             "type": "BUY",
             "quantity": 10.0,
             "price": 200.0, # Total Value 2000
@@ -104,15 +99,16 @@ async def test_create_transaction_updates_position(
         }
         # New Avg = (1000 + 2000) / 20 = 150
         
-        response = await ac.post("/api/v1/transactions", json=payload2)
-        assert response.status_code == 200
+        response3 = await ac.post("/api/v1/transactions/", json=payload2)
+        assert response3.status_code == 200, response3.text
 
         # Re-query Position to get latest data
-        result = await test_session.execute(stmt)
-        position = result.scalar_one_or_none()
-        
-        assert float(position.quantity) == 20.0
-        assert float(position.avg_price) == 150.0
+        response4 = await ac.get(f"/api/v1/portfolios/{portfolio.id}/positions")
+        assert response4.status_code == 200
+        positions = response4.json()
+        pos = positions[0]
+        assert float(pos["quantity"]) == 20.0
+        assert float(pos["avg_price"]) == 150.0
 
 @pytest.mark.asyncio
 async def test_create_transaction_sell_logic(
@@ -121,47 +117,51 @@ async def test_create_transaction_sell_logic(
     override_deps
 ):
     """
-    Test that creating a SELL transaction correctly updates Position.
+    Test that creating a SELL transaction correctly updates computed Position.
     """
     user, portfolio, asset = setup_data
     
-    # Pre-condition: Have 20 quantity (from previous logic, but setup_data is clean in fixture? 
-    # Default fixture scope is function? verifying...)
-    # Yes, pytest fixtures are function scope by default. So clean state.
-    
-    # Setup: Buy 20 @ 100
-    pos = Position(portfolio_id=portfolio.id, asset_id=asset.id, quantity=20.0, avg_price=100.0)
-    test_session.add(pos)
-    await test_session.commit()
-    
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        # Setup: Buy 20 @ 100
+        payload_buy = {
+            "portfolio_id": str(portfolio.id),
+            "asset_id": str(asset.id),
+            "type": "BUY",
+            "quantity": 20.0,
+            "price": 100.0,
+            "executed_at": "2026-01-01T00:00:00Z"
+        }
+        await ac.post("/api/v1/transactions/", json=payload_buy)
+        
         # 1. SELL 5
-        payload = {
-            "portfolio_id": portfolio.id,
-            "asset_id": asset.id,
+        payload_sell = {
+            "portfolio_id": str(portfolio.id),
+            "asset_id": str(asset.id),
             "type": "SELL",
             "quantity": 5.0,
             "price": 120.0, 
             "executed_at": "2026-01-03T00:00:00Z"
         }
         
-        response = await ac.post("/api/v1/transactions", json=payload)
+        response = await ac.post("/api/v1/transactions/", json=payload_sell)
         assert response.status_code == 200
         
         # Verify Position
-        await test_session.refresh(pos)
-        assert float(pos.quantity) == 15.0
-        assert float(pos.avg_price) == 100.0 # Avg price doesn't change on SELL
+        response2 = await ac.get(f"/api/v1/portfolios/{portfolio.id}/positions")
+        positions = response2.json()
+        pos = positions[0]
+        assert float(pos["quantity"]) == 15.0
+        assert float(pos["avg_price"]) == 100.0 # Avg price doesn't change on SELL
 
         # 2. Assert Insufficient Quantity
         payload_fail = {
-            "portfolio_id": portfolio.id,
-            "asset_id": asset.id,
+            "portfolio_id": str(portfolio.id),
+            "asset_id": str(asset.id),
             "type": "SELL",
             "quantity": 20.0, # have 15
             "price": 120.0, 
             "executed_at": "2026-01-04T00:00:00Z"
         }
-        response = await ac.post("/api/v1/transactions", json=payload_fail)
-        assert response.status_code == 400
-        assert "Insufficient quantity" in response.text
+        response3 = await ac.post("/api/v1/transactions/", json=payload_fail)
+        assert response3.status_code == 400
+        assert "Insufficient quantity" in response3.text

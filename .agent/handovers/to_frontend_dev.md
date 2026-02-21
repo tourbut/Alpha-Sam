@@ -7,17 +7,16 @@
 - `develop`
 
 ## 현재 상황 (Context)
-- 시스템 전반의 핵심 기능(멀티 포트폴리오, 소셜 등) 로직 완성 이후, 클라이언트 환경에서의 안정적인 동작과 코드 품질 보증이 필요합니다.
+- 백엔드에서 UUID로의 식별자 타입 변경과 `Position` 모델 제거 작업이 완료되었습니다. 클라이언트 환경에서의 안정성 보증 및 Svelte 5 관련 리팩토링이 필요합니다.
 
 ## 해야 할 일 (Tasks)
-1. 백엔드 구조 변경사항과 프론트엔드 연동(API 응답 에러 핸들링, 로딩 UI 등) 상태를 종합적으로 점검.
-2. Svelte 5 (Runes) 마이그레이션 상태 및 코드 포맷을 리뷰하고 불필요한 콘솔 로그, 데드 코드를 정리.
-3. `npm run check` (svelte-check 및 tsc) 수행 후 발견된 모든 타입 에러 및 경고 개선.
-4. UI/UX 관점에서 브라우저 콘솔 에러가 발생하지 않는지 각 주요 라우트를 순회하며 점검.
+1. 백엔드의 ID 타입 변경(Number -> UUID String)으로 인해 프론트엔드 라우팅 및 파라미터 로직에서 깨지는 부분이 없는지 전체적으로 점검하세요.
+2. `updateAsset` 및 트랜잭션 추가(`createTransaction`) 시 밸리데이션(예: 보유 수량 부족으로 인한 매도 실패)에 대한 백엔드 에러 응답을 핸들링하고, 사용자에게 명확한 피드백(Toast 알림 등)을 제공하도록 UI를 개선하세요.
+3. 터미널의 `npm run check` 명령어를 통해 Svelte 5 Deprecation Warnings (`<slot>` -> `{@render ...}`, `svelte:component` 변경 등) 및 린트 에러를 완전히 해결하세요.
 
 ## 기대 산출물 (Expected Outputs)
-- `npm run check` 실행 시 에러나 경고 없음.
-- 불필요한 콘솔 로그 제거 및 안정적인 API 연동 처리 로직(에러 피드백 등) 강화 커밋.
+- `npm run check` 통과 및 경고(Warning) 제거.
+- 에러 상황에 대한 Toast 피드백이 적용된 직관적인 UI.
 
 ## 참고 자료 (References)
-- `.agent/project/info/context.md`
+- `.agent/project/artifacts/architecture/inspection_report_20260221.md`

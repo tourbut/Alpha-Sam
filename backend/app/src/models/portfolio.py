@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.src.models.user import User
     from app.src.models.transaction import Transaction
-    from app.src.models.position import Position
+    from app.src.models.transaction import Transaction
 
 class PortfolioVisibility(str, Enum):
     PRIVATE = "PRIVATE"
@@ -85,4 +85,3 @@ class Portfolio(SQLModel, table=True):
     owner: "User" = Relationship(back_populates="portfolios")
     assets: List["Asset"] = Relationship(back_populates="portfolio")
     transactions: List["Transaction"] = Relationship(back_populates="portfolio")
-    positions: List["Position"] = Relationship(back_populates="portfolio")

@@ -7,17 +7,17 @@
 - `develop`
 
 ## 현재 상황 (Context)
-- 주요 기능(멀티 포트폴리오, 자산 트래킹, 인증 등) 릴리즈 및 아키텍처 변경 이후 안정성을 검증하는 종합 기능 테스트 단계입니다.
+- `Position` 데이터가 DB 테이블에서 제거되고 실시간 계산되는 방식으로 구조가 변경되었습니다. 
 
 ## 해야 할 일 (Tasks)
-1. 현재 시스템의 구조(UUID, 멀티 포트폴리오)를 반영한 E2E 종합 기능 테스트 계획(`test_plan_20260221.md`)을 수립합니다.
-2. 사용자 인증, 다중 포트폴리오 조작, 자산 및 거래 추가/삭제, 리더보드 등 핵심 비즈니스 플로우를 브라우저 환경에서 직접 또는 자동화 테스트로 검증합니다.
-3. 오류나 동작 이상 발견 시 상세 버그 리포트를 작성하여 프론트/백엔드 담당자가 수정할 수 있도록 리포트합니다.
+1. 사용자가 거래(Transaction)를 추가하거나 삭제할 때, 포트폴리오의 잔고(Position) 및 총 평가액, 수익률이 즉각적이고 정확하게 반영되는지 집중적으로 E2E 브라우저 테스트를 수행하세요.
+2. (공매도 불가) 보유 수량보다 많은 자산을 "매도"하려고 할 때 시스템이 적절하게 차단하고 오류 메시지를 보여주는지 화면에서 확인하세요.
+3. 테스트 결과를 `.agent/project/artifacts/qa_reports/test_report_20260221_position.md` 파일로 작성하세요.
 
 ## 기대 산출물 (Expected Outputs)
-- `.agent/project/artifacts/qa_reports/test_plan_20260221.md` (테스트 계획)
-- `.agent/project/artifacts/qa_reports/test_report_20260221.md` (종합 테스트 결과 및 버그 내역 리포트)
+- 트랜잭션-포지션 계산 파이프라인 E2E 테스트 통과 확인.
+- 상세한 버그 리포트 (발견 시).
 
 ## 참고 자료 (References)
-- `.agent/project/info/domain_rules.md`
-- 이전 테스트 리포트 내역들.
+- `.agent/handovers/to_backend_dev.md`
+- `.agent/handovers/to_frontend_dev.md`

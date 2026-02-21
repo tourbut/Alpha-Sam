@@ -53,15 +53,6 @@ class PortfolioResponse(SQLModel):
     summary: PortfolioSummary
     positions: List[PositionWithAsset]
 
-class PortfolioHistoryRead(SQLModel):
-    id: uuid.UUID
-    total_value: float
-    total_cost: float
-    total_pl: float
-    timestamp: datetime
-    
-    model_config = ConfigDict(from_attributes=True)
-
 # 포트폴리오 목록 + 자산 요약 조회용 스키마
 class PortfolioAssetSummary(SQLModel):
     """개별 자산 요약 정보"""

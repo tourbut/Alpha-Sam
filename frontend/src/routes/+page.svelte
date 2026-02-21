@@ -4,7 +4,6 @@
     import { get_assets as getAssets } from "$lib/apis/assets";
     import {
         get_portfolio_summary as getPortfolioSummary,
-        get_portfolio_history as getPortfolioHistory,
         fetchPortfolios,
     } from "$lib/apis/portfolio";
     import type {
@@ -18,7 +17,6 @@
     import { ActivityType } from "$lib/types";
     import { get_recent_activities as getRecentActivities } from "$lib/apis/dashboard";
     import PortfolioDistributionChart from "$lib/components/PortfolioDistributionChart.svelte";
-    import PortfolioHistoryChart from "$lib/components/PortfolioHistoryChart.svelte";
     import ShareModal from "$lib/components/ShareModal.svelte";
     import { auth } from "$lib/stores/auth.svelte";
     import { goto } from "$app/navigation";
@@ -45,7 +43,6 @@
         realized_pl: 0,
         total_pl_stats: { percent: 0, direction: "flat" },
     };
-    let history: PortfolioHistory[] = [];
     let activities: ActivityItem[] = [];
     let currentPortfolio: Portfolio | null = null; // State for current portfolio
     let error: string | null = null;
@@ -77,12 +74,11 @@
             const results = await Promise.allSettled([
                 getAssets(),
                 getPortfolioSummary(),
-                getPortfolioHistory({ skip: 0, limit: 30 }),
                 fetchPortfolios(),
                 getRecentActivities(),
             ]);
 
-            // 0: assets, 1: summary, 2: history, 3: portfolios, 4: activities
+            // 0: assets, 1: summary, 2: portfolios, 3: activities
             if (results[0].status === "fulfilled") {
                 assets = results[0].value;
             } else {
@@ -99,28 +95,22 @@
                 );
             }
 
-            if (results[2].status === "fulfilled") {
-                history = results[2].value;
-            } else {
-                console.error("Failed to load history:", results[2].reason);
-            }
-
             let portfoliosData: Portfolio[] = [];
-            if (results[3].status === "fulfilled") {
-                portfoliosData = results[3].value;
+            if (results[2].status === "fulfilled") {
+                portfoliosData = results[2].value;
                 if (portfoliosData.length > 0) {
                     currentPortfolio = portfoliosData[0];
                 }
             } else {
-                console.error("Failed to load portfolios:", results[3].reason);
+                console.error("Failed to load portfolios:", results[2].reason);
             }
 
-            if (results[4].status === "fulfilled") {
-                activities = results[4].value;
+            if (results[3].status === "fulfilled") {
+                activities = results[3].value;
             } else {
                 console.error(
                     "Failed to load recent activities:",
-                    results[4].reason,
+                    results[3].reason,
                 );
                 // Don't set global error for this, just leave empty list logic to handle
             }
@@ -128,7 +118,7 @@
             // If critical data failed (e.g. portfolios and assets both failed), maybe set error
             if (
                 results[0].status === "rejected" &&
-                results[3].status === "rejected"
+                results[2].status === "rejected"
             ) {
                 error = "Failed to load core data. Please try refreshing.";
             }
@@ -299,11 +289,17 @@
                 <h2 class="card-title text-lg normal-case">Allocation</h2>
                 <PortfolioDistributionChart {positions} />
             </Card>
-            <Card class="card p-6">
-                <h2 class="card-title text-lg normal-case">
+            <Card
+                class="card p-6 flex flex-col items-center justify-center text-neutral-500 py-12"
+            >
+                <h2
+                    class="card-title text-lg normal-case w-full text-left mb-6"
+                >
                     Performance (Value)
                 </h2>
-                <PortfolioHistoryChart {history} />
+                <span class="text-sm italic"
+                    >Performance chart feature is coming soon</span
+                >
             </Card>
         </div>
 

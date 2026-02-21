@@ -3,6 +3,7 @@
     import { auth } from "$lib/stores/auth.svelte";
     import { tick } from "svelte";
     import { APP_NAME } from "$lib/constants";
+    import { X } from "lucide-svelte";
 
     let isOpen = $state(false);
     let message = $state("");
@@ -73,28 +74,13 @@
 
 {#if auth.isAuthenticated}
     <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-        <!-- Chat Icon Button -->
-        <button
-            onclick={toggleChat}
-            class="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white p-4 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-purple-300 dark:focus:ring-purple-900"
-            aria-label="Open Chat"
-        >
-            {#if isOpen}
-                <svg
-                    class="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M6 18L18 6M6 6l12 12"
-                    ></path>
-                </svg>
-            {:else}
+        <!-- Chat Icon Button - Hidden when chat is open -->
+        {#if !isOpen}
+            <button
+                onclick={toggleChat}
+                class="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white p-4 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-purple-300 dark:focus:ring-purple-900"
+                aria-label="Open Chat"
+            >
                 <svg
                     class="w-6 h-6"
                     fill="none"
@@ -109,8 +95,8 @@
                         d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
                     ></path>
                 </svg>
-            {/if}
-        </button>
+            </button>
+        {/if}
 
         <!-- Chat Popover Window -->
         {#if isOpen}
@@ -118,9 +104,18 @@
                 class="mb-4 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col transition-all duration-200 origin-bottom-right"
             >
                 <!-- Header -->
-                <div class="bg-primary-600 p-4 text-white">
-                    <h3 class="font-bold text-lg">AI Assistant</h3>
-                    <p class="text-xs opacity-80">{APP_NAME} 도우미</p>
+                <div class="bg-primary-600 p-4 text-white flex items-start justify-between">
+                    <div>
+                        <h3 class="font-bold text-lg">AI Assistant</h3>
+                        <p class="text-xs opacity-80">{APP_NAME} 도우미</p>
+                    </div>
+                    <button
+                        onclick={toggleChat}
+                        class="text-white hover:bg-primary-700 p-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary-300"
+                        aria-label="Close Chat"
+                    >
+                        <X size={20} stroke-width={2.5} />
+                    </button>
                 </div>
 
                 <!-- Body -->

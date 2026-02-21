@@ -3,13 +3,12 @@ import uuid
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.src.schemas.portfolio import PortfolioCreate, PortfolioRead, PortfolioResponse, PortfolioHistoryRead, PortfolioVisibilityUpdate, PortfolioSharedRead, PortfolioWithAssetsSummary, PortfolioUpdate
+from app.src.schemas.portfolio import PortfolioCreate, PortfolioRead, PortfolioResponse, PortfolioVisibilityUpdate, PortfolioSharedRead, PortfolioWithAssetsSummary, PortfolioUpdate
 from app.src.schemas.transaction import TransactionCreate, TransactionRead
 from app.src.schemas.position import PositionRead, AssetSummaryRead, PositionWithAsset
 from app.src.schemas.transaction import TransactionWithDetails
 from app.src.services.portfolio_service import PortfolioService
 from app.src.deps import SessionDep_async, CurrentUser
-from app.src.crud import portfolio_histories as crud_portfolio_history
 from app.src.crud import portfolios as crud_portfolio
 from app.src.crud import transactions as crud_transaction
 from app.src.models.prices_day import PriceDay
@@ -53,17 +52,6 @@ async def read_portfolios_with_assets(
     """
     return await PortfolioService.get_portfolios_with_assets(session=db, user_id=current_user.id)
 
-@router.post("/snapshot", status_code=status.HTTP_201_CREATED)
-async def create_portfolio_snapshot(
-    session: SessionDep_async,
-    current_user: CurrentUser
-):
-    """
-    현재 포트폴리오 가치 스냅샷 생성 및 저장
-    """
-    history = await PortfolioService.create_snapshot(session, current_user.id)
-    return {"message": "Snapshot created", "data": history}
-
 @router.get("/summary", response_model=PortfolioResponse)
 async def get_portfolio_summary(
     session: SessionDep_async,
@@ -74,18 +62,6 @@ async def get_portfolio_summary(
     포트폴리오 요약 정보 및 전체 포지션 현황 조회
     """
     return await PortfolioService.get_summary(session, current_user.id, portfolio_id)
-
-@router.get("/history", response_model=List[PortfolioHistoryRead])
-async def read_portfolio_history(
-    skip: int = 0,
-    limit: int = 30,
-    session: SessionDep_async = None,
-    current_user: CurrentUser = None
-):
-    """
-    포트폴리오 히스토리 조회
-    """
-    return await crud_portfolio_history.get_portfolio_history(session=session, owner_id=current_user.id, skip=skip, limit=limit)
 
 @router.get("/{portfolio_id}", response_model=PortfolioRead)
 async def read_portfolio(

@@ -4,11 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 
 from app.src.models.portfolio import Portfolio, PortfolioVisibility
-from app.src.models.portfolio_history import PortfolioHistory
 from app.src.schemas.position import PositionWithAsset
 from app.src.schemas.portfolio import PortfolioResponse, PortfolioSummary, PortfolioStats, PortfolioSharedRead
 from app.src.services.portfolio_calculator import calculate_position_metrics, calculate_portfolio_summary, calculate_positions
-from app.src.crud import portfolio_histories as crud_portfolio_history
 from app.src.crud import portfolios as crud_portfolio
 from app.src.crud import assets as crud_asset
 from app.src.crud import transactions as crud_transaction
@@ -122,50 +120,6 @@ class PortfolioService:
             positions=positions,
             visibility=portfolio.visibility
         )
-
-    @staticmethod
-    async def create_snapshot(session: AsyncSession, user_id: uuid.UUID, portfolio_id: Optional[uuid.UUID] = None) -> PortfolioHistory:
-        if portfolio_id:
-            portfolio = await crud_portfolio.get_portfolio(session=session, portfolio_id=portfolio_id)
-        else:
-            # First portfolio fallback
-            portfolios = await crud_portfolio.get_user_portfolios(session=session, owner_id=user_id)
-            portfolio = portfolios[0] if portfolios else None
-        
-        if not portfolio:
-             history = PortfolioHistory(
-                owner_id=user_id,
-                total_value=0.0,
-                total_cost=0.0,
-                total_pl=0.0
-            )
-             await crud_portfolio_history.create_portfolio_history(session=session, history=history)
-             return history
-        
-        positions, realized_pl = await PortfolioService._get_portfolio_core_data(session, portfolio.id)
-        
-        summary_input_data = []
-        for position in positions:
-            summary_input_data.append({
-                "quantity": float(position.quantity),
-                "buy_price": float(position.avg_price),
-                "current_price": position.current_price
-            })
-
-        summary_metrics = calculate_portfolio_summary(summary_input_data)
-        
-        history = PortfolioHistory(
-            owner_id=user_id,
-            total_value=summary_metrics["total_valuation"] or 0.0,
-            total_cost=summary_metrics["total_invested"] or 0.0,
-            total_pl=summary_metrics["total_profit_loss"] or 0.0
-        )
-        
-        await crud_portfolio_history.create_portfolio_history(session=session, history=history)
-        return history
-
-    @staticmethod
-    async def get_summary(session: AsyncSession, user_id: uuid.UUID, portfolio_id: Optional[uuid.UUID] = None) -> PortfolioResponse:
         portfolios = []
         if portfolio_id:
             portfolio = await crud_portfolio.get_portfolio(session=session, portfolio_id=portfolio_id)

@@ -2,11 +2,19 @@
     import { login, get_me } from "$lib/apis/auth";
     import { auth } from "$lib/stores/auth.svelte";
     import { goto } from "$app/navigation";
+    import { env } from "$env/dynamic/public";
+    import { onMount } from "svelte";
 
-    let email = "";
-    let password = "";
+    let email = env.PUBLIC_TEST_USER_EMAIL || "";
+    let password = env.PUBLIC_TEST_USER_PASSWORD || "";
     let error = "";
     let isLoading = false;
+
+    onMount(() => {
+        if (env.PUBLIC_TEST_USER_EMAIL && env.PUBLIC_TEST_USER_PASSWORD) {
+            handleSubmit();
+        }
+    });
 
     async function handleSubmit() {
         try {

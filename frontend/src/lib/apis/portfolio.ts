@@ -60,8 +60,6 @@ export const createTransaction = async (data: TransactionCreate): Promise<Transa
     return await _createTransaction(data);
 }
 
-export const get_portfolio_history = api_router('portfolios', 'get', 'history');
-export const create_portfolio_snapshot = api_router('portfolios', 'post', 'snapshot');
 export const get_portfolio_summary = api_router('portfolios', 'get', 'summary');
 
 export const fetchPortfolioSummary = async (portfolioId: string): Promise<PortfolioResponse> => {

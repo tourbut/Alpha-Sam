@@ -1,29 +1,23 @@
-# Handovers: To Frontend Developer
+# Handovers: To Frontend Dev
 
 ## 날짜
-- 2026-02-01
+- 2026-02-21
 
-## 브랜치
-- feature/frontend-update-ui
+## 브랜치 (Version Control)
+- `develop`
 
-## 현재 상황
-- 백엔드에서 자산 및 거래 내역 수정을 위한 API(`PUT`)를 개발 중입니다.
-- 프론트엔드에서도 이를 지원하기 위한 UI 및 API 연동 작업이 필요합니다.
+## 현재 상황 (Context)
+- 시스템 전반의 핵심 기능(멀티 포트폴리오, 소셜 등) 로직 완성 이후, 클라이언트 환경에서의 안정적인 동작과 코드 품질 보증이 필요합니다.
 
-## 해야 할 일
-1. **API Client 업데이트**
-   - 백엔드 배포 후, 자산 수정(`updateAsset`) 및 거래 수정(`updateTransaction`) API 호출 함수 추가.
+## 해야 할 일 (Tasks)
+1. 백엔드 구조 변경사항과 프론트엔드 연동(API 응답 에러 핸들링, 로딩 UI 등) 상태를 종합적으로 점검.
+2. Svelte 5 (Runes) 마이그레이션 상태 및 코드 포맷을 리뷰하고 불필요한 콘솔 로그, 데드 코드를 정리.
+3. `npm run check` (svelte-check 및 tsc) 수행 후 발견된 모든 타입 에러 및 경고 개선.
+4. UI/UX 관점에서 브라우저 콘솔 에러가 발생하지 않는지 각 주요 라우트를 순회하며 점검.
 
-2. **UI 구현**
-   - **자산 수정**:
-     - 자산 목록 또는 상세 페이지에 '수정' 버튼 추가.
-     - `EditAssetModal` (또는 기존 모달 재사용) 구현: 이름, 카테고리 등 수정 가능.
-   - **거래 수정**:
-     - 거래 내역 목록(`TransactionTable` 등)에 '수정' 버튼 추가.
-     - `EditTransactionModal` 구현: 수량, 가격, 날짜, 타입 수정 가능.
+## 기대 산출물 (Expected Outputs)
+- `npm run check` 실행 시 에러나 경고 없음.
+- 불필요한 콘솔 로그 제거 및 안정적인 API 연동 처리 로직(에러 피드백 등) 강화 커밋.
 
-3. **상태 관리**
-   - 수정 완료 후 스토어(`portfolioStore` 등)에 변경 사항 반영 (리로드 또는 로컬 업데이트).
-
-## 기대 산출물
-- 사용자가 자산 및 거래 내역을 UI에서 수정할 수 있어야 함.
+## 참고 자료 (References)
+- `.agent/project/info/context.md`

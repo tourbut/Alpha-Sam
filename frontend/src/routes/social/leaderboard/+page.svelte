@@ -45,19 +45,19 @@
             <Spinner size="12" />
         </div>
     {:else}
-        <Card class="p-0 overflow-hidden border-none shadow-xl">
+        <Card class="w-full p-0 overflow-hidden border-none shadow-xl">
             <Table hoverable={true}>
                 <TableHead class="bg-gray-50 dark:bg-gray-700">
-                    <TableHeadCell>Rank</TableHeadCell>
-                    <TableHeadCell>Investor</TableHeadCell>
-                    <TableHeadCell class="text-right">PnL %</TableHeadCell>
+                    <TableHeadCell id="rank-header" scope="col" aria-label="Rank">Rank</TableHeadCell>
+                    <TableHeadCell id="investor-header" scope="col" aria-label="Investor Name">Investor</TableHeadCell>
+                    <TableHeadCell id="pnl-header" scope="col" class="text-right" aria-label="Profit and Loss Percentage">PnL %</TableHeadCell>
                 </TableHead>
                 <TableBody>
                     {#each socialStore.leaderboard as entry}
-                        <TableBodyRow class="text-base">
-                            <TableBodyCell class="font-bold w-24">
+                        <TableBodyRow class="text-base" role="row">
+                            <TableBodyCell class="font-bold w-24" headers="rank-header">
                                 <div class="flex items-center gap-2">
-                                    {entry.rank}
+                                    <span aria-label="Rank {entry.rank}">{entry.rank}</span>
                                     {#if getRankBadge(entry.rank)}
                                         <Badge
                                             color={getRankBadge(entry.rank)!
@@ -69,7 +69,7 @@
                                     {/if}
                                 </div>
                             </TableBodyCell>
-                            <TableBodyCell>
+                            <TableBodyCell headers="investor-header">
                                 <div class="flex items-center gap-3">
                                     <UserCircleOutline
                                         class="w-6 h-6 text-gray-400"
@@ -83,8 +83,9 @@
                             </TableBodyCell>
                             <TableBodyCell
                                 class="text-right font-mono font-bold text-green-500"
+                                headers="pnl-header"
                             >
-                                +{entry.pnl_percent.toFixed(2)}%
+                                <span aria-label="Profit and loss {entry.pnl_percent.toFixed(2)} percent">+{entry.pnl_percent.toFixed(2)}%</span>
                             </TableBodyCell>
                         </TableBodyRow>
                     {/each}

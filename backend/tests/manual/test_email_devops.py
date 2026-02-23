@@ -1,4 +1,4 @@
-from app.src.engine.tasks.email_tasks import send_price_alert
+from app.src.services.tasks.email_tasks import send_price_alert
 import time
 
 def test_email_alert():

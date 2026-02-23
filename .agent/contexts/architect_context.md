@@ -1,0 +1,1 @@
+- [2026-02-22 16:50:00] v2.1.0 Dashboard Analytics 구현 시, 개발 속도와 설계 단순성을 위해 별도의 일일 스냅샷 테이블을 생성하지 않고 Transaction 누합(On-the-fly Calculation) 방식을 채택함.

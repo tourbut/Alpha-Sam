@@ -5,11 +5,13 @@ export interface UserRead {
     is_superuser: boolean;
     is_verified: boolean;
     nickname?: string;
+    is_public_leaderboard: boolean;
 }
 
 export interface UserUpdate {
     nickname?: string;
     email?: string;
+    is_public_leaderboard?: boolean;
 }
 
 export interface UserProfile {

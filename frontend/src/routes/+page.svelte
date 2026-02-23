@@ -13,10 +13,17 @@
         PortfolioHistory,
         Portfolio, // Import Portfolio type
         ActivityItem,
+        AssetAllocationResponse,
+        PortfolioHistoryResponse,
     } from "$lib/types";
     import { ActivityType } from "$lib/types";
     import { get_recent_activities as getRecentActivities } from "$lib/apis/dashboard";
+    import {
+        get_portfolio_allocation,
+        get_portfolio_history,
+    } from "$lib/apis/analytics";
     import PortfolioDistributionChart from "$lib/components/PortfolioDistributionChart.svelte";
+    import PortfolioHistoryChart from "$lib/components/PortfolioHistoryChart.svelte";
     import ShareModal from "$lib/components/ShareModal.svelte";
     import { auth } from "$lib/stores/auth.svelte";
     import { goto } from "$app/navigation";
@@ -34,21 +41,23 @@
     } from "flowbite-svelte-icons";
     import { APP_NAME } from "$lib/constants";
 
-    let assets: Asset[] = [];
-    let positions: Position[] = [];
-    let portfolioSummary: ApiPortfolioSummary = {
+    let assets: Asset[] = $state([]);
+    let positions: Position[] = $state([]);
+    let allocationData: AssetAllocationResponse[] = $state([]);
+    let historyData: PortfolioHistoryResponse[] = $state([]);
+    let portfolioSummary: ApiPortfolioSummary = $state({
         total_value: 0,
         total_cost: 0,
         total_pl: 0,
         realized_pl: 0,
         total_pl_stats: { percent: 0, direction: "flat" },
-    };
-    let activities: ActivityItem[] = [];
-    let currentPortfolio: Portfolio | null = null; // State for current portfolio
-    let error: string | null = null;
-    let loading = true;
-    let refreshing = false;
-    let shareModal = false;
+    });
+    let activities: ActivityItem[] = $state([]);
+    let currentPortfolio: Portfolio | null = $state(null); // State for current portfolio
+    let error: string | null = $state(null);
+    let loading = $state(true);
+    let refreshing = $state(false);
+    let shareModal = $state(false);
 
     async function handleRefresh() {
         refreshing = true;
@@ -121,6 +130,28 @@
                 results[2].status === "rejected"
             ) {
                 error = "Failed to load core data. Please try refreshing.";
+            }
+
+            if (currentPortfolio) {
+                try {
+                    const analyticsResults = await Promise.allSettled([
+                        get_portfolio_allocation({
+                            portfolio_id: currentPortfolio.id,
+                        }),
+                        get_portfolio_history({
+                            portfolio_id: currentPortfolio.id,
+                        }),
+                    ]);
+
+                    if (analyticsResults[0].status === "fulfilled") {
+                        allocationData = analyticsResults[0].value;
+                    }
+                    if (analyticsResults[1].status === "fulfilled") {
+                        historyData = analyticsResults[1].value;
+                    }
+                } catch (e) {
+                    console.error("Failed to load analytics:", e);
+                }
             }
         } catch (e) {
             console.error("Critical error in loadData:", e);
@@ -286,20 +317,14 @@
         <!-- 차트 섹션 -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card class="card p-6">
-                <h2 class="card-title text-lg normal-case">Allocation</h2>
-                <PortfolioDistributionChart {positions} />
+                <h2 class="card-title text-lg normal-case mb-4">Allocation</h2>
+                <PortfolioDistributionChart data={allocationData} />
             </Card>
-            <Card
-                class="card p-6 flex flex-col items-center justify-center text-neutral-500 py-12"
-            >
-                <h2
-                    class="card-title text-lg normal-case w-full text-left mb-6"
-                >
+            <Card class="card p-6">
+                <h2 class="card-title text-lg normal-case mb-4">
                     Performance (Value)
                 </h2>
-                <span class="text-sm italic"
-                    >Performance chart feature is coming soon</span
-                >
+                <PortfolioHistoryChart data={historyData} />
             </Card>
         </div>
 

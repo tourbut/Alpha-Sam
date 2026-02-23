@@ -4,3 +4,4 @@ export * from './asset';
 export * from './transaction';
 export * from './portfolio';
 export * from './admin';
+export * from './analytics';

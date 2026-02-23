@@ -3,7 +3,7 @@ PriceDay (일봉 시세) 모델
 yfinance의 일봉 데이터(OHLCV)를 저장
 """
 import uuid
-from datetime import datetime, date as date_type
+from datetime import datetime, date as date_type, timezone
 from typing import Optional
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import Column, Date, DateTime, Numeric, BigInteger, func, ForeignKey, UniqueConstraint
@@ -68,7 +68,7 @@ class PriceDay(SQLModel, table=True):
         description="수정 종가"
     )
     created_at: datetime = Field(
-        default_factory=datetime.utcnow,
+        default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
     

@@ -73,7 +73,7 @@
 </script>
 
 {#if auth.isAuthenticated}
-    <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div class="fixed bottom-[120px] right-6 z-50 flex flex-col items-end transition-all duration-200">
         <!-- Chat Icon Button - Hidden when chat is open -->
         {#if !isOpen}
             <button

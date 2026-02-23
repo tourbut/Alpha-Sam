@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch, AsyncMock
-from app.src.engine.price_service import PriceService
+from app.src.services.price_service import PriceService
 
 class TestPriceService(unittest.IsolatedAsyncioTestCase):
     async def test_search_symbol_success(self):

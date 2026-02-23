@@ -1,0 +1,42 @@
+E   sqlite3.IntegrityError: NOT NULL constraint failed: assets.portfolio_id
+E   sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: assets.portfolio_id
+E   [SQL: INSERT INTO assets (id, portfolio_id, owner_id, symbol, name, category, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)]
+E   [parameters: ('f36e7352fd9d4905b3abaee381fdf310', None, None, 'AAPL', 'Apple Inc.', None, '2026-02-21 02:53:22.858704', '2026-02-21 02:53:22.858751')]
+E   (Background on this error at: https://sqlalche.me/e/20/gkpj)
+E   sqlite3.IntegrityError: NOT NULL constraint failed: assets.portfolio_id
+E   sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: assets.portfolio_id
+E   [SQL: INSERT INTO assets (id, portfolio_id, owner_id, symbol, name, category, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)]
+E   [parameters: ('e3e772c905ef40169fa675e6db046401', None, None, 'AAPL', 'Apple Inc.', None, '2026-02-21 02:53:23.084639', '2026-02-21 02:53:23.084682')]
+E   (Background on this error at: https://sqlalche.me/e/20/gkpj)
+E       fixture 'async_session' not found
+E       fixture 'async_session' not found
+E       fixture 'async_session' not found
+E       fixture 'async_session' not found
+E       fixture 'async_session' not found
+E   AttributeError: module 'app.src' has no attribute 'engine'
+E   AttributeError: module 'app.src' has no attribute 'engine'
+E   NameError: name 'Price' is not defined
+E   assert 422 == 201
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for LeaderboardEntry
+E   user_id
+E     Input should be a valid integer [type=int_type, input_value=UUID('96a4c235-7bb3-49dc-8269-f8ffb2c50f09'), input_type=UUID]
+E       For further information visit https://errors.pydantic.dev/2.12/v/int_type
+E   asyncpg.exceptions.UndefinedFunctionError: operator does not exist: uuid = integer
+E   HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+E   sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.ProgrammingError: <class 'asyncpg.exceptions.UndefinedFunctionError'>: operator does not exist: uuid = integer
+E   HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+E   sqlalchemy.exc.ProgrammingError: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.UndefinedFunctionError'>: operator does not exist: uuid = integer
+E   HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+E   [SQL: SELECT users.id, users.email, users.hashed_password, users.is_active, users.is_superuser, users.is_verified, users.nickname, users.is_public_leaderboard, users.created_at, users.updated_at 
+E   FROM users 
+E   WHERE users.id = $1::INTEGER]
+E   [parameters: (999,)]
+E   (Background on this error at: https://sqlalche.me/e/20/f405)
+E   NameError: name 'Price' is not defined
+E   TypeError: LeaderboardService.__init__() got an unexpected keyword argument 'key'
+E   sqlite3.IntegrityError: NOT NULL constraint failed: assets.portfolio_id
+E   sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: assets.portfolio_id
+E   [SQL: INSERT INTO assets (id, portfolio_id, owner_id, symbol, name, category, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)]
+E   [parameters: ('8f68397f7d664c69ae31ac67a0c180b0', None, None, 'TEST_RANK', 'Test Rank Coin', 'Crypto', '2026-02-21 02:53:23.709503', '2026-02-21 02:53:23.709550')]
+E   (Background on this error at: https://sqlalche.me/e/20/gkpj)

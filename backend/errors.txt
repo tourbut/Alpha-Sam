@@ -1,0 +1,484 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-9.0.2, pluggy-1.6.0
+rootdir: /Users/shin/MyDir/MyGit/Alpha-Sam/backend
+configfile: pytest.ini
+plugins: anyio-4.12.0, asyncio-1.3.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 6 items
+
+tests/api/test_social_integration.py F.                                  [ 33%]
+tests/test_portfolio_asset_details.py F.                                 [ 66%]
+tests/test_social_integration.py .F                                      [100%]
+
+=================================== FAILURES ===================================
+__________________________ test_follow_unfollow_flow ___________________________
+
+test_session = <sqlalchemy.orm.session.AsyncSession object at 0x1131e4ad0>
+setup_users = (User(hashed_password='pw', is_superuser=False, nickname='Nick1', created_at=datetime.datetime(2026, 2, 21, 8, 44, 33,...6b55b'), is_verified=False, is_public_leaderboard=False, updated_at=datetime.datetime(2026, 2, 21, 8, 44, 33, 791971)))
+
+    @pytest.mark.asyncio
+    async def test_follow_unfollow_flow(test_session: AsyncSession, setup_users):
+        user1, user2 = setup_users
+    
+        # Override CurrentUser to be user1
+        async def get_current_user_override():
+            return user1
+    
+        async def get_session_override():
+            yield test_session
+    
+        app.dependency_overrides[get_session] = get_session_override
+        app.dependency_overrides[get_current_user] = get_current_user_override
+    
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            # 1. Follow User2
+>           response = await ac.post(f"/api/v1/social/follow/{user2.id}")
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/api/test_social_integration.py:42: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.13/site-packages/httpx/_client.py:1859: in post
+    return await self.request(
+.venv/lib/python3.13/site-packages/httpx/_client.py:1540: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/httpx/_client.py:1629: in send
+    response = await self._send_handling_auth(
+.venv/lib/python3.13/site-packages/httpx/_client.py:1657: in _send_handling_auth
+    response = await self._send_handling_redirects(
+.venv/lib/python3.13/site-packages/httpx/_client.py:1694: in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/httpx/_client.py:1730: in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/httpx/_transports/asgi.py:170: in handle_async_request
+    await self.app(scope, receive, send)
+.venv/lib/python3.13/site-packages/fastapi/applications.py:1139: in __call__
+    await super().__call__(scope, receive, send)
+.venv/lib/python3.13/site-packages/starlette/applications.py:107: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.13/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+.venv/lib/python3.13/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+.venv/lib/python3.13/site-packages/starlette/middleware/cors.py:85: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.13/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+.venv/lib/python3.13/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.13/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.13/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.13/site-packages/starlette/routing.py:716: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.13/site-packages/starlette/routing.py:736: in app
+    await route.handle(scope, receive, send)
+.venv/lib/python3.13/site-packages/starlette/routing.py:290: in handle
+    await self.app(scope, receive, send)
+.venv/lib/python3.13/site-packages/fastapi/routing.py:120: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+.venv/lib/python3.13/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.13/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.13/site-packages/fastapi/routing.py:106: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/fastapi/routing.py:452: in app
+    content = await serialize_response(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[IncEx] = None,
+        exclude: Optional[IncEx] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+        endpoint_ctx: Optional[EndpointContext] = None,
+    ) -> Any:
+        if field:
+            errors = []
+            if not hasattr(field, "serialize"):
+                # pydantic v1
+                response_content = _prepare_response_content(
+                    response_content,
+                    exclude_unset=exclude_unset,
+                    exclude_defaults=exclude_defaults,
+                    exclude_none=exclude_none,
+                )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, list):
+                errors.extend(errors_)
+            elif errors_:
+                errors.append(errors_)
+            if errors:
+                ctx = endpoint_ctx or EndpointContext()
+>               raise ResponseValidationError(
+                    errors=_normalize_errors(errors),
+                    body=response_content,
+                    endpoint_ctx=ctx,
+                )
+E               fastapi.exceptions.ResponseValidationError: 2 validation errors:
+E                 {'type': 'int_type', 'loc': ('response', 'follower_id'), 'msg': 'Input should be a valid integer', 'input': UUID('581c5a9f-56d7-4de6-8afd-24330fd9ba1e')}
+E                 {'type': 'int_type', 'loc': ('response', 'following_id'), 'msg': 'Input should be a valid integer', 'input': UUID('ef076817-32bb-4a47-9aaa-8c1566c6b55b')}
+E               
+E                 File "/Users/shin/MyDir/MyGit/Alpha-Sam/backend/app/src/routes/social.py", line 81, in follow_user
+E                   POST /api/v1/social/follow/{target_id}
+
+.venv/lib/python3.13/site-packages/fastapi/routing.py:278: ResponseValidationError
+______________________ test_read_portfolio_asset_summary _______________________
+
+test_session = <sqlalchemy.orm.session.AsyncSession object at 0x1132b5400>
+setup_user = User(hashed_password='pw', is_superuser=False, nickname='AssetTester_e996bda1', created_at=datetime.datetime(2026, 2, ...d76d03'), is_verified=False, is_public_leaderboard=False, updated_at=datetime.datetime(2026, 2, 21, 8, 44, 33, 950783))
+
+    @pytest.mark.asyncio
+    async def test_read_portfolio_asset_summary(test_session: AsyncSession, setup_user):
+        user = setup_user
+    
+        # 1. Setup Portfolio
+        portfolio = Portfolio(
+            owner_id=user.id,
+            name="Asset Detail Test Portfolio",
+            description="Testing asset details"
+        )
+        test_session.add(portfolio)
+        await test_session.commit()
+        await test_session.refresh(portfolio)
+    
+        # 2. Setup Asset (Linked to Portfolio)
+        asset = Asset(
+            portfolio_id=portfolio.id,
+            symbol="BTC",
+            name="Bitcoin",
+            category="CRYPTO"
+        )
+        test_session.add(asset)
+        await test_session.commit()
+        await test_session.refresh(asset)
+    
+        # 3. Add Transactions (Buy BTC)
+        # Transaction 1: Buy 1.0 at 50000
+        tx1 = Transaction(
+            portfolio_id=portfolio.id,
+            asset_id=asset.id,
+            type="BUY",
+            quantity=1.0,
+            price=50000.0,
+            executed_at=datetime.utcnow()
+        )
+        test_session.add(tx1)
+    
+        # Transaction 2: Buy 0.5 at 40000
+        tx2 = Transaction(
+            portfolio_id=portfolio.id,
+            asset_id=asset.id,
+            type="BUY",
+            quantity=0.5,
+            price=40000.0,
+            executed_at=datetime.utcnow()
+        )
+        test_session.add(tx2)
+    
+        # Add Price (Current Price)
+        price = PriceDay(
+            asset_id=asset.id,
+            date=datetime.utcnow().date(),
+            open=60000.0,
+            high=60000.0,
+            low=60000.0,
+            close=60000.0,
+            volume=1000
+        )
+        test_session.add(price)
+    
+        await test_session.commit()
+    
+        # 4. Override Dependencies
+        async def get_current_user_override():
+            return user
+    
+        async def get_session_override():
+            yield test_session
+    
+        app.dependency_overrides[get_session] = get_session_override
+        app.dependency_overrides[get_current_user] = get_current_user_override
+    
+        # 5. Test API Call
+        from unittest.mock import patch, AsyncMock
+>       with patch("app.src.services.portfolio_service.price_service.get_asset_prices", new_callable=AsyncMock) as mock_price:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_portfolio_asset_details.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Users/shin/.local/share/uv/python/cpython-3.13.2-macos-aarch64-none/lib/python3.13/unittest/mock.py:1479: in __enter__
+    self.target = self.getter()
+                  ^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'app.src.services.portfolio_service.price_service'
+
+    def resolve_name(name):
+        """
+        Resolve a name to an object.
+    
+        It is expected that `name` will be a string in one of the following
+        formats, where W is shorthand for a valid Python identifier and dot stands
+        for a literal period in these pseudo-regexes:
+    
+        W(.W)*
+        W(.W)*:(W(.W)*)?
+    
+        The first form is intended for backward compatibility only. It assumes that
+        some part of the dotted name is a package, and the rest is an object
+        somewhere within that package, possibly nested inside other objects.
+        Because the place where the package stops and the object hierarchy starts
+        can't be inferred by inspection, repeated attempts to import must be done
+        with this form.
+    
+        In the second form, the caller makes the division point clear through the
+        provision of a single colon: the dotted name to the left of the colon is a
+        package to be imported, and the dotted name to the right is the object
+        hierarchy within that package. Only one import is needed in this form. If
+        it ends with the colon, then a module object is returned.
+    
+        The function will return an object (which might be a module), or raise one
+        of the following exceptions:
+    
+        ValueError - if `name` isn't in a recognised format
+        ImportError - if an import failed when it shouldn't have
+        AttributeError - if a failure occurred when traversing the object hierarchy
+                         within the imported package to get to the desired object.
+        """
+        global _NAME_PATTERN
+        if _NAME_PATTERN is None:
+            # Lazy import to speedup Python startup time
+            import re
+            dotted_words = r'(?!\d)(\w+)(\.(?!\d)(\w+))*'
+            _NAME_PATTERN = re.compile(f'^(?P<pkg>{dotted_words})'
+                                       f'(?P<cln>:(?P<obj>{dotted_words})?)?$',
+                                       re.UNICODE)
+    
+        m = _NAME_PATTERN.match(name)
+        if not m:
+            raise ValueError(f'invalid format: {name!r}')
+        gd = m.groupdict()
+        if gd.get('cln'):
+            # there is a colon - a one-step import is all that's needed
+            mod = importlib.import_module(gd['pkg'])
+            parts = gd.get('obj')
+            parts = parts.split('.') if parts else []
+        else:
+            # no colon - have to iterate to find the package boundary
+            parts = name.split('.')
+            modname = parts.pop(0)
+            # first part *must* be a module/package.
+            mod = importlib.import_module(modname)
+            while parts:
+                p = parts[0]
+                s = f'{modname}.{p}'
+                try:
+                    mod = importlib.import_module(s)
+                    parts.pop(0)
+                    modname = s
+                except ImportError:
+                    break
+        # if we reach this point, mod is the module, already imported, and
+        # parts is the list of parts in the object hierarchy to be traversed, or
+        # an empty list if just the module is wanted.
+        result = mod
+        for p in parts:
+>           result = getattr(result, p)
+                     ^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'app.src.services.portfolio_service' has no attribute 'price_service'
+
+/Users/shin/.local/share/uv/python/cpython-3.13.2-macos-aarch64-none/lib/python3.13/pkgutil.py:528: AttributeError
+_________________________ test_leaderboard_calculation _________________________
+
+test_session = <sqlalchemy.orm.session.AsyncSession object at 0x1132b5be0>
+random_email = 'user_lnypdwxo@test.com'
+
+    @pytest.mark.asyncio
+    async def test_leaderboard_calculation(test_session, random_email):
+        # Setup User & Portfolio
+        user = User(email=random_email, hashed_password="pw", nickname="RankUser")
+        test_session.add(user)
+        await test_session.flush()
+    
+        # is_primary_for_leaderboard=True 필수
+        pf = Portfolio(owner_id=user.id, name="RankPF", is_primary_for_leaderboard=True)
+        test_session.add(pf)
+        await test_session.flush()
+    
+        # Setup Asset
+        asset = Asset(portfolio_id=pf.id, symbol="TEST_RANK", name="Test Rank Coin", category="Crypto")
+        test_session.add(asset)
+        await test_session.flush()
+    
+        # Setup Price (Current price = 200)
+        price = PriceDay(
+            asset_id=asset.id,
+            date=datetime.utcnow().date(),
+            open=200.0,
+            high=200.0,
+            low=200.0,
+            close=200.0,
+            volume=1000
+        )
+        test_session.add(price)
+    
+        # Setup Transaction (Buy 1 at 100) -> Return 100%
+        tx = Transaction(
+            portfolio_id=pf.id, asset_id=asset.id, type="BUY",
+            quantity=1.0, price=100.0, executed_at=datetime.utcnow()
+        )
+        test_session.add(tx)
+        await test_session.commit()
+    
+        # Calculate Leaderboard
+        # Redis might fail in test environment, but DB fallback logic should work via exception handling in service
+        from unittest.mock import patch, AsyncMock
+>       with patch("app.src.services.portfolio_service.price_service.get_asset_prices", new_callable=AsyncMock) as mock_price:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_social_integration.py:90: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Users/shin/.local/share/uv/python/cpython-3.13.2-macos-aarch64-none/lib/python3.13/unittest/mock.py:1479: in __enter__
+    self.target = self.getter()
+                  ^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'app.src.services.portfolio_service.price_service'
+
+    def resolve_name(name):
+        """
+        Resolve a name to an object.
+    
+        It is expected that `name` will be a string in one of the following
+        formats, where W is shorthand for a valid Python identifier and dot stands
+        for a literal period in these pseudo-regexes:
+    
+        W(.W)*
+        W(.W)*:(W(.W)*)?
+    
+        The first form is intended for backward compatibility only. It assumes that
+        some part of the dotted name is a package, and the rest is an object
+        somewhere within that package, possibly nested inside other objects.
+        Because the place where the package stops and the object hierarchy starts
+        can't be inferred by inspection, repeated attempts to import must be done
+        with this form.
+    
+        In the second form, the caller makes the division point clear through the
+        provision of a single colon: the dotted name to the left of the colon is a
+        package to be imported, and the dotted name to the right is the object
+        hierarchy within that package. Only one import is needed in this form. If
+        it ends with the colon, then a module object is returned.
+    
+        The function will return an object (which might be a module), or raise one
+        of the following exceptions:
+    
+        ValueError - if `name` isn't in a recognised format
+        ImportError - if an import failed when it shouldn't have
+        AttributeError - if a failure occurred when traversing the object hierarchy
+                         within the imported package to get to the desired object.
+        """
+        global _NAME_PATTERN
+        if _NAME_PATTERN is None:
+            # Lazy import to speedup Python startup time
+            import re
+            dotted_words = r'(?!\d)(\w+)(\.(?!\d)(\w+))*'
+            _NAME_PATTERN = re.compile(f'^(?P<pkg>{dotted_words})'
+                                       f'(?P<cln>:(?P<obj>{dotted_words})?)?$',
+                                       re.UNICODE)
+    
+        m = _NAME_PATTERN.match(name)
+        if not m:
+            raise ValueError(f'invalid format: {name!r}')
+        gd = m.groupdict()
+        if gd.get('cln'):
+            # there is a colon - a one-step import is all that's needed
+            mod = importlib.import_module(gd['pkg'])
+            parts = gd.get('obj')
+            parts = parts.split('.') if parts else []
+        else:
+            # no colon - have to iterate to find the package boundary
+            parts = name.split('.')
+            modname = parts.pop(0)
+            # first part *must* be a module/package.
+            mod = importlib.import_module(modname)
+            while parts:
+                p = parts[0]
+                s = f'{modname}.{p}'
+                try:
+                    mod = importlib.import_module(s)
+                    parts.pop(0)
+                    modname = s
+                except ImportError:
+                    break
+        # if we reach this point, mod is the module, already imported, and
+        # parts is the list of parts in the object hierarchy to be traversed, or
+        # an empty list if just the module is wanted.
+        result = mod
+        for p in parts:
+>           result = getattr(result, p)
+                     ^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'app.src.services.portfolio_service' has no attribute 'price_service'
+
+/Users/shin/.local/share/uv/python/cpython-3.13.2-macos-aarch64-none/lib/python3.13/pkgutil.py:528: AttributeError
+=============================== warnings summary ===============================
+app/src/schemas/social.py:18
+  /Users/shin/MyDir/MyGit/Alpha-Sam/backend/app/src/schemas/social.py:18: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class FollowerResponse(BaseModel):
+
+app/src/schemas/dashboard.py:12
+  /Users/shin/MyDir/MyGit/Alpha-Sam/backend/app/src/schemas/dashboard.py:12: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class ActivityItem(BaseModel):
+
+tests/api/test_social_integration.py: 15 warnings
+tests/test_portfolio_asset_details.py: 15 warnings
+tests/test_social_integration.py: 12 warnings
+  /Users/shin/MyDir/MyGit/Alpha-Sam/backend/.venv/lib/python3.13/site-packages/pydantic/fields.py:747: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return fac()
+
+tests/test_portfolio_asset_details.py::test_read_portfolio_asset_summary
+  /Users/shin/MyDir/MyGit/Alpha-Sam/backend/tests/test_portfolio_asset_details.py:66: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    executed_at=datetime.utcnow()
+
+tests/test_portfolio_asset_details.py::test_read_portfolio_asset_summary
+  /Users/shin/MyDir/MyGit/Alpha-Sam/backend/tests/test_portfolio_asset_details.py:77: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    executed_at=datetime.utcnow()
+
+tests/test_portfolio_asset_details.py::test_read_portfolio_asset_summary
+  /Users/shin/MyDir/MyGit/Alpha-Sam/backend/tests/test_portfolio_asset_details.py:84: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    date=datetime.utcnow().date(),
+
+tests/test_portfolio_asset_details.py::test_read_asset_transactions
+  /Users/shin/MyDir/MyGit/Alpha-Sam/backend/tests/test_portfolio_asset_details.py:165: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    executed_at=datetime.utcnow()
+
+tests/test_social_integration.py::test_leaderboard_calculation
+  /Users/shin/MyDir/MyGit/Alpha-Sam/backend/tests/test_social_integration.py:70: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    date=datetime.utcnow().date(),
+
+tests/test_social_integration.py::test_leaderboard_calculation
+  /Users/shin/MyDir/MyGit/Alpha-Sam/backend/tests/test_social_integration.py:82: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    quantity=1.0, price=100.0, executed_at=datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/api/test_social_integration.py::test_follow_unfollow_flow - fast...
+FAILED tests/test_portfolio_asset_details.py::test_read_portfolio_asset_summary
+FAILED tests/test_social_integration.py::test_leaderboard_calculation - Attri...
+=================== 3 failed, 3 passed, 50 warnings in 0.90s ===================

@@ -1,4 +1,5 @@
 from typing import List, Any
+import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, delete
@@ -79,7 +80,7 @@ async def calculate_leaderboard_manually(
 
 @router.post("/follow/{target_id}", response_model=FollowerResponse, status_code=status.HTTP_201_CREATED)
 async def follow_user(
-    target_id: int,
+    target_id: uuid.UUID,
     session: SessionDep_async,
     current_user: CurrentUser
 ):
@@ -105,7 +106,7 @@ async def follow_user(
 
 @router.delete("/follow/{target_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def unfollow_user(
-    target_id: int,
+    target_id: uuid.UUID,
     session: SessionDep_async,
     current_user: CurrentUser
 ):
@@ -124,7 +125,7 @@ async def unfollow_user(
 
 @router.get("/users/{user_id}/followers", response_model=FollowListResponse)
 async def get_followers(
-    user_id: int,
+    user_id: uuid.UUID,
     session: SessionDep_async,
     skip: int = 0, 
     limit: int = 20
@@ -154,7 +155,7 @@ async def get_followers(
 
 @router.get("/users/{user_id}/following", response_model=FollowListResponse)
 async def get_following(
-    user_id: int,
+    user_id: uuid.UUID,
     session: SessionDep_async,
     skip: int = 0, 
     limit: int = 20

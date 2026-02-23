@@ -11,7 +11,9 @@
         NavHamburger,
     } from "flowbite-svelte";
 
-    let loading = true;
+    let { children } = $props();
+
+    let loading = $state(true);
 
     onMount(() => {
         // auth.connstructor에서 initialize()가 호출되므로 상태는 로드되어 있음
@@ -29,5 +31,5 @@
         <Spinner size="12" />
     </div>
 {:else}
-    <slot />
+    {@render children()}
 {/if}

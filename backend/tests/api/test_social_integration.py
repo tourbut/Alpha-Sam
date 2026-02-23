@@ -42,22 +42,22 @@ async def test_follow_unfollow_flow(test_session: AsyncSession, setup_users):
         response = await ac.post(f"/api/v1/social/follow/{user2.id}")
         assert response.status_code == 201
         data = response.json()
-        assert data["following_id"] == user2.id
-        assert data["follower_id"] == user1.id
+        assert data["following_id"] == str(user2.id)
+        assert data["follower_id"] == str(user1.id)
 
         # 2. Check Followers of User2
         response = await ac.get(f"/api/v1/social/users/{user2.id}/followers")
         assert response.status_code == 200
         data = response.json()
         assert data["total"] == 1
-        assert data["users"][0]["id"] == user1.id
+        assert data["users"][0]["id"] == str(user1.id)
 
         # 3. Check Following of User1
         response = await ac.get(f"/api/v1/social/users/{user1.id}/following")
         assert response.status_code == 200
         data = response.json()
         assert data["total"] == 1
-        assert data["users"][0]["id"] == user2.id
+        assert data["users"][0]["id"] == str(user2.id)
 
         # 4. Unfollow User2
         response = await ac.delete(f"/api/v1/social/follow/{user2.id}")
@@ -75,8 +75,8 @@ async def test_leaderboard_simple(test_session: AsyncSession, setup_users):
     
     # Need at least one portfolio for the mandatory portfolio_id in LeaderboardRank
     from app.src.models.portfolio import Portfolio
-    p1 = Portfolio(name="P1", owner_id=user1.id, total_value=10000.0)
-    p2 = Portfolio(name="P2", owner_id=user2.id, total_value=5000.0)
+    p1 = Portfolio(name="P1", owner_id=user1.id)
+    p2 = Portfolio(name="P2", owner_id=user2.id)
     test_session.add(p1)
     test_session.add(p2)
     await test_session.commit()

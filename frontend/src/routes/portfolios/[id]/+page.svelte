@@ -75,10 +75,10 @@
       const data = await fetchPortfolioSummary(portfolioId);
 
       summary = {
-        totalValuation: data.summary.total_value,
-        totalProfitLoss: data.summary.total_pl,
+        totalValuation: data.summary.total_value || 0,
+        totalProfitLoss: data.summary.total_pl || 0,
         totalReturnRate: data.summary.total_pl_stats?.percent || 0,
-        totalInvested: data.summary.total_cost,
+        totalInvested: data.summary.total_cost || 0,
         realizedProfitLoss: data.summary.realized_pl || 0,
       };
 

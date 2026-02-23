@@ -1,5 +1,6 @@
 from typing import Optional
 from fastapi import Depends, HTTPException, status, Header
+import uuid
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 from pydantic import ValidationError
@@ -20,10 +21,10 @@ async def get_current_user(
     token: Optional[str] = Depends(reusable_oauth2),
     x_user_id: Optional[str] = Header(None, alias="X-User-Id")
 ) -> User:
-    # 1. X-User-Id 헤더가 있으면 우선 사용 (개발 환경 전용)
-    if settings.environment == "dev" and x_user_id:
+    # 1. X-User-Id 헤더가 있으면 우선 사용 (개발/테스트 환경 전용)
+    if settings.environment in ["dev", "test"] and x_user_id:
         try:
-            user_id = int(x_user_id)
+            user_id = uuid.UUID(x_user_id)
             result = await session.execute(select(User).where(User.id == user_id))
             user = result.scalar_one_or_none()
             if user:

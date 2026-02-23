@@ -1,5 +1,5 @@
 # import pytest (removed for standalone run)
-from datetime import datetime
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from app.src.models.prices_day import PriceDay
 
@@ -24,26 +24,26 @@ def test_price_timezone_aware():
     # Let's check the code we wrote.
     # timestamp: datetime = Field(..., default_factory=lambda: datetime.now(ZoneInfo("Asia/Seoul")))
     
-    price = Price(
+    price = PriceDay(
         asset_id=dummy_id,
-        value=100.0
-        # timestamp and created_at should be autofilled
+        date=datetime.now(timezone.utc).date(),
+        open=100.0,
+        high=100.0,
+        low=100.0,
+        close=100.0,
+        volume=1000
     )
     
-    # Check timestamp
-    assert price.timestamp is not None
-    assert price.timestamp.tzinfo is not None
-    assert str(price.timestamp.tzinfo) == "Asia/Seoul"
+    # Note: timestamp is not in PriceDay. We only check created_at.
     
     # Check created_at
     assert price.created_at is not None
     assert price.created_at.tzinfo is not None
-    assert str(price.created_at.tzinfo) == "Asia/Seoul"
+    assert price.created_at.tzinfo == timezone.utc
 
-    # Verify offset (KST is UTC+9)
-    # Be careful with DST but KST doesn't have DST since 1988.
-    kt = datetime.now(ZoneInfo("Asia/Seoul"))
-    assert kt.utcoffset().total_seconds() == 9 * 3600
+    # Verify offset (UTC is +0)
+    offset = price.created_at.utcoffset()
+    assert offset.total_seconds() == 0
 
 if __name__ == "__main__":
     try:

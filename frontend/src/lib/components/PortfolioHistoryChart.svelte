@@ -1,39 +1,34 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
     import Chart from "chart.js/auto";
-    import type { PortfolioHistory } from "$lib/types";
+    import type { PortfolioHistoryResponse } from "$lib/types";
 
-    export let history: PortfolioHistory[] = [];
+    let { data = [] }: { data: PortfolioHistoryResponse[] } = $props();
 
     let canvas: HTMLCanvasElement;
     let chart: Chart;
 
-    $: if (chart && history) {
-        updateChartData();
-    }
+    $effect(() => {
+        if (chart && data) {
+            updateChartData();
+        }
+    });
 
     function updateChartData() {
-        if (!history || history.length === 0) return;
+        if (!data || data.length === 0) return;
 
-        // Sort by date ascending
-        const sorted = [...history].sort(
-            (a, b) =>
-                new Date(a.timestamp).getTime() -
-                new Date(b.timestamp).getTime(),
+        const sorted = [...data].sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
         );
 
-        const labels = sorted.map((h) =>
-            new Date(h.timestamp).toLocaleDateString(),
-        );
+        const labels = sorted.map((h) => new Date(h.date).toLocaleDateString());
         const dataValue = sorted.map((h) => h.total_value);
-        const dataCost = sorted.map((h) => h.total_cost);
+        const dataCash = sorted.map((h) => h.uninvested_cash);
 
         chart.data.labels = labels;
         chart.data.datasets[0].data = dataValue;
         if (chart.data.datasets[1]) {
-            chart.data.datasets[1].data = dataCost;
-        } else {
-            // Should be initialized in onMount, but handle update if needed
+            chart.data.datasets[1].data = dataCash;
         }
         chart.update();
     }
@@ -50,7 +45,7 @@
                     {
                         label: "Total Value ($)",
                         data: [],
-                        borderColor: "#10B981", // Emerald 500
+                        borderColor: "#10B981",
                         backgroundColor: "rgba(16, 185, 129, 0.1)",
                         borderWidth: 2,
                         fill: true,
@@ -59,11 +54,11 @@
                         pointHoverRadius: 6,
                     },
                     {
-                        label: "Total Cost ($)",
+                        label: "Uninvested Cash ($)",
                         data: [],
-                        borderColor: "#9CA3AF", // Gray 400
+                        borderColor: "#9CA3AF",
                         borderDash: [5, 5],
-                        backgroundColor: "rgba(156, 163, 175, 0.1)",
+                        backgroundColor: "transparent",
                         borderWidth: 2,
                         fill: false,
                         tension: 0.4,
@@ -77,9 +72,6 @@
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        display: false,
-                    },
-                    title: {
                         display: false,
                     },
                     tooltip: {
@@ -99,31 +91,12 @@
                                 }
                                 return label;
                             },
-                            afterBody: function (tooltipItems: any[]) {
-                                const valueItem = tooltipItems.find(
-                                    (i: any) => i.datasetIndex === 0,
-                                );
-                                const costItem = tooltipItems.find(
-                                    (i: any) => i.datasetIndex === 1,
-                                );
-
-                                if (valueItem && costItem) {
-                                    const value = valueItem.parsed.y;
-                                    const cost = costItem.parsed.y;
-                                    const pl = value - cost;
-                                    const plPercent =
-                                        cost > 0 ? (pl / cost) * 100 : 0;
-
-                                    return `P/L: ${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(pl)} (${plPercent.toFixed(2)}%)`;
-                                }
-                                return "";
-                            },
                         },
                     },
                 },
                 scales: {
                     y: {
-                        beginAtZero: false, // Value unlikely to be 0
+                        beginAtZero: false,
                         grid: {
                             color: "rgba(0, 0, 0, 0.05)",
                         },

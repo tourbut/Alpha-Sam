@@ -18,6 +18,7 @@ class UserCreate(schemas.BaseUserCreate):
 # Properties to receive via API on update
 class UserUpdate(schemas.BaseUserUpdate):
     nickname: Optional[str] = None
+    is_public_leaderboard: Optional[bool] = None
 
 class UserPasswordUpdate(SQLModel):
     current_password: str
@@ -26,6 +27,7 @@ class UserPasswordUpdate(SQLModel):
 # Properties to return to client
 class UserRead(schemas.BaseUser[uuid.UUID]):
     nickname: Optional[str] = None
+    is_public_leaderboard: bool = False
 
 class Token(SQLModel):
     access_token: str

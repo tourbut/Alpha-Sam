@@ -1,5 +1,12 @@
 <script lang="ts">
-    import { Modal, Label, Input, Button, Select } from "flowbite-svelte";
+    import {
+        Modal,
+        Label,
+        Input,
+        Button,
+        Select,
+        Alert,
+    } from "flowbite-svelte";
     import { portfolioStore } from "$lib/stores/portfolio.svelte";
     import { createTransaction } from "$lib/apis/portfolio";
     import { get_assets as getAssets } from "$lib/apis/assets";
@@ -18,6 +25,7 @@
     let price = $state(0);
     let date = $state("");
     let loading = $state(false);
+    let errorMessage = $state("");
     let assets = $state<any[]>([]);
     let selectedAssetId = $state("");
 
@@ -56,21 +64,22 @@
             portfolioId || portfolioStore.selectedPortfolioId;
 
         if (!targetPortfolioId) {
-            alert("Please select a portfolio first.");
+            errorMessage = "Please select a portfolio first.";
             return;
         }
         const finalAssetId = assetId || selectedAssetId;
         if (!finalAssetId) {
-            alert("Please select an asset");
+            errorMessage = "Please select an asset";
             return;
         }
 
         if (quantity <= 0 || price <= 0) {
-            alert("Quantity and Price must be positive.");
+            errorMessage = "Quantity and Price must be positive.";
             return;
         }
 
         loading = true;
+        errorMessage = "";
         try {
             await createTransaction({
                 portfolio_id: targetPortfolioId,
@@ -92,10 +101,10 @@
             price = 0;
             if (!assetId) selectedAssetId = "";
         } catch (e: any) {
-            alert(
-                "Failed to create transaction: " +
-                    (e.response?.data?.detail || e.message),
-            );
+            errorMessage =
+                e.response?.data?.detail ||
+                e.message ||
+                "Failed to create transaction";
         } finally {
             loading = false;
         }
@@ -116,6 +125,10 @@
             handleSubmit();
         }}
     >
+        {#if errorMessage}
+            <Alert color="red" class="mb-4">{errorMessage}</Alert>
+        {/if}
+
         {#if !assetId}
             <Label class="space-y-2">
                 <span>Select Asset</span>

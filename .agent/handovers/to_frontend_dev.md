@@ -1,22 +1,28 @@
 # Handovers: To Frontend Dev
 
 ## 날짜
-- 2026-02-21
+- 2026-02-22
 
 ## 브랜치 (Version Control)
 - `develop`
 
 ## 현재 상황 (Context)
-- 백엔드에서 UUID로의 식별자 타입 변경과 `Position` 모델 제거 작업이 완료되었습니다. 클라이언트 환경에서의 안정성 보증 및 Svelte 5 관련 리팩토링이 필요합니다.
+- v2.0.0 마이그레이션이 완료되었고, v2.1.0 (User Settings 및 Dashboard Analytics) 기능에 대한 UI/UX 작업이 백엔드와 함께 병렬로 진행될 수 있는 상태입니다. (Mock 데이터를 활용한 사전 작업 요망)
+- 백엔드에서는 관련 데이터를 `PUT /api/v1/users/me/profile`, `PUT /api/v1/users/me/password` 및 `GET /api/v1/analytics/portfolio/{portfolio_id}/...` 엔드포인트를 통해 제공할 예정입니다.
 
 ## 해야 할 일 (Tasks)
-1. 백엔드의 ID 타입 변경(Number -> UUID String)으로 인해 프론트엔드 라우팅 및 파라미터 로직에서 깨지는 부분이 없는지 전체적으로 점검하세요.
-2. `updateAsset` 및 트랜잭션 추가(`createTransaction`) 시 밸리데이션(예: 보유 수량 부족으로 인한 매도 실패)에 대한 백엔드 에러 응답을 핸들링하고, 사용자에게 명확한 피드백(Toast 알림 등)을 제공하도록 UI를 개선하세요.
-3. 터미널의 `npm run check` 명령어를 통해 Svelte 5 Deprecation Warnings (`<slot>` -> `{@render ...}`, `svelte:component` 변경 등) 및 린트 에러를 완전히 해결하세요.
+1. **User Settings 페이지 (`/settings`) 구현**:
+   - `ProfileForm` 컴포넌트 구현: 닉네임 수정 및 리더보드 공개 여부 Toggle 버튼
+   - `PasswordChangeForm` 컴포넌트 구현: 기존 비밀번호 및 새 비밀번호 입력 (유효성 검사 적용)
+2. **Dashboard Analytics 기능 연동 (`/` 메인 대시보드 컴포넌트)**:
+   - `AssetAllocationChart`: 포트폴리오의 자산 비중을 보여주는 파이(Pie) 차트 구현 (Chart.js 등 라이브러리 검토 요망)
+   - `PortfolioPerformanceChart`: 기간(`1W`, `1M`, `1Y` 등)별 가치 추이를 보여주는 라인(Line) 차트 구현
+   - 백엔드 구현 완료 전까지 프론트 단에서 Mock 데이터를 사용하여 레이아웃 및 차트 렌더링 확인
 
 ## 기대 산출물 (Expected Outputs)
-- `npm run check` 통과 및 경고(Warning) 제거.
-- 에러 상황에 대한 Toast 피드백이 적용된 직관적인 UI.
+- User Settings (`/settings`) 페이지 및 폼 컴포넌트
+- 대시보드 내 Asset Allocation & Performance 차트 컴포넌트
+- 프론트엔드 스타일 규칙(`verify-frontend-style`) 통과
 
 ## 참고 자료 (References)
-- `.agent/project/artifacts/architecture/inspection_report_20260221.md`
+- `.agent/project/artifacts/architecture/v2.1.0_design_spec.md`

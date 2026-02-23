@@ -1,9 +1,9 @@
 import unittest
 from unittest.mock import AsyncMock, patch
-from app.src.engine.asset_service import AssetService
+from app.src.services.asset_service import AssetService
 
 class TestAssetListing(unittest.IsolatedAsyncioTestCase):
-    @patch("app.src.engine.asset_service.crud_asset")
+    @patch("app.src.services.asset_service.crud_asset")
     async def test_get_assets_with_metrics_call_signature(self, mock_crud_asset):
         """
         Verify that AssetService.get_assets_with_metrics calls crud_asset.get_assets

@@ -8,6 +8,7 @@ from app.src.models.transaction import Transaction
 from app.src.models.portfolio import Portfolio
 from app.src.models.asset import Asset
 from app.src.schemas.transaction import TransactionCreate # Schema가 있다고 가정
+import uuid
 
 class TransactionService:
     @staticmethod

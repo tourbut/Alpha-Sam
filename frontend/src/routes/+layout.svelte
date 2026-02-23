@@ -14,6 +14,8 @@
     WalletSolid,
   } from "flowbite-svelte-icons";
 
+  let { children } = $props();
+
   let openAssetModal = $state(false);
 
   // 사이드바 네비게이션 아이템 (전역 적용)
@@ -68,6 +70,7 @@
           <!-- 사이드바 네비게이션 -->
           <aside class="sidebar hidden lg:block">
             {#each finalNavItems as item}
+              {@const Icon = item.icon}
               <a
                 href={item.href}
                 class="nav-item flex items-center gap-3 {page.url.pathname ===
@@ -75,7 +78,7 @@
                   ? 'active'
                   : ''}"
               >
-                <svelte:component this={item.icon} class="w-5 h-5" />
+                <Icon class="w-5 h-5" />
                 {item.label}
               </a>
             {/each}
@@ -83,7 +86,7 @@
 
           <!-- 페이지 콘텐츠 -->
           <div class="min-w-0">
-            <slot />
+            {@render children()}
           </div>
         </div>
       </div>
@@ -91,7 +94,7 @@
   {:else}
     <!-- 로그인/회원가입 페이지는 사이드바 없이 전체 너비 사용 -->
     <main class="flex-grow w-full overflow-visible pt-20">
-      <slot />
+      {@render children()}
     </main>
   {/if}
 

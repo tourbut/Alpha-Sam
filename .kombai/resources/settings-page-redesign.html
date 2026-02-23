@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings Page - Redesign Wireframe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f9fafb;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        .header {
+            margin-bottom: 32px;
+            border-bottom: 2px dashed #e5e7eb;
+            padding-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .header p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .tab {
+            padding: 12px 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            color: #6b7280;
+        }
+        .tab.active {
+            color: #2774ae;
+            border-bottom-color: #2774ae;
+        }
+        .tab:hover {
+            color: #374151;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-section {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .form-section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #111827;
+        }
+        .form-section p {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #374151;
+            font-size: 14px;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #2774ae;
+            box-shadow: 0 0 0 3px rgba(39, 116, 174, 0.1);
+        }
+        .form-group input:disabled {
+            background: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+        .toggle-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .toggle-item:last-child {
+            border-bottom: none;
+        }
+        .toggle-content {
+            flex: 1;
+        }
+        .toggle-content label {
+            display: block;
+            font-weight: 500;
+            color: #1f2937;
+            margin-bottom: 4px;
+            cursor: pointer;
+        }
+        .toggle-content p {
+            font-size: 13px;
+            color: #6b7280;
+        }
+        .toggle-switch {
+            width: 48px;
+            height: 28px;
+            background: #d1d5db;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.3s;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .toggle-switch.on {
+            background: #2774ae;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s;
+        }
+        .toggle-switch.on::after {
+            left: 22px;
+        }
+        .button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .button.primary {
+            background: linear-gradient(to right, #1a4d74, #2774ae);
+            color: white;
+            width: 100%;
+        }
+        .button.primary:hover {
+            box-shadow: 0 10px 15px -3px rgba(39, 116, 174, 0.3);
+            transform: translateY(-2px);
+        }
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-top: 16px;
+            font-size: 13px;
+        }
+        .alert.success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+        .alert.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        .security-badge {
+            display: inline-block;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+            .tabs {
+                flex-wrap: wrap;
+            }
+            .form-section {
+                padding: 16px;
+            }
+            .toggle-item {
+                flex-direction: column;
+            }
+            .toggle-switch {
+                align-self: flex-start;
+            }
+            .button.primary {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>User Settings</h1>
+            <p>Manage your account, security, and preferences</p>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('profile')">Profile</button>
+            <button class="tab" onclick="switchTab('security')">Security</button>
+            <button class="tab" onclick="switchTab('notifications')">Notifications</button>
+        </div>
+
+        <!-- Profile Tab -->
+        <div id="profile" class="tab-content active">
+            <div class="form-section">
+                <h3>Profile Information</h3>
+                <p>Update your basic account information</p>
+                
+                <form onsubmit="handleSubmit(event, 'profile')">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" value="tester@example.com" disabled>
+                        <p style="font-size: 12px; color: #9ca3af; margin-top: 4px;">Cannot be changed - contact support for assistance</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="nickname">Nickname</label>
+                        <input type="text" id="nickname" placeholder="Enter your nickname" value="">
+                    </div>
+                    
+                    <button type="submit" class="button primary">Save Changes</button>
+                    <div class="alert success" style="display: none;">Profile updated successfully!</div>
+                </form>
+            </div>
+
+            <div class="form-section">
+                <h3>Public Visibility</h3>
+                <p>Control who can see your activity on the leaderboard</p>
+                
+                <div class="toggle-item">
+                    <div class="toggle-content">
+                        <label>Show on Leaderboard</label>
+                        <p>Allow other users to see your nickname and portfolio performance on the weekly leaderboard. You can toggle this anytime.</p>
+                    </div>
+                    <button class="toggle-switch" onclick="toggleSwitch(this)" aria-label="Toggle leaderboard visibility"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Tab -->
+        <div id="security" class="tab-content">
+            <div class="form-section">
+                <div class="security-badge">🔒 IMPORTANT</div>
+                <h3>Change Password</h3>
+                <p>We recommend using a strong, unique password for your account</p>
+                
+                <form onsubmit="handleSubmit(event, 'password')">
+                    <div class="form-group">
+                        <label for="current-password">Current Password</label>
+                        <input type="password" id="current-password" placeholder="••••••••" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new-password">New Password</label>
+                        <input type="password" id="new-password" placeholder="••••••••" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirm-password">Confirm New Password</label>
+                        <input type="password" id="confirm-password" placeholder="••••••••" required>
+                    </div>
+                    
+                    <button type="submit" class="button primary">Update Password</button>
+                    <div class="alert error" style="display: none;">Please check your current password and try again</div>
+                </form>
+            </div>
+
+            <div class="form-section">
+                <h3>Session Management</h3>
+                <p>Log out from all other devices and sessions</p>
+                <button class="button primary" style="background: #ef4444; margin-top: 16px;">Log Out From All Devices</button>
+            </div>
+        </div>
+
+        <!-- Notifications Tab -->
+        <div id="notifications" class="tab-content">
+            <div class="form-section">
+                <h3>Email Notifications</h3>
+                <p>Choose what updates you want to receive via email</p>
+                
+                <div class="toggle-item">
+                    <div class="toggle-content">
+                        <label>Daily Portfolio Report</label>
+                        <p>Receive a daily summary of your portfolio performance, including P&L, top performers, and overall changes.</p>
+                    </div>
+                    <button class="toggle-switch on" onclick="toggleSwitch(this)" aria-label="Toggle daily reports"></button>
+                </div>
+                
+                <div class="toggle-item">
+                    <div class="toggle-content">
+                        <label>Price Alerts</label>
+                        <p>Get notified when assets in your portfolio hit price targets or significant price movements occur.</p>
+                    </div>
+                    <button class="toggle-switch on" onclick="toggleSwitch(this)" aria-label="Toggle price alerts"></button>
+                </div>
+                
+                <div class="toggle-item">
+                    <div class="toggle-content">
+                        <label>Weekly Market Summary</label>
+                        <p>Receive insights about market trends and opportunities relevant to your portfolio composition.</p>
+                    </div>
+                    <button class="toggle-switch" onclick="toggleSwitch(this)" aria-label="Toggle market summary"></button>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Notification Frequency</h3>
+                <p>Control how often you receive email notifications</p>
+                
+                <div class="form-group">
+                    <label for="frequency">Delivery Schedule</label>
+                    <select id="frequency" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                        <option>Immediate (as they happen)</option>
+                        <option selected>Daily Digest (8:00 AM)</option>
+                        <option>Weekly Digest (Monday 8:00 AM)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        function toggleSwitch(button) {
+            button.classList.toggle('on');
+        }
+
+        function handleSubmit(event, type) {
+            event.preventDefault();
+            alert(`${type} form would be submitted here`);
+        }
+    </script>
+</body>
+</html>

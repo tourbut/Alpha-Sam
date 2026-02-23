@@ -12,13 +12,14 @@
     Spinner,
     Alert,
   } from "flowbite-svelte";
-  import { Plus, ArrowLeft, DollarSign, Edit } from "lucide-svelte";
+  import { Plus, ArrowLeft, DollarSign, Edit, Trash2 } from "lucide-svelte";
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
   import {
     fetchPortfolioAsset,
     fetchPortfolioAssetTransactions,
   } from "$lib/apis/portfolio";
+  import { delete_transaction } from "$lib/apis/transactions";
   import type { AssetSummary, AssetTransaction, Asset } from "$lib/types";
   import TransactionFormModal from "$lib/components/transaction/TransactionFormModal.svelte";
   import EditAssetModal from "$lib/components/EditAssetModal.svelte";
@@ -73,6 +74,21 @@
 
   function openAddTransaction() {
     showModal = true;
+  }
+
+  async function handleDeleteTransaction(id: string) {
+    if (
+      !confirm(
+        "정말로 이 트랜잭션을 삭제하시겠습니까? 잔고와 수익률이 변경됩니다.",
+      )
+    )
+      return;
+    try {
+      await delete_transaction({ id });
+      await loadData();
+    } catch (e: any) {
+      alert(e.message || "Failed to delete transaction");
+    }
   }
 </script>
 
@@ -191,15 +207,23 @@
                   </TableBodyCell>
                   <TableBodyCell>{tx.fee ? `$${tx.fee}` : "-"}</TableBodyCell>
                   <TableBodyCell>
-                    <button
-                      class="text-neutral-500 hover:text-primary-600"
-                      onclick={() => {
-                        selectedTransaction = tx;
-                        showEditTransactionModal = true;
-                      }}
-                    >
-                      <Edit class="w-4 h-4" />
-                    </button>
+                    <div class="flex items-center gap-2">
+                      <button
+                        class="text-neutral-500 hover:text-primary-600"
+                        onclick={() => {
+                          selectedTransaction = tx;
+                          showEditTransactionModal = true;
+                        }}
+                      >
+                        <Edit class="w-4 h-4" />
+                      </button>
+                      <button
+                        class="text-neutral-500 hover:text-red-600"
+                        onclick={() => handleDeleteTransaction(tx.id)}
+                      >
+                        <Trash2 class="w-4 h-4" />
+                      </button>
+                    </div>
                   </TableBodyCell>
                 </TableBodyRow>
               {/each}

@@ -28,7 +28,7 @@ async def setup_data(test_session: AsyncSession):
     await test_session.refresh(portfolio)
 
     # Create Asset
-    asset = Asset(symbol="AAPL", name="Apple Inc.", current_price=150.0)
+    asset = Asset(portfolio_id=portfolio.id, symbol="AAPL", name="Apple Inc.", category="EQUITY")
     test_session.add(asset)
     await test_session.commit()
     await test_session.refresh(asset)
@@ -74,7 +74,7 @@ async def test_create_transaction_updates_position(
             "executed_at": "2026-01-01T00:00:00Z"
         }
         
-        response = await ac.post("/api/v1/transactions/", json=payload)
+        response = await ac.post("/api/v1/transactions", json=payload)
         assert response.status_code == 200, response.text
         data = response.json()
         assert float(data["quantity"]) == 10.0
@@ -99,7 +99,7 @@ async def test_create_transaction_updates_position(
         }
         # New Avg = (1000 + 2000) / 20 = 150
         
-        response3 = await ac.post("/api/v1/transactions/", json=payload2)
+        response3 = await ac.post("/api/v1/transactions", json=payload2)
         assert response3.status_code == 200, response3.text
 
         # Re-query Position to get latest data
@@ -131,7 +131,7 @@ async def test_create_transaction_sell_logic(
             "price": 100.0,
             "executed_at": "2026-01-01T00:00:00Z"
         }
-        await ac.post("/api/v1/transactions/", json=payload_buy)
+        await ac.post("/api/v1/transactions", json=payload_buy)
         
         # 1. SELL 5
         payload_sell = {
@@ -143,7 +143,7 @@ async def test_create_transaction_sell_logic(
             "executed_at": "2026-01-03T00:00:00Z"
         }
         
-        response = await ac.post("/api/v1/transactions/", json=payload_sell)
+        response = await ac.post("/api/v1/transactions", json=payload_sell)
         assert response.status_code == 200
         
         # Verify Position
@@ -162,6 +162,6 @@ async def test_create_transaction_sell_logic(
             "price": 120.0, 
             "executed_at": "2026-01-04T00:00:00Z"
         }
-        response3 = await ac.post("/api/v1/transactions/", json=payload_fail)
+        response3 = await ac.post("/api/v1/transactions", json=payload_fail)
         assert response3.status_code == 400
         assert "Insufficient quantity" in response3.text

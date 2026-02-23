@@ -9,11 +9,11 @@
 </script>
 
 <Footer
-    class="mt-auto rounded-none shadow-none border-t border-gray-200 dark:border-gray-700"
+    class="mt-auto rounded-none shadow-none border-t border-neutral-200 dark:border-neutral-700"
 >
-    <div class="w-full text-center">
+    <div class="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div
-            class="w-full justify-between sm:flex sm:items-center sm:justify-between"
+            class="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between"
         >
             <FooterCopyright
                 href="/"
@@ -21,7 +21,7 @@
                 year={new Date().getFullYear()}
             />
             <FooterLinkGroup
-                class="flex flex-wrap items-center mt-3 text-sm text-gray-500 dark:text-gray-400 sm:mt-0"
+                class="flex flex-wrap items-center justify-center sm:justify-end text-sm text-neutral-500 dark:text-neutral-400"
             >
                 <FooterLink href="/">About</FooterLink>
                 <FooterLink href="/">Privacy Policy</FooterLink>

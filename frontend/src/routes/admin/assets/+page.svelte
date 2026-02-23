@@ -146,20 +146,20 @@
             <div class="overflow-x-auto">
                 <Table hoverable={true}>
                     <TableHead>
-                        <TableHeadCell>Asset</TableHeadCell>
-                        <TableHeadCell>Type</TableHeadCell>
-                        <TableHeadCell>Status</TableHeadCell>
-                        <TableHeadCell class="text-right"
+                        <TableHeadCell class="px-6 py-3">Asset</TableHeadCell>
+                        <TableHeadCell class="px-6 py-3">Type</TableHeadCell>
+                        <TableHeadCell class="px-6 py-3">Status</TableHeadCell>
+                        <TableHeadCell class="px-6 py-3 text-right"
                             >Last Update</TableHeadCell
                         >
-                        <TableHeadCell class="text-center"
+                        <TableHeadCell class="px-6 py-3 text-center"
                             >Actions</TableHeadCell
                         >
                     </TableHead>
                     <TableBody>
                         {#each assets as asset}
                             <TableBodyRow>
-                                <TableBodyCell>
+                                <TableBodyCell class="px-6 py-3">
                                     <div class="flex items-center gap-2">
                                         <div
                                             class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center"
@@ -182,14 +182,14 @@
                                         </div>
                                     </div>
                                 </TableBodyCell>
-                                <TableBodyCell>
+                                <TableBodyCell class="px-6 py-3">
                                     <span
-                                        class="text-sm font-medium text-gray-900 dark:text-gray-300"
+                                        class="text-sm font-medium text-neutral-900 dark:text-neutral-300"
                                     >
                                         {asset.type}
                                     </span>
                                 </TableBodyCell>
-                                <TableBodyCell>
+                                <TableBodyCell class="px-6 py-3">
                                     <Button
                                         color={asset.is_active
                                             ? "green"
@@ -205,12 +205,12 @@
                                             : "Inactive"}
                                     </Button>
                                 </TableBodyCell>
-                                <TableBodyCell class="text-right text-gray-500">
+                                <TableBodyCell class="px-6 py-3 text-right text-neutral-500">
                                     {new Date(
                                         asset.updated_at,
                                     ).toLocaleString()}
                                 </TableBodyCell>
-                                <TableBodyCell class="text-center">
+                                <TableBodyCell class="px-6 py-3 text-center">
                                     <Button
                                         color="red"
                                         size="xs"

@@ -6,6 +6,7 @@
         Input,
         Select,
         Helper,
+        Alert,
     } from "flowbite-svelte";
     import { PlusOutline, RefreshOutline } from "flowbite-svelte-icons";
     import { create_asset as createAsset } from "$lib/apis/assets";
@@ -115,7 +116,7 @@
         </div>
 
         {#if error}
-            <div class="text-red-600 text-sm">{error}</div>
+            <Alert color="red" class="mb-4">{error}</Alert>
         {/if}
 
         <div class="flex justify-end gap-2">

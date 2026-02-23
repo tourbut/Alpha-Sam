@@ -79,10 +79,14 @@ async def test_read_portfolio_asset_summary(test_session: AsyncSession, setup_us
     test_session.add(tx2)
     
     # Add Price (Current Price)
-    price = Price(
+    price = PriceDay(
         asset_id=asset.id,
-        value=60000.0,
-        timestamp=datetime.utcnow()
+        date=datetime.utcnow().date(),
+        open=60000.0,
+        high=60000.0,
+        low=60000.0,
+        close=60000.0,
+        volume=1000
     )
     test_session.add(price)
     
@@ -99,11 +103,14 @@ async def test_read_portfolio_asset_summary(test_session: AsyncSession, setup_us
     app.dependency_overrides[get_current_user] = get_current_user_override
 
     # 5. Test API Call
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.get(f"/api/v1/portfolios/{portfolio.id}/assets/{asset.id}")
+    from unittest.mock import patch, AsyncMock
+    with patch("app.src.services.price_service.price_service.get_current_price", new_callable=AsyncMock) as mock_price:
+        mock_price.return_value = 60000.0
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            response = await ac.get(f"/api/v1/portfolios/{portfolio.id}/assets/{asset.id}")
 
-        assert response.status_code == 200
-        data = response.json()
+            assert response.status_code == 200
+            data = response.json()
         
         # 6. Verify Calculations
         # Total Qty: 1.5

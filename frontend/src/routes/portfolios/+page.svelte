@@ -154,7 +154,7 @@
     <!-- 포트폴리오 그리드 (와이어프레임 기준: auto-fill, minmax 350px) -->
     <div
       class="grid gap-6"
-      style="grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));"
+      style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));"
     >
       {#each portfoliosWithAssets as portfolio (portfolio.id)}
         <PortfolioCard

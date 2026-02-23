@@ -60,12 +60,20 @@ async def test_leaderboard_calculation(test_session, random_email):
     await test_session.flush()
     
     # Setup Asset
-    asset = Asset(symbol="TEST_RANK", name="Test Rank Coin", category="Crypto")
+    asset = Asset(portfolio_id=pf.id, symbol="TEST_RANK", name="Test Rank Coin", category="Crypto")
     test_session.add(asset)
     await test_session.flush()
     
     # Setup Price (Current price = 200)
-    price = Price(asset_id=asset.id, value=200.0, timestamp=datetime.utcnow())
+    price = PriceDay(
+        asset_id=asset.id, 
+        date=datetime.utcnow().date(),
+        open=200.0,
+        high=200.0,
+        low=200.0,
+        close=200.0,
+        volume=1000
+    )
     test_session.add(price)
     
     # Setup Transaction (Buy 1 at 100) -> Return 100%
@@ -78,12 +86,15 @@ async def test_leaderboard_calculation(test_session, random_email):
     
     # Calculate Leaderboard
     # Redis might fail in test environment, but DB fallback logic should work via exception handling in service
-    try:
-        count = await leaderboard_service.calculate_leaderboard(test_session, LeaderboardPeriod.ALL_TIME)
-        # count depends on pre-existing data too, so at least 1
-        assert count >= 1
-    except Exception as e:
-        pytest.fail(f"Leaderboard calculation failed: {e}")
+    from unittest.mock import patch, AsyncMock
+    with patch("app.src.services.price_service.price_service.get_current_price", new_callable=AsyncMock) as mock_price:
+        mock_price.return_value = 200.0
+        try:
+            count = await leaderboard_service.calculate_leaderboard(test_session, LeaderboardPeriod.ALL_TIME)
+            # count depends on pre-existing data too, so at least 1
+            assert count >= 1
+        except Exception as e:
+            pytest.fail(f"Leaderboard calculation failed: {e}")
     
     # Verify via get_top_n (DB fallback)
     # Redis might not be running, so get_top_n logic relies on Service handling exception

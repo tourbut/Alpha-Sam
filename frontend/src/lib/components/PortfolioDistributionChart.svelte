@@ -1,17 +1,18 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
     import Chart from "chart.js/auto";
-    import type { Position } from "$lib/types";
+    import type { AssetAllocationResponse } from "$lib/types";
 
-    export let positions: Position[] = [];
+    let { data = [] }: { data: AssetAllocationResponse[] } = $props();
 
     let canvas: HTMLCanvasElement;
     let chart: Chart;
 
-    // React to positions changes
-    $: if (chart && positions) {
-        updateChart();
-    }
+    $effect(() => {
+        if (chart && data) {
+            updateChart();
+        }
+    });
 
     onMount(() => {
         const ctx = canvas.getContext("2d");
@@ -25,14 +26,14 @@
                     {
                         data: [],
                         backgroundColor: [
-                            "#3B82F6", // Blue
-                            "#10B981", // Green
-                            "#F59E0B", // Yellow
-                            "#EF4444", // Red
-                            "#8B5CF6", // Purple
-                            "#EC4899", // Pink
-                            "#6366F1", // Indigo
-                            "#14B8A6", // Teal
+                            "#3B82F6",
+                            "#10B981",
+                            "#F59E0B",
+                            "#EF4444",
+                            "#8B5CF6",
+                            "#EC4899",
+                            "#6366F1",
+                            "#14B8A6",
                         ],
                         borderWidth: 1,
                     },
@@ -67,18 +68,10 @@
     function updateChart() {
         if (!chart) return;
 
-        const allocation: Record<string, number> = {};
-
-        positions.forEach((p) => {
-            const symbol = p.asset_symbol || `Asset ${p.asset_id}`;
-            // Use valuation if available, otherwise 0.
-            // Note: Valuation might be null/undefined if price fetching failed.
-            const value = p.valuation ?? 0;
-            allocation[symbol] = (allocation[symbol] || 0) + value;
-        });
-
-        chart.data.labels = Object.keys(allocation);
-        chart.data.datasets[0].data = Object.values(allocation);
+        chart.data.labels = data.map(
+            (d) => `${d.ticker} (${d.percentage.toFixed(1)}%)`,
+        );
+        chart.data.datasets[0].data = data.map((d) => d.total_value);
         chart.update();
     }
 </script>

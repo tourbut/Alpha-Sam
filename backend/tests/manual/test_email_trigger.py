@@ -5,7 +5,7 @@ from datetime import datetime
 # backend 디렉토리를 path에 추가
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from app.src.engine.tasks.email_tasks import send_price_alert, send_daily_report_email
+from app.src.services.tasks.email_tasks import send_price_alert, send_daily_report_email
 from app.src.core.email_service import email_settings
 
 def check_settings():

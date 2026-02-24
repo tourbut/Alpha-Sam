@@ -156,7 +156,7 @@
     <!-- Summary Section -->
     {#if summary}
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card class="p-4" size="md">
+        <Card class="!max-w-none w-full p-4" size="md">
           <div class="flex items-center justify-between mb-2">
             <span class="text-sm font-medium text-neutral-500">Total Value</span
             >
@@ -167,7 +167,7 @@
           </div>
         </Card>
 
-        <Card class="p-4" size="md">
+        <Card class="!max-w-none w-full p-4" size="md">
           <div class="flex items-center justify-between mb-2">
             <span class="text-sm font-medium text-neutral-500"
               >Total Profit/Loss</span
@@ -192,7 +192,7 @@
           </div>
         </Card>
 
-        <Card class="p-4" size="md">
+        <Card class="!max-w-none w-full p-4" size="md">
           <div class="flex items-center justify-between mb-2">
             <span class="text-sm font-medium text-neutral-500"
               >Realized Profit</span
@@ -210,7 +210,7 @@
           </div>
         </Card>
 
-        <Card class="p-4" size="md">
+        <Card class="!max-w-none w-full p-4" size="md">
           <div class="flex items-center justify-between mb-2">
             <span class="text-sm font-medium text-neutral-500"
               >Total Invested</span
@@ -227,7 +227,7 @@
     {/if}
 
     {#if assets.length > 0}
-      <Card class="mt-6">
+      <Card class="!max-w-none w-full mt-6">
         <div class="overflow-x-auto">
           <Table hoverable={true}>
             <TableHead>
@@ -302,7 +302,7 @@
         </div>
       </Card>
     {:else}
-      <Card class="text-center py-12">
+      <Card class="!max-w-none w-full text-center py-12">
         <PieChart
           class="w-16 h-16 mx-auto mb-4 text-neutral-300 dark:text-neutral-600"
         />

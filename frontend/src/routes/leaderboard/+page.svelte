@@ -59,7 +59,7 @@
             {error}
         </div>
     {:else}
-        <Card class="w-full">
+        <Card class="!max-w-none w-full w-full">
             <Table hoverable>
                 <TableHead>
                     <TableHeadCell class="w-20 text-center">Rank</TableHeadCell>

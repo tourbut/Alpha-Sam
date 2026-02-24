@@ -78,7 +78,7 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-                <Card class="text-center sm:text-left p-4">
+                <Card class="!max-w-none w-full text-center sm:text-left p-4">
                     <h3
                         class="text-gray-500 text-sm font-medium uppercase mb-1"
                     >
@@ -88,7 +88,7 @@
                         {formatCurrency(portfolio.total_value || 0)}
                     </p>
                 </Card>
-                <Card class="text-center sm:text-left p-4">
+                <Card class="!max-w-none w-full text-center sm:text-left p-4">
                     <h3
                         class="text-gray-500 text-sm font-medium uppercase mb-1"
                     >
@@ -100,7 +100,7 @@
                         {formatPercent(portfolio.return_rate || 0)}
                     </p>
                 </Card>
-                <Card class="text-center sm:text-left p-4">
+                <Card class="!max-w-none w-full text-center sm:text-left p-4">
                     <h3
                         class="text-gray-500 text-sm font-medium uppercase mb-1"
                     >
@@ -116,8 +116,10 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Asset Allocation Chart -->
             <div class="lg:col-span-1">
-                <Card>
-                    <h3 class="text-lg font-bold mb-4">Asset Allocation</h3>
+                <Card size="xl" class="!max-w-none w-full">
+                    <h3 class="!max-w-none w-full text-lg font-bold mb-4">
+                        Asset Allocation
+                    </h3>
                     <div class="h-64">
                         <!-- Chart Component Reuse -->
                         <!-- Note: Needs check if chart component accepts data props or fetches itself. 
@@ -133,7 +135,7 @@
 
             <!-- Positions Table -->
             <div class="lg:col-span-2">
-                <Card class="w-full">
+                <Card class="!max-w-none w-full w-full">
                     <h3 class="text-lg font-bold mb-4">Holdings</h3>
                     <Table hoverable>
                         <TableHead>

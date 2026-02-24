@@ -45,7 +45,7 @@
             <Spinner size="12" />
         </div>
     {:else}
-        <Card class="w-full p-0 overflow-hidden border-none shadow-xl">
+        <Card class="!max-w-none w-full w-full p-0 overflow-hidden border-none shadow-xl">
             <Table hoverable={true}>
                 <TableHead class="bg-gray-50 dark:bg-gray-700">
                     <TableHeadCell id="rank-header" scope="col" aria-label="Rank">Rank</TableHeadCell>

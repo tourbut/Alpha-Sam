@@ -132,7 +132,7 @@
     <!-- 에러 상태 -->
     <div class="col-span-full">
       <Card
-        class="text-center py-16 border-2 border-dashed border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20"
+        class="!max-w-none w-full text-center py-16 border-2 border-dashed border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20"
       >
         <div
           class="w-20 h-20 mx-auto mb-6 rounded-full bg-red-100 dark:bg-red-800 flex items-center justify-center"
@@ -151,11 +151,8 @@
       </Card>
     </div>
   {:else}
-    <!-- 포트폴리오 그리드 (와이어프레임 기준: auto-fill, minmax 350px) -->
-    <div
-      class="grid gap-6"
-      style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));"
-    >
+    <!-- 포트폴리오 그리드 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       {#each portfoliosWithAssets as portfolio (portfolio.id)}
         <PortfolioCard
           {portfolio}
@@ -170,7 +167,7 @@
         <!-- 빈 상태 UI -->
         <div class="col-span-full">
           <Card
-            class="text-center py-16 border-2 border-dashed border-neutral-300 dark:border-neutral-600"
+            class="!max-w-none w-full text-center py-16 border-2 border-dashed border-neutral-300 dark:border-neutral-600"
           >
             <div
               class="w-20 h-20 mx-auto mb-6 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"

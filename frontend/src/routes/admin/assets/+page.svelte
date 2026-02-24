@@ -142,8 +142,8 @@
             </Alert>
         </div>
     {:else if assets.length > 0}
-        <Card>
-            <div class="overflow-x-auto">
+        <Card size="xl" class="!max-w-none w-full">
+            <div class="!max-w-none w-full overflow-x-auto">
                 <Table hoverable={true}>
                     <TableHead>
                         <TableHeadCell class="px-6 py-3">Asset</TableHeadCell>
@@ -205,7 +205,9 @@
                                             : "Inactive"}
                                     </Button>
                                 </TableBodyCell>
-                                <TableBodyCell class="px-6 py-3 text-right text-neutral-500">
+                                <TableBodyCell
+                                    class="px-6 py-3 text-right text-neutral-500"
+                                >
                                     {new Date(
                                         asset.updated_at,
                                     ).toLocaleString()}
@@ -227,7 +229,7 @@
             </div>
         </Card>
     {:else}
-        <Card class="text-center py-12">
+        <Card class="!max-w-none w-full text-center py-12">
             <PieChart
                 class="w-16 h-16 mx-auto mb-4 text-neutral-300 dark:text-neutral-600"
             />

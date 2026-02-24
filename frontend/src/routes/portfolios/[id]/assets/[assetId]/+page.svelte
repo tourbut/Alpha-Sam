@@ -142,24 +142,24 @@
 
     <!-- Asset Summary -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <Card>
-        <div class="card-title">Quantity</div>
+      <Card size="xl" class="!max-w-none w-full">
+        <div class="!max-w-none w-full card-title">Quantity</div>
         <div class="card-value">{asset.quantity}</div>
       </Card>
-      <Card>
-        <div class="card-title">Avg Price</div>
+      <Card size="xl" class="!max-w-none w-full">
+        <div class="!max-w-none w-full card-title">Avg Price</div>
         <div class="card-value">${asset.avg_price.toLocaleString()}</div>
       </Card>
-      <Card>
-        <div class="card-title">Current Price</div>
+      <Card size="xl" class="!max-w-none w-full">
+        <div class="!max-w-none w-full card-title">Current Price</div>
         <div class="card-value">
           ${asset.current_price
             ? asset.current_price.toLocaleString()
             : asset.avg_price.toLocaleString()}
         </div>
       </Card>
-      <Card>
-        <div class="card-title">Total Value</div>
+      <Card size="xl" class="!max-w-none w-full">
+        <div class="!max-w-none w-full card-title">Total Value</div>
         <div class="card-value">
           ${asset.total_value.toLocaleString()}
         </div>
@@ -168,9 +168,9 @@
 
     <!-- Transactions Table -->
     {#if transactions.length > 0}
-      <Card>
+      <Card size="xl" class="!max-w-none w-full">
         <h2
-          class="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-4"
+          class="!max-w-none w-full text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-4"
         >
           Transactions
         </h2>
@@ -232,7 +232,7 @@
         </div>
       </Card>
     {:else}
-      <Card class="text-center py-12">
+      <Card class="!max-w-none w-full text-center py-12">
         <DollarSign
           class="w-16 h-16 mx-auto mb-4 text-neutral-300 dark:text-neutral-600"
         />

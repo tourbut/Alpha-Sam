@@ -153,7 +153,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Profile Settings Card -->
-        <Card class="border border-neutral-200 dark:border-neutral-700 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-800/50 dark:to-neutral-800 h-fit p-6">
+        <Card class="!max-w-none w-full border border-neutral-200 dark:border-neutral-700 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-800/50 dark:to-neutral-800 h-fit p-6">
             <h5
                 class="mb-2 text-lg font-semibold text-neutral-900 dark:text-neutral-100"
             >
@@ -220,7 +220,7 @@
         </Card>
 
         <!-- Security Settings Card -->
-        <Card class="border border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-white dark:from-amber-900/20 dark:to-neutral-800 h-fit p-6">
+        <Card class="!max-w-none w-full border border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-white dark:from-amber-900/20 dark:to-neutral-800 h-fit p-6">
             <div class="inline-block bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-200 px-3 py-1 rounded-full text-xs font-semibold mb-4">
                 🔒 IMPORTANT
             </div>
@@ -287,7 +287,7 @@
         </Card>
 
         <!-- Notification Settings Card -->
-        <Card class="border border-neutral-200 dark:border-neutral-700 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-800/50 dark:to-neutral-800 lg:col-span-2 p-6">
+        <Card class="!max-w-none w-full border border-neutral-200 dark:border-neutral-700 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-800/50 dark:to-neutral-800 lg:col-span-2 p-6">
             <h5
                 class="mb-2 text-lg font-semibold text-neutral-900 dark:text-neutral-100"
             >

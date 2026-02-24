@@ -41,7 +41,8 @@
 </script>
 
 <Card
-    class="cursor-pointer hover:shadow-lg transition-all duration-300 p-6 bg-gradient-to-br from-white to-neutral-50 dark:from-neutral-800 dark:to-neutral-900 border-0 shadow-sm hover:shadow-md"
+    size="xl"
+    class="!max-w-none w-full w-full !max-w-none cursor-pointer hover:shadow-lg transition-all duration-300 p-6 bg-gradient-to-br from-white to-neutral-50 dark:from-neutral-800 dark:to-neutral-900 border-0 shadow-sm hover:shadow-md"
     {onclick}
 >
     <!-- 카드 헤더: 아이콘 + 이름 + 뱃지 -->
@@ -111,9 +112,7 @@
     {/if}
 
     <!-- 날짜 정보 -->
-    <div
-        class="text-xs text-neutral-500 dark:text-neutral-400 mb-4"
-    >
+    <div class="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
         {#if portfolio.created_at}
             Created {new Date(portfolio.created_at).toLocaleDateString()}
         {/if}
@@ -162,7 +161,8 @@
         class="flex flex-col gap-3 pt-4 border-t border-neutral-200 dark:border-neutral-700"
     >
         <div class="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-            {portfolio.assets?.length ?? 0} {portfolio.assets?.length === 1 ? 'asset' : 'assets'}
+            {portfolio.assets?.length ?? 0}
+            {portfolio.assets?.length === 1 ? "asset" : "assets"}
         </div>
         <Button
             size="sm"

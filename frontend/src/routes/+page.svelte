@@ -316,11 +316,11 @@
 
         <!-- 차트 섹션 -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card class="card p-6">
+            <Card class="!max-w-none w-full card p-6">
                 <h2 class="card-title text-lg normal-case mb-4">Allocation</h2>
                 <PortfolioDistributionChart data={allocationData} />
             </Card>
-            <Card class="card p-6">
+            <Card class="!max-w-none w-full card p-6">
                 <h2 class="card-title text-lg normal-case mb-4">
                     Performance (Value)
                 </h2>
@@ -331,7 +331,7 @@
         <!-- Quick Actions & Summary 섹션 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Portfolio Summary -->
-            <Card class="card p-6 md:col-span-2">
+            <Card class="!max-w-none w-full card p-6 md:col-span-2">
                 <h2 class="card-title text-lg normal-case mb-4">
                     Portfolio Summary
                 </h2>
@@ -379,7 +379,7 @@
         <!-- Recent Activity & Insights 섹션 -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <!-- Recent Activity Panel -->
-            <Card class="card p-6">
+            <Card class="!max-w-none w-full card p-6">
                 <h2 class="card-title text-lg normal-case mb-4">
                     Recent Activity
                 </h2>
@@ -452,7 +452,7 @@
 
             <!-- AI Insights Panel -->
             <Card
-                class="card p-6 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/20 dark:to-neutral-800 border-blue-200 dark:border-blue-700"
+                class="!max-w-none w-full card p-6 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/20 dark:to-neutral-800 border-blue-200 dark:border-blue-700"
             >
                 <h2
                     class="card-title text-lg normal-case text-blue-700 dark:text-blue-300 mb-4"

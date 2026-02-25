@@ -1,28 +1,26 @@
 # Handovers: To Frontend Dev
 
-## 날짜
-- 2026-02-22
+## 2026-02-25
 
 ## 브랜치 (Version Control)
-- `develop`
+- `feature/dashboard-aggregate-analytics-frontend`
 
 ## 현재 상황 (Context)
-- v2.0.0 마이그레이션이 완료되었고, v2.1.0 (User Settings 및 Dashboard Analytics) 기능에 대한 UI/UX 작업이 백엔드와 함께 병렬로 진행될 수 있는 상태입니다. (Mock 데이터를 활용한 사전 작업 요망)
-- 백엔드에서는 관련 데이터를 `PUT /api/v1/users/me/profile`, `PUT /api/v1/users/me/password` 및 `GET /api/v1/analytics/portfolio/{portfolio_id}/...` 엔드포인트를 통해 제공할 예정입니다.
+- 대시보드 뷰(`frontend/src/routes/+page.svelte`)가 현재 단일 특정 포트폴리오(`currentPortfolio`)의 Allocation과 History 데이터만 요청하여 보여주고 있습니다.
+- 대시보드 목적에 맞게, 전체 포트폴리오에 대한 통합(Aggregated) 정보를 요청하고 렌더링하도록 수정해야 합니다. 백엔드에서 제공할 새로운 엔드포인트를 적용해야 합니다.
 
 ## 해야 할 일 (Tasks)
-1. **User Settings 페이지 (`/settings`) 구현**:
-   - `ProfileForm` 컴포넌트 구현: 닉네임 수정 및 리더보드 공개 여부 Toggle 버튼
-   - `PasswordChangeForm` 컴포넌트 구현: 기존 비밀번호 및 새 비밀번호 입력 (유효성 검사 적용)
-2. **Dashboard Analytics 기능 연동 (`/` 메인 대시보드 컴포넌트)**:
-   - `AssetAllocationChart`: 포트폴리오의 자산 비중을 보여주는 파이(Pie) 차트 구현 (Chart.js 등 라이브러리 검토 요망)
-   - `PortfolioPerformanceChart`: 기간(`1W`, `1M`, `1Y` 등)별 가치 추이를 보여주는 라인(Line) 차트 구현
-   - 백엔드 구현 완료 전까지 프론트 단에서 Mock 데이터를 사용하여 레이아웃 및 차트 렌더링 확인
+1. `frontend/src/lib/apis/analytics.ts` 파일에 새로운 통합 데이터 API 함수 추가.
+   - 예: `get_portfolios_allocation` (`GET /portfolios/allocation`)
+   - 예: `get_portfolios_history` (`GET /portfolios/history`)
+2. `frontend/src/routes/+page.svelte` 수정.
+   - 기존의 `get_portfolio_allocation({ portfolio_id: currentPortfolio.id })` 와 `get_portfolio_history({ portfolio_id: currentPortfolio.id })` 대신 **새로 추가한 전체 포트폴리오용 함수**를 호출하도록 변경.
+3. 데이터 응답이 정상적으로 Allocation 차트와 History 차트에 렌더링되는지 확인.
 
 ## 기대 산출물 (Expected Outputs)
-- User Settings (`/settings`) 페이지 및 폼 컴포넌트
-- 대시보드 내 Asset Allocation & Performance 차트 컴포넌트
-- 프론트엔드 스타일 규칙(`verify-frontend-style`) 통과
+- 대시보드의 파이 차트 및 수익률 차트에 사용자의 "전체" 자산 분포 및 히스토리가 요약되어 표시될 것.
+- API 호출 시 오류가 없으며 타입 에러(Svelte Check)가 통과할 것.
 
 ## 참고 자료 (References)
-- `.agent/project/artifacts/architecture/v2.1.0_design_spec.md`
+- `frontend/src/routes/+page.svelte`
+- `frontend/src/lib/apis/analytics.ts`

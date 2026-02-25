@@ -185,3 +185,158 @@ async def get_portfolio_history(
         current_date += timedelta(days=1)
         
     return history
+
+async def get_portfolios_allocation(
+    session: AsyncSession,
+    user_id: uuid.UUID
+) -> List[AssetAllocationResponse]:
+    """
+    Get aggregated asset allocation (pie chart data) across all portfolios for a user.
+    """
+    # 1. Fetch all assets and transactions for the user's portfolios
+    query_assets = select(Asset).join(Transaction).join(Portfolio).where(Portfolio.owner_id == user_id).distinct()
+    result_assets = await session.execute(query_assets)
+    assets = result_assets.scalars().all()
+    
+    query_tx = select(Transaction).join(Portfolio).where(Portfolio.owner_id == user_id).order_by(Transaction.executed_at.asc())
+    result_tx = await session.execute(query_tx)
+    transactions = result_tx.scalars().all()
+    
+    if not assets or not transactions:
+        return []
+        
+    # 2. Calculate current positions
+    positions, _ = calculate_positions(list(assets), list(transactions))
+    
+    # 3. Calculate valuation
+    total_portfolio_value = 0.0
+    allocations = []
+    
+    for pos in positions:
+        price_to_use = pos.current_price if pos.current_price is not None and pos.current_price > 0 else pos.avg_price
+        valuation = pos.quantity * price_to_use
+        if valuation > 0:
+            total_portfolio_value += valuation
+            allocations.append({
+                "ticker": pos.asset_symbol,
+                "value": valuation
+            })
+            
+    # Calculate percentages
+    response = []
+    for alloc in allocations:
+        percentage = (alloc["value"] / total_portfolio_value * 100) if total_portfolio_value > 0 else 0.0
+        response.append(
+            AssetAllocationResponse(
+                ticker=alloc["ticker"],
+                percentage=round(percentage, 2),
+                total_value=round(alloc["value"], 2)
+            )
+        )
+        
+    # Sort by percentage descending
+    response.sort(key=lambda x: x.percentage, reverse=True)
+    return response
+
+async def get_portfolios_history(
+    session: AsyncSession,
+    user_id: uuid.UUID,
+    range: str = "1M"
+) -> List[PortfolioHistoryResponse]:
+    """
+    Get aggregated portfolio value history (line chart data) across all portfolios for a user.
+    """
+    # 1. Determine date range
+    end_date = date.today()
+    start_date = end_date
+    
+    if range == "1W":
+        start_date = end_date - timedelta(days=7)
+    elif range == "1M":
+        start_date = end_date - relativedelta(months=1)
+    elif range == "1Y":
+        start_date = end_date - relativedelta(years=1)
+    elif range == "YTD":
+        start_date = date(end_date.year, 1, 1)
+    else: # ALL
+        start_date = date(2000, 1, 1) # Will be clamped to first tx later
+        
+    # 2. Fetch transactions up to end_date
+    query_tx = select(Transaction).join(Portfolio).where(
+        Portfolio.owner_id == user_id,
+        func.date(Transaction.executed_at) <= end_date
+    ).order_by(Transaction.executed_at.asc())
+    
+    result_tx = await session.execute(query_tx)
+    transactions = result_tx.scalars().all()
+    
+    if not transactions:
+        return []
+        
+    # Clamp start_date to first transaction date if 'ALL' or before first tx
+    first_tx_date = transactions[0].executed_at.date()
+    if start_date < first_tx_date:
+        start_date = first_tx_date
+        
+    # 3. Simulate day-by-day accumulation
+    history = []
+    current_date = start_date
+    tx_idx = 0
+    num_tx = len(transactions)
+    
+    # State tracking
+    cumulative_invested = 0.0
+    holdings = {} # asset_id -> {qty, cost}
+    
+    # Fast-forward state to start_date
+    while tx_idx < num_tx and transactions[tx_idx].executed_at.date() < start_date:
+        tx = transactions[tx_idx]
+        qty = float(tx.quantity)
+        price = float(tx.price)
+        value = qty * price
+        
+        if tx.asset_id not in holdings:
+            holdings[tx.asset_id] = {"qty": 0.0, "cost": 0.0}
+            
+        if tx.type == "BUY":
+            holdings[tx.asset_id]["qty"] += qty
+            cumulative_invested += value
+        elif tx.type == "SELL":
+            holdings[tx.asset_id]["qty"] = max(0.0, holdings[tx.asset_id]["qty"] - qty)
+            cumulative_invested -= value
+            
+        tx_idx += 1
+
+    # Daily simulation
+    while current_date <= end_date:
+        # Process transactions for current_date
+        while tx_idx < num_tx and transactions[tx_idx].executed_at.date() == current_date:
+            tx = transactions[tx_idx]
+            qty = float(tx.quantity)
+            price = float(tx.price)
+            value = qty * price
+            
+            if tx.asset_id not in holdings:
+                holdings[tx.asset_id] = {"qty": 0.0}
+                
+            if tx.type == "BUY":
+                holdings[tx.asset_id]["qty"] += qty
+                cumulative_invested += value
+            elif tx.type == "SELL":
+                holdings[tx.asset_id]["qty"] = max(0.0, holdings[tx.asset_id]["qty"] - qty)
+                cumulative_invested -= value
+                
+            tx_idx += 1
+            
+        mock_eod_value = cumulative_invested # Replace with actual query to historical prices
+        
+        history.append(
+            PortfolioHistoryResponse(
+                date=current_date.strftime("%Y-%m-%d"),
+                total_value=round(max(0, mock_eod_value), 2),
+                uninvested_cash=0.0
+            )
+        )
+        current_date += timedelta(days=1)
+        
+    return history

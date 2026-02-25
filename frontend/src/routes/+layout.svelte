@@ -45,9 +45,14 @@
   // 사이드바를 표시하지 않을 경로 목록
   const noSidebarPaths = ["/login", "/signup"];
 
+  // 에이전트 전용 경로는 모든 기본 레이아웃 요소(Navbar, Sidebar, Footer, Chat)를 배제함
+  let isAgentPath = $derived(page.url.pathname.startsWith("/agent/"));
+
   // 현재 경로가 사이드바를 표시해야 하는지 확인
   let showSidebar = $derived(
-    auth.isAuthenticated && !noSidebarPaths.includes(page.url.pathname),
+    auth.isAuthenticated &&
+      !noSidebarPaths.includes(page.url.pathname) &&
+      !isAgentPath,
   );
 
   onMount(() => {
@@ -57,47 +62,51 @@
   });
 </script>
 
-<div
-  class="flex flex-col min-h-screen w-full bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 transition-colors duration-200 overflow-x-hidden"
->
-  <AppNavbar />
+{#if isAgentPath}
+  {@render children()}
+{:else}
+  <div
+    class="flex flex-col min-h-screen w-full bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 transition-colors duration-200 overflow-x-hidden"
+  >
+    <AppNavbar />
 
-  <!-- 메인 영역: 사이드바 + 콘텐츠 (인증된 사용자에게만 사이드바 표시) -->
-  {#if showSidebar}
-    <main class="flex-grow w-full overflow-visible pt-20">
-      <div class="max-w-[1400px] mx-auto p-5">
-        <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5">
-          <!-- 사이드바 네비게이션 -->
-          <aside class="sidebar hidden lg:block">
-            {#each finalNavItems as item}
-              {@const Icon = item.icon}
-              <a
-                href={item.href}
-                class="nav-item flex items-center gap-3 {page.url.pathname ===
-                item.href
-                  ? 'active'
-                  : ''}"
-              >
-                <Icon class="w-5 h-5" />
-                {item.label}
-              </a>
-            {/each}
-          </aside>
+    <!-- 메인 영역: 사이드바 + 콘텐츠 (인증된 사용자에게만 사이드바 표시) -->
+    {#if showSidebar}
+      <main class="flex-grow w-full overflow-visible pt-20">
+        <div class="max-w-[1400px] mx-auto p-5">
+          <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5">
+            <!-- 사이드바 네비게이션 -->
+            <aside class="sidebar hidden lg:block">
+              {#each finalNavItems as item}
+                {@const Icon = item.icon}
+                <a
+                  href={item.href}
+                  class="nav-item flex items-center gap-3 {page.url.pathname ===
+                  item.href
+                    ? 'active'
+                    : ''}"
+                >
+                  <Icon class="w-5 h-5" />
+                  {item.label}
+                </a>
+              {/each}
+            </aside>
 
-          <!-- 페이지 콘텐츠 -->
-          <div class="min-w-0">
-            {@render children()}
+            <!-- 페이지 콘텐츠 -->
+            <div class="min-w-0">
+              {@render children()}
+            </div>
           </div>
         </div>
-      </div>
-    </main>
-  {:else}
-    <!-- 로그인/회원가입 페이지는 사이드바 없이 전체 너비 사용 -->
-    <main class="flex-grow w-full overflow-visible pt-20">
-      {@render children()}
-    </main>
-  {/if}
+      </main>
+    {:else}
+      <!-- 로그인/회원가입 페이지는 사이드바 없이 전체 너비 사용 -->
+      <main class="flex-grow w-full overflow-visible pt-20">
+        {@render children()}
+      </main>
+    {/if}
 
-  <Footer />
-  <ChatWidget />
-</div>
+    <Footer />
+    <ChatWidget />
+  </div>
+{/if}

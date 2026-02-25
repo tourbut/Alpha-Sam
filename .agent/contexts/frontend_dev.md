@@ -74,3 +74,6 @@
   - **TransactionFormModal**: 'Add Transaction' 버튼 스타일 개선 (btn-primary).
   - **AssetModal**: 'Add Asset' 버튼 Full-width 적용, 'Cancel' 버튼 제거.
   - **ShareModal**: 모달 사이즈 'lg'로 변경.
+- [2026-02-24 23:20:00] **Agent-Centric Interface 프론트엔드 작업 완료**.
+  - **+layout.svelte**: `/agent/login` 경로일 경우 AppNavbar 및 Sidebar 등을 모두 배제하도록 조건 추가.
+  - **/agent/login/+page.svelte**: 에이전트를 위한 시맨틱 HTML 기반 로그인 폼 구현. 인증 성공 시 raw JSON(API 스펙 포함)을 `<pre>` 태그로 반환하여 에이전트 토큰 낭비를 최소화함.

@@ -44,3 +44,26 @@ async def get_history(
     await check_portfolio_ownership(session, portfolio_id, current_user.id)
     history = await analytics_service.get_portfolio_history(session, portfolio_id, range=range)
     return history
+
+@router.get("/portfolios/allocation", response_model=List[AssetAllocationResponse])
+async def get_portfolios_allocation(
+    session: SessionDep_async,
+    current_user: CurrentUser
+):
+    """
+    Get aggregated asset allocation across all portfolios for the current user
+    """
+    allocations = await analytics_service.get_portfolios_allocation(session, current_user.id)
+    return allocations
+
+@router.get("/portfolios/history", response_model=List[PortfolioHistoryResponse])
+async def get_portfolios_history(
+    session: SessionDep_async,
+    current_user: CurrentUser,
+    range: str = Query("1M", regex="^(1W|1M|1Y|YTD|ALL)$")
+):
+    """
+    Get aggregated portfolio value history across all portfolios for the current user
+    """
+    history = await analytics_service.get_portfolios_history(session, current_user.id, range=range)
+    return history

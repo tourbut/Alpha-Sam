@@ -7,7 +7,7 @@
 
     let isOpen = $state(false);
     let message = $state("");
-    let chatContainer: HTMLElement;
+    let chatContainer: HTMLElement | undefined = $state();
 
     // Message type definition
     type Message = {
@@ -73,7 +73,9 @@
 </script>
 
 {#if auth.isAuthenticated}
-    <div class="fixed bottom-[120px] right-6 z-50 flex flex-col items-end transition-all duration-200">
+    <div
+        class="fixed bottom-[120px] right-6 z-50 flex flex-col items-end transition-all duration-200"
+    >
         <!-- Chat Icon Button - Hidden when chat is open -->
         {#if !isOpen}
             <button
@@ -104,7 +106,9 @@
                 class="mb-4 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col transition-all duration-200 origin-bottom-right"
             >
                 <!-- Header -->
-                <div class="bg-primary-600 p-4 text-white flex items-start justify-between">
+                <div
+                    class="bg-primary-600 p-4 text-white flex items-start justify-between"
+                >
                     <div>
                         <h3 class="font-bold text-lg">AI Assistant</h3>
                         <p class="text-xs opacity-80">{APP_NAME} 도우미</p>

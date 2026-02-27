@@ -21,6 +21,7 @@
   - 단위 테스트 작성 (`test_position_calculation.py`)
   - 데이터 일관성 향상: Transaction이 단일 진실 공급원(Single Source of Truth)이 됨
 - [2026-01-21 11:50:00] **포트폴리오 상세 자산/거래 API 구현 완료**. 프론트엔드 자산 상세 페이지 지원을 위해 `GET /api/v1/portfolios/{id}/assets/{assetId}` 및 `../transactions` 엔드포인트를 `portfolios.py`에 추가함. `TransactionWithDetails`, `AssetSummaryRead` 스키마 추가. 단위 테스트 `test_portfolio_asset_details.py` 작성 및 통과.
+- [2026-02-24 23:15:00] **Agent-Centric Interface Backend 추가 완료**. 에이전트를 위한 `/api/v1/agent/login` 및 `/api/v1/agent/docs` 엔드포인트 구현 완료. `Agent`가 원활히 연동할 수 있도록 `agent.py` 신규 라우터 생성, 관련 통합 테스트 `test_agent_api.py` 작성 및 통과 확인 완료.
 
 ## 해야 할 일 (Tasks)
 - (없음 - 복구 완료)

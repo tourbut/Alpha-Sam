@@ -105,4 +105,5 @@
 - [2026-01-08 17:15:00] **Feature Merged**: `feature/enhanced-mock-chat` (Mock Chat Widget with history) merged into `develop`. QA Verified.
 - [2026-01-09 15:15:00] **v1.1.0 Planning**: Drafted `v1.1.0_architecture_draft.md`. Defined Schema for Social (PortfolioShare, Leaderboard) and Automation (Bot, Alerts).
 - [2026-01-16 23:00:00] **v1.1.0 Detailed Spec Completed**: `v1.1.0_detailed_spec.md` 작성 완료. DB 스키마, API 명세, 리더보드 알고리즘, 검증 계획 포함.
+- [2026-02-24 23:05:00] **v2.2.0 Agent-Centric Interface Design Completed**: `agent_interface_design.md` 작성 완료. 시맨틱 HTML 폼 인증 후 REST API 기반의 Headless Control 로직을 정의함.
 

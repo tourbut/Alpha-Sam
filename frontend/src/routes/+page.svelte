@@ -19,8 +19,8 @@
     import { ActivityType } from "$lib/types";
     import { get_recent_activities as getRecentActivities } from "$lib/apis/dashboard";
     import {
-        get_portfolio_allocation,
-        get_portfolio_history,
+        get_portfolios_allocation,
+        get_portfolios_history,
     } from "$lib/apis/analytics";
     import PortfolioDistributionChart from "$lib/components/PortfolioDistributionChart.svelte";
     import PortfolioHistoryChart from "$lib/components/PortfolioHistoryChart.svelte";
@@ -132,26 +132,20 @@
                 error = "Failed to load core data. Please try refreshing.";
             }
 
-            if (currentPortfolio) {
-                try {
-                    const analyticsResults = await Promise.allSettled([
-                        get_portfolio_allocation({
-                            portfolio_id: currentPortfolio.id,
-                        }),
-                        get_portfolio_history({
-                            portfolio_id: currentPortfolio.id,
-                        }),
-                    ]);
+            try {
+                const analyticsResults = await Promise.allSettled([
+                    get_portfolios_allocation(),
+                    get_portfolios_history(),
+                ]);
 
-                    if (analyticsResults[0].status === "fulfilled") {
-                        allocationData = analyticsResults[0].value;
-                    }
-                    if (analyticsResults[1].status === "fulfilled") {
-                        historyData = analyticsResults[1].value;
-                    }
-                } catch (e) {
-                    console.error("Failed to load analytics:", e);
+                if (analyticsResults[0].status === "fulfilled") {
+                    allocationData = analyticsResults[0].value;
                 }
+                if (analyticsResults[1].status === "fulfilled") {
+                    historyData = analyticsResults[1].value;
+                }
+            } catch (e) {
+                console.error("Failed to load analytics:", e);
             }
         } catch (e) {
             console.error("Critical error in loadData:", e);

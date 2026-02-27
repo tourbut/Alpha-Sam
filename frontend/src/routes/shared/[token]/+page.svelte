@@ -2,7 +2,7 @@
     import { onMount } from "svelte";
     import { page } from "$app/stores";
     import { fetchSharedPortfolio } from "$lib/apis/portfolio";
-    import type { PortfolioShared } from "$lib/types";
+    import type { PortfolioShared, AssetAllocationResponse } from "$lib/types";
     import {
         Card,
         Spinner,
@@ -21,6 +21,18 @@
     let portfolio: PortfolioShared | null = $state(null);
     let loading = $state(true);
     let error = $state("");
+
+    let allocationData: AssetAllocationResponse[] = $derived.by(() => {
+        if (!portfolio || !portfolio.positions) return [];
+        return portfolio.positions.map((p: any) => ({
+            ticker: p.asset_symbol,
+            total_value: p.valuation || 0,
+            percentage:
+                (portfolio!.total_value || 0) > 0
+                    ? ((p.valuation || 0) / portfolio!.total_value!) * 100
+                    : 0,
+        }));
+    });
 
     onMount(async () => {
         try {
@@ -122,13 +134,8 @@
                     </h3>
                     <div class="h-64">
                         <!-- Chart Component Reuse -->
-                        <!-- Note: Needs check if chart component accepts data props or fetches itself. 
-                              Usually charts fetch themselves in this project, need to check. 
-                              Let's assume we need to pass data or rewrite chart for shared usage.
-                              Checking PortfolioDistributionChart.svelte... -->
-                        <PortfolioDistributionChart
-                            positions={portfolio.positions}
-                        />
+                        <!-- Component expects data prop array of AssetAllocationResponse -->
+                        <PortfolioDistributionChart data={allocationData} />
                     </div>
                 </Card>
             </div>

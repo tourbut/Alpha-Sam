@@ -59,3 +59,7 @@ api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
 
 # Analytics Router
 api_router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
+
+# Agent Router
+from app.src.routes import agent
+api_router.include_router(agent.router, prefix="/agent", tags=["agent"])

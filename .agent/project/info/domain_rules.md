@@ -33,6 +33,7 @@
 - **Rules**:
   - **포트폴리오별 관리**: 모든 자산은 반드시 하나의 포트폴리오에 귀속되어야 한다.
   - 동일 포트폴리오 내에서 동일 심볼의 중복 자산 등록은 비즈니스 로직에 따라 제한될 수 있다.
+  - **Cash(현금성) 자산 특례**: `category`가 `cash`인 경우, 시세(Price)가 고정(1.0)되며 수량(Quantity) 필드를 금액(Amount)으로 취급한다.
 - **Relationships**:
   - `portfolio`: Portfolio (N:1)
   - `price_days`: 일봉 시세 이력 (1:N)
@@ -68,6 +69,7 @@
   - `created_at`: 레코드 생성 시각.
 - **Rules**:
   - Transaction 추가/수정/삭제 시 귀속된 Portfolio의 해당 Asset Position을 재계산해야 한다.
+  - **Cash 트랜잭션 처리**: 대상 자산이 `cash` 카테고리인 경우 프론트엔드는 금액(`amount`)만 입력받지만, 내부적으로는 `price=1.0`, `quantity=amount` 로 모델에 저장하여 기존 포지션 계산 로직과 호환성을 유지한다.
 - **Relationships**:
   - `portfolio`: Portfolio (N:1)
   - `asset`: Asset (N:1)

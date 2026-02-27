@@ -12,9 +12,8 @@ from fastapi import HTTPException
 
 async def create_transaction(*, session: AsyncSession, transaction_in: TransactionCreate, owner_id: uuid.UUID) -> Transaction:
     """
-    거래 생성 (단순화)
     1. 사용자의 Portfolio를 찾아서 Transaction 레코드 생성
-    참고: Position은 더 이상 DB에 저장하지 않고, 필요 시 Transaction을 집계하여 계산함
+    참고: Position은 더 이상 디비에 저장하지 않고, 필요 시 Transaction을 집계하여 계산함
     """
     try:
         # 1. 자산 존재 확인
@@ -22,6 +21,18 @@ async def create_transaction(*, session: AsyncSession, transaction_in: Transacti
         if not asset:
             raise HTTPException(status_code=404, detail="Asset not found")
         
+        # 1-1. Cash 자산 처리 로직
+        if asset.category == "cash":
+            if transaction_in.amount is None:
+                raise HTTPException(status_code=400, detail="'amount' is required for cash assets")
+            tx_price = 1.0
+            tx_quantity = transaction_in.amount
+        else:
+            if transaction_in.price is None or transaction_in.quantity is None:
+                raise HTTPException(status_code=400, detail="'price' and 'quantity' are required for this asset")
+            tx_price = transaction_in.price
+            tx_quantity = transaction_in.quantity
+            
         # 2. 사용자의 Portfolio 조회 (요청된 portfolio_id 검증)
         portfolio = await session.get(Portfolio, transaction_in.portfolio_id)
         
@@ -33,8 +44,9 @@ async def create_transaction(*, session: AsyncSession, transaction_in: Transacti
             portfolio_id=portfolio.id,
             asset_id=transaction_in.asset_id,
             type=transaction_in.type,
-            quantity=transaction_in.quantity,
-            price=transaction_in.price,
+            quantity=tx_quantity,
+            price=tx_price,
+            executed_at=transaction_in.executed_at,
         )
         session.add(db_transaction)
         

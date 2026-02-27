@@ -6,7 +6,7 @@ from app.src.core.db import AsyncSessionLocal
 from app.src.models.user import User
 from sqlalchemy import select, delete
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="session")
 async def test_x_user_id_header_isolation():
     """
     X-User-Id 헤더를 통한 사용자 격리 테스트

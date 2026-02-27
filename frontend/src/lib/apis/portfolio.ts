@@ -14,8 +14,9 @@ export interface TransactionCreate {
     portfolio_id: string
     asset_id: string
     type: "BUY" | "SELL"
-    quantity: number
-    price: number
+    quantity?: number
+    price?: number
+    amount?: number
     executed_at?: string
 }
 

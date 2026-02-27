@@ -11,14 +11,16 @@ export interface Transaction {
 export interface CreateTransaction {
     asset_id: string;
     type: "BUY" | "SELL";
-    quantity: number;
-    price: number;
+    quantity?: number;
+    price?: number;
+    amount?: number;
 }
 
 export interface TransactionUpdate {
     type?: "BUY" | "SELL";
     quantity?: number;
     price?: number;
+    amount?: number;
     executed_at?: string;
 }
 

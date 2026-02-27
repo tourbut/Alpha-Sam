@@ -179,11 +179,17 @@
             <TableHead>
               <TableHeadCell>Date</TableHeadCell>
               <TableHeadCell>Type</TableHeadCell>
-              <TableHeadCell>Quantity</TableHeadCell>
-              <TableHeadCell>Price</TableHeadCell>
-              <TableHeadCell>Total</TableHeadCell>
-              <TableHeadCell>Fee</TableHeadCell>
-              <TableHeadCell>Action</TableHeadCell>
+              {#if asset.category === "cash"}
+                <TableHeadCell>Amount</TableHeadCell>
+                <TableHeadCell>Fee</TableHeadCell>
+                <TableHeadCell>Action</TableHeadCell>
+              {:else}
+                <TableHeadCell>Quantity</TableHeadCell>
+                <TableHeadCell>Price</TableHeadCell>
+                <TableHeadCell>Total</TableHeadCell>
+                <TableHeadCell>Fee</TableHeadCell>
+                <TableHeadCell>Action</TableHeadCell>
+              {/if}
             </TableHead>
             <TableBody>
               {#each transactions as tx}
@@ -200,31 +206,58 @@
                       {tx.type.toUpperCase()}
                     </span>
                   </TableBodyCell>
-                  <TableBodyCell>{tx.quantity}</TableBodyCell>
-                  <TableBodyCell>${tx.price.toLocaleString()}</TableBodyCell>
-                  <TableBodyCell class="font-semibold">
-                    ${tx.total.toLocaleString()}
-                  </TableBodyCell>
-                  <TableBodyCell>{tx.fee ? `$${tx.fee}` : "-"}</TableBodyCell>
-                  <TableBodyCell>
-                    <div class="flex items-center gap-2">
-                      <button
-                        class="text-neutral-500 hover:text-primary-600"
-                        onclick={() => {
-                          selectedTransaction = tx;
-                          showEditTransactionModal = true;
-                        }}
-                      >
-                        <Edit class="w-4 h-4" />
-                      </button>
-                      <button
-                        class="text-neutral-500 hover:text-red-600"
-                        onclick={() => handleDeleteTransaction(tx.id)}
-                      >
-                        <Trash2 class="w-4 h-4" />
-                      </button>
-                    </div>
-                  </TableBodyCell>
+
+                  {#if asset.category === "cash"}
+                    <TableBodyCell>{tx.quantity.toLocaleString()}</TableBodyCell
+                    >
+                    <!-- amount is stored in quantity -->
+                    <TableBodyCell>{tx.fee ? `$${tx.fee}` : "-"}</TableBodyCell>
+                    <TableBodyCell>
+                      <div class="flex items-center gap-2">
+                        <button
+                          class="text-neutral-500 hover:text-primary-600"
+                          onclick={() => {
+                            selectedTransaction = tx;
+                            showEditTransactionModal = true;
+                          }}
+                        >
+                          <Edit class="w-4 h-4" />
+                        </button>
+                        <button
+                          class="text-neutral-500 hover:text-red-600"
+                          onclick={() => handleDeleteTransaction(tx.id)}
+                        >
+                          <Trash2 class="w-4 h-4" />
+                        </button>
+                      </div>
+                    </TableBodyCell>
+                  {:else}
+                    <TableBodyCell>{tx.quantity}</TableBodyCell>
+                    <TableBodyCell>${tx.price.toLocaleString()}</TableBodyCell>
+                    <TableBodyCell class="font-semibold">
+                      ${tx.total.toLocaleString()}
+                    </TableBodyCell>
+                    <TableBodyCell>{tx.fee ? `$${tx.fee}` : "-"}</TableBodyCell>
+                    <TableBodyCell>
+                      <div class="flex items-center gap-2">
+                        <button
+                          class="text-neutral-500 hover:text-primary-600"
+                          onclick={() => {
+                            selectedTransaction = tx;
+                            showEditTransactionModal = true;
+                          }}
+                        >
+                          <Edit class="w-4 h-4" />
+                        </button>
+                        <button
+                          class="text-neutral-500 hover:text-red-600"
+                          onclick={() => handleDeleteTransaction(tx.id)}
+                        >
+                          <Trash2 class="w-4 h-4" />
+                        </button>
+                      </div>
+                    </TableBodyCell>
+                  {/if}
                 </TableBodyRow>
               {/each}
             </TableBody>
@@ -273,7 +306,7 @@
       id: asset.asset_id,
       symbol: asset.symbol,
       name: asset.name,
-      category: "Stock",
+      category: (asset as any).category || "Stock",
     }}
     onupdated={loadData}
   />
@@ -283,5 +316,6 @@
   bind:open={showEditTransactionModal}
   transaction={selectedTransaction}
   assetSymbol={asset?.symbol || ""}
+  isCashAsset={asset?.category === "cash"}
   onupdated={loadData}
 />

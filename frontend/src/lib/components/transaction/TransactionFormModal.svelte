@@ -21,13 +21,17 @@
     } = $props();
 
     let type = $state("BUY");
-    let quantity = $state(0);
-    let price = $state(0);
+    let quantity = $state<number | undefined>(undefined);
+    let price = $state<number | undefined>(undefined);
+    let amount = $state<number | undefined>(undefined);
     let date = $state("");
     let loading = $state(false);
     let errorMessage = $state("");
     let assets = $state<any[]>([]);
     let selectedAssetId = $state("");
+    let isCashAsset = $derived(
+        assets.find(a => a.id === (assetId || selectedAssetId))?.category === "cash"
+    );
 
     const types = [
         { value: "BUY", name: "Buy" },
@@ -73,9 +77,16 @@
             return;
         }
 
-        if (quantity <= 0 || price <= 0) {
-            errorMessage = "Quantity and Price must be positive.";
-            return;
+        if (isCashAsset) {
+            if (amount === undefined || amount <= 0) {
+                errorMessage = "Amount must be positive.";
+                return;
+            }
+        } else {
+            if (quantity === undefined || price === undefined || quantity <= 0 || price <= 0) {
+                errorMessage = "Quantity and Price must be positive.";
+                return;
+            }
         }
 
         loading = true;
@@ -85,8 +96,9 @@
                 portfolio_id: targetPortfolioId,
                 asset_id: finalAssetId,
                 type: type as "BUY" | "SELL",
-                quantity,
-                price,
+                quantity: isCashAsset ? undefined : quantity,
+                price: isCashAsset ? undefined : price,
+                amount: isCashAsset ? amount : undefined,
                 executed_at: new Date(date).toISOString(),
             });
             open = false;
@@ -97,8 +109,9 @@
             await portfolioStore.loadPositions(
                 portfolioStore.selectedPortfolioId || portfolioId,
             );
-            quantity = 0;
-            price = 0;
+            quantity = undefined;
+            price = undefined;
+            amount = undefined;
             if (!assetId) selectedAssetId = "";
         } catch (e: any) {
             errorMessage =
@@ -148,26 +161,41 @@
             <span>Type</span>
             <Select items={types} bind:value={type} />
         </Label>
-        <Label class="space-y-2">
-            <span>Quantity</span>
-            <Input
-                type="number"
-                bind:value={quantity}
-                min="0.00000001"
-                step="0.00000001"
-                required
-            />
-        </Label>
-        <Label class="space-y-2">
-            <span>Price per Unit</span>
-            <Input
-                type="number"
-                bind:value={price}
-                min="0.00000001"
-                step="0.00000001"
-                required
-            />
-        </Label>
+
+        {#if isCashAsset}
+            <Label class="space-y-2">
+                <span>Amount</span>
+                <Input
+                    type="number"
+                    bind:value={amount}
+                    min="0.00000001"
+                    step="0.00000001"
+                    required
+                />
+            </Label>
+        {:else}
+            <Label class="space-y-2">
+                <span>Quantity</span>
+                <Input
+                    type="number"
+                    bind:value={quantity}
+                    min="0.00000001"
+                    step="0.00000001"
+                    required
+                />
+            </Label>
+            <Label class="space-y-2">
+                <span>Price per Unit</span>
+                <Input
+                    type="number"
+                    bind:value={price}
+                    min="0.00000001"
+                    step="0.00000001"
+                    required
+                />
+            </Label>
+        {/if}
+
         <Label class="space-y-2">
             <span>Date & Time</span>
             <Input type="datetime-local" bind:value={date} required />

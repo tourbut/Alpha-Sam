@@ -39,6 +39,8 @@ export interface AssetSummary {
     asset_id: string;
     symbol: string;
     name: string;
+    category: string;
+    currency: string;
     quantity: number;
     avg_price: number;
     current_price: number | null;

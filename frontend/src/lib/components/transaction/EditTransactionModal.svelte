@@ -8,17 +8,20 @@
         open = $bindable(false),
         transaction = $bindable(null) as AssetTransaction | null,
         assetSymbol = "",
+        isCashAsset = false,
         onupdated = () => {},
     } = $props<{
         open: boolean;
         transaction: AssetTransaction | null;
         assetSymbol: string;
+        isCashAsset?: boolean;
         onupdated?: () => void;
     }>();
 
     let type = $state("BUY");
-    let quantity = $state(0);
-    let price = $state(0);
+    let quantity = $state<number | undefined>(undefined);
+    let price = $state<number | undefined>(undefined);
+    let amount = $state<number | undefined>(undefined);
     let date = $state("");
     let loading = $state(false);
     let error: string | null = $state(null);
@@ -31,8 +34,15 @@
     $effect(() => {
         if (open && transaction) {
             type = transaction.type.toUpperCase();
-            quantity = transaction.quantity;
-            price = transaction.price;
+            if (isCashAsset) {
+                amount = transaction.quantity; // amount is mapped to quantity by backend
+                quantity = undefined;
+                price = undefined;
+            } else {
+                quantity = transaction.quantity;
+                price = transaction.price;
+                amount = undefined;
+            }
 
             // Convert ISO string to datetime-local format (YYYY-MM-DDTHH:MM)
             const d = new Date(transaction.date);
@@ -46,9 +56,21 @@
     async function handleSubmit() {
         if (!transaction) return;
 
-        if (quantity <= 0 || price <= 0) {
-            alert("Quantity and Price must be positive.");
-            return;
+        if (isCashAsset) {
+            if (amount === undefined || amount <= 0) {
+                alert("Amount must be positive.");
+                return;
+            }
+        } else {
+            if (
+                quantity === undefined ||
+                price === undefined ||
+                quantity <= 0 ||
+                price <= 0
+            ) {
+                alert("Quantity and Price must be positive.");
+                return;
+            }
         }
 
         loading = true;
@@ -56,8 +78,9 @@
         try {
             const updateData: TransactionUpdate = {
                 type: type as "BUY" | "SELL",
-                quantity,
-                price,
+                quantity: isCashAsset ? undefined : quantity,
+                price: isCashAsset ? undefined : price,
+                amount: isCashAsset ? amount : undefined,
                 executed_at: new Date(date).toISOString(),
             };
 
@@ -96,26 +119,41 @@
             <span>Type</span>
             <Select items={types} bind:value={type} />
         </Label>
-        <Label class="space-y-2">
-            <span>Quantity</span>
-            <Input
-                type="number"
-                bind:value={quantity}
-                min="0.00000001"
-                step="0.00000001"
-                required
-            />
-        </Label>
-        <Label class="space-y-2">
-            <span>Price per Unit</span>
-            <Input
-                type="number"
-                bind:value={price}
-                min="0.00000001"
-                step="0.00000001"
-                required
-            />
-        </Label>
+
+        {#if isCashAsset}
+            <Label class="space-y-2">
+                <span>Amount</span>
+                <Input
+                    type="number"
+                    bind:value={amount}
+                    min="0.00000001"
+                    step="0.00000001"
+                    required
+                />
+            </Label>
+        {:else}
+            <Label class="space-y-2">
+                <span>Quantity</span>
+                <Input
+                    type="number"
+                    bind:value={quantity}
+                    min="0.00000001"
+                    step="0.00000001"
+                    required
+                />
+            </Label>
+            <Label class="space-y-2">
+                <span>Price per Unit</span>
+                <Input
+                    type="number"
+                    bind:value={price}
+                    min="0.00000001"
+                    step="0.00000001"
+                    required
+                />
+            </Label>
+        {/if}
+
         <Label class="space-y-2">
             <span>Date & Time</span>
             <Input type="datetime-local" bind:value={date} required />

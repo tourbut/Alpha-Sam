@@ -20,11 +20,20 @@ class TransactionService:
         portfolio_id = transaction_data.get("portfolio_id")
         asset_id = transaction_data.get("asset_id")
         tx_type = transaction_data.get("type") # 'BUY' or 'SELL'
-        quantity = Decimal(str(transaction_data.get("quantity")))
         
-        # 1-1. Create Transaction Record
+        # 1-1. Get Asset to check category
+        stmt = select(Asset).where(Asset.id == asset_id)
+        result = await session.execute(stmt)
+        asset: Asset = result.scalar_one_or_none()
+        if not asset:
+            raise HTTPException(status_code=404, detail="Asset not found")
+
+        # 1-2. Create Transaction Record
+        transaction_data.pop("amount", None)
         new_tx = Transaction(**transaction_data)
         session.add(new_tx)
+
+        quantity = Decimal(str(transaction_data.get("quantity", 0)))
 
         if tx_type == 'SELL':
             # 매도시 잔고 부족 여부 검증

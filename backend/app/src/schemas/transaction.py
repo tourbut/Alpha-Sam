@@ -8,14 +8,18 @@ class TransactionCreate(SQLModel):
     portfolio_id: uuid.UUID
     asset_id: uuid.UUID
     type: Literal["BUY", "SELL"]
-    quantity: float = Field(gt=0, description="거래 수량")
-    price: float = Field(gt=0, description="거래 단가")
+    # 일반 자산: price, quantity 필수
+    # Cash 자산: amount 필수 (price=1.0, quantity=amount 로 매핑)
+    quantity: Optional[float] = Field(None, gt=0, description="거래 수량")
+    price: Optional[float] = Field(None, gt=0, description="거래 단가")
+    amount: Optional[float] = Field(None, gt=0, description="거래 금액 (Cash 자산용)")
     executed_at: Optional[datetime] = Field(None, description="거래 실행 일시")
 
 class TransactionUpdate(SQLModel):
     type: Optional[Literal["BUY", "SELL"]] = None
     quantity: Optional[float] = Field(None, gt=0, description="거래 수량")
     price: Optional[float] = Field(None, gt=0, description="거래 단가")
+    amount: Optional[float] = Field(None, gt=0, description="거래 금액 (Cash 자산용)")
     executed_at: Optional[datetime] = Field(None, description="거래 실행 일시")
 
 class TransactionRead(SQLModel):

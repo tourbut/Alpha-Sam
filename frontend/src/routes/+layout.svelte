@@ -63,7 +63,14 @@
 </script>
 
 {#if isAgentPath}
-  {@render children()}
+  <div
+    class="flex flex-col min-h-screen w-full bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 transition-colors duration-200 overflow-x-hidden"
+  >
+    <!-- 에이전트 전용 경로는 Navbar, Sidebar, Footer 배제 -->
+    <main class="flex-grow w-full overflow-visible pt-10">
+      {@render children()}
+    </main>
+  </div>
 {:else}
   <div
     class="flex flex-col min-h-screen w-full bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 transition-colors duration-200 overflow-x-hidden"

@@ -205,7 +205,7 @@
         </section>
     {:else}
         <div
-            class="max-w-md mx-auto bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md mt-10"
+            class="max-w-[400px] w-full mx-auto bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md mt-10"
         >
             <h2
                 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center"
@@ -217,12 +217,13 @@
                 onsubmit={handleSubmit}
                 class="flex flex-col gap-6"
             >
-                <div>
+                <div class="w-full">
                     <label
                         for="username"
                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                        >Username/Email</label
                     >
+                        Username/Email
+                    </label>
                     <input
                         type="text"
                         id="username"
@@ -231,12 +232,13 @@
                         required
                     />
                 </div>
-                <div>
+                <div class="w-full">
                     <label
                         for="password"
                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                        >Password</label
                     >
+                        Password
+                    </label>
                     <input
                         type="password"
                         id="password"
@@ -248,9 +250,10 @@
                 <button
                     type="submit"
                     id="submit-login"
-                    class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 w-full dark:bg-primary-600 dark:hover:bg-primary-700"
-                    >Access Interface</button
+                    class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 w-full dark:bg-primary-600 dark:hover:bg-primary-700 mt-2"
                 >
+                    Access Interface
+                </button>
             </form>
 
             {#if error}

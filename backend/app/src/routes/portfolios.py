@@ -8,11 +8,14 @@ from app.src.schemas.transaction import TransactionCreate, TransactionRead
 from app.src.schemas.position import PositionRead, AssetSummaryRead, PositionWithAsset
 from app.src.schemas.transaction import TransactionWithDetails
 from app.src.services.portfolio_service import PortfolioService
+from app.src.services.toss_parser_service import TossParserService
 from app.src.deps import SessionDep_async, CurrentUser
 from app.src.crud import portfolios as crud_portfolio
 from app.src.crud import transactions as crud_transaction
+from app.src.crud import assets as crud_asset
 from app.src.models.prices_day import PriceDay
 from sqlalchemy import select, desc
+from fastapi import UploadFile, File
 
 router = APIRouter(tags=["portfolios"])
 
@@ -31,6 +34,83 @@ async def create_portfolio(
         name=portfolio_in.name,
         description=portfolio_in.description
     )
+
+@router.post("/upload/toss", status_code=status.HTTP_201_CREATED)
+async def upload_toss_portfolio(
+    current_user: CurrentUser,
+    db: SessionDep_async,
+    file: UploadFile = File(...)
+):
+    """
+    토스증권 거래내역서 PDF를 업로드하여 포트폴리오에 반영합니다.
+    """
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported.")
+
+    # 1. 파일 파싱
+    try:
+        transactions_data = await TossParserService.parse_pdf(file)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to parse PDF: {str(e)}")
+
+    if not transactions_data:
+        raise HTTPException(status_code=400, detail="No transactions found in the PDF.")
+
+    # 2. Get or create portfolio
+    portfolio_name = "토스증권 포트폴리오(자동생성)"
+    from app.src.models.portfolio import Portfolio
+    result = await db.execute(select(Portfolio).where(Portfolio.owner_id == current_user.id, Portfolio.name == portfolio_name))
+    portfolio = result.scalars().first()
+    
+    if not portfolio:
+        portfolio = await crud_portfolio.create_portfolio(
+            session=db,
+            owner_id=current_user.id,
+            name=portfolio_name,
+            description="토스증권 거래내역 파싱을 통해 자동 생성된 포트폴리오"
+        )
+        # 포트폴리오 ID가 생성되도록 확인
+    
+    # 3. Add transactions
+    from app.src.models.asset import Asset
+    from app.src.schemas.asset import AssetCreate
+    added_count = 0
+    for tx in transactions_data:
+        if tx.ticker == "UNKNOWN":
+            continue
+            
+        # Get or create asset
+        result = await db.execute(
+            select(Asset).where(Asset.portfolio_id == portfolio.id, Asset.symbol == tx.ticker)
+        )
+        asset = result.scalars().first()
+        
+        if not asset:
+            new_asset_data = AssetCreate(
+                portfolio_id=portfolio.id,
+                owner_id=current_user.id,
+                symbol=tx.ticker,
+                name=tx.name,
+                category="ETF" if "ETF" in tx.name else "Stock"
+            )
+            asset = await crud_asset.create_asset(session=db, obj_in=new_asset_data)
+            
+        # Create transaction
+        from app.src.models.transaction import Transaction
+        db_tx = Transaction(
+            portfolio_id=portfolio.id,
+            asset_id=asset.id,
+            type=tx.type,
+            quantity=tx.quantity,
+            price=tx.price,
+            executed_at=tx.date
+        )
+        db.add(db_tx)
+        added_count += 1
+        
+    await db.commit()
+    
+    return {"message": f"Successfully added {added_count} transactions to portfolio.", "portfolio_id": portfolio.id, "transaction_count": added_count}
 
 @router.get("", response_model=List[PortfolioRead])
 async def read_portfolios(

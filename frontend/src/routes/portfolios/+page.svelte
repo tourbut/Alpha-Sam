@@ -14,7 +14,7 @@
   import { Button, Card, Spinner } from "flowbite-svelte";
   import { Plus, Wallet, AlertCircle, FileText } from "lucide-svelte";
   import CreatePortfolioModal from "$lib/components/portfolio/CreatePortfolioModal.svelte";
-  import TossUploadModal from "$lib/components/portfolio/TossUploadModal.svelte";
+  import TransactionUploadModal from "$lib/components/portfolio/TransactionUploadModal.svelte";
   import PortfolioCard from "$lib/components/portfolio/PortfolioCard.svelte";
   import { goto } from "$app/navigation";
   import type { PortfolioWithAssets } from "$lib/types";
@@ -25,7 +25,7 @@
   let PortfolioPieChart: any = $state(null);
 
   let openCreateModal = $state(false);
-  let openTossUploadModal = $state(false);
+  let openUploadModal = $state(false);
   let editingPortfolio = $state<PortfolioWithAssets | null>(null);
   let portfoliosWithAssets = $state<PortfolioWithAssets[]>([]);
   let isLoading = $state(true);
@@ -98,8 +98,8 @@
     openCreateModal = true;
   }
 
-  function openTossUploadDialog() {
-    openTossUploadModal = true;
+  function openUploadDialog() {
+    openUploadModal = true;
   }
 </script>
 
@@ -121,9 +121,9 @@
       </p>
     </div>
     <div class="flex items-center gap-3">
-      <Button color="alternative" size="sm" onclick={openTossUploadDialog}>
+      <Button color="alternative" size="sm" onclick={openUploadDialog}>
         <FileText class="w-4 h-4 mr-2" />
-        토스증권 업로드
+        포트폴리오 업로드
       </Button>
       <Button class="btn-primary" size="sm" onclick={openCreateDialog}>
         <Plus class="w-4 h-4 mr-2" />
@@ -215,7 +215,7 @@
   initialData={editingPortfolio}
 />
 
-<TossUploadModal
-  bind:open={openTossUploadModal}
+<TransactionUploadModal
+  bind:open={openUploadModal}
   onuploaded={handlePortfolioCreated}
 />

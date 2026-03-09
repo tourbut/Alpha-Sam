@@ -1,6 +1,13 @@
 <script lang="ts">
-    import { Modal, Button, Fileupload, Label, Spinner } from "flowbite-svelte";
-    import { uploadTossPortfolio } from "$lib/apis/portfolio";
+    import {
+        Modal,
+        Button,
+        Fileupload,
+        Label,
+        Spinner,
+        Select,
+    } from "flowbite-svelte";
+    import { uploadPortfolio } from "$lib/apis/portfolio";
     import { FileText, CheckCircle, AlertCircle } from "lucide-svelte";
 
     let { open = $bindable(false), onuploaded } = $props<{
@@ -9,12 +16,19 @@
     }>();
 
     let files = $state<FileList | undefined>();
+    let provider = $state<string>("toss");
     let isLoading = $state(false);
     let error = $state<string | null>(null);
     let successMessage = $state<string | null>(null);
 
+    let providers = [
+        { value: "toss", name: "토스증권 (PDF)" },
+        { value: "common", name: "알파샘 공통양식 (CSV)" },
+    ];
+
     function resetState() {
         files = undefined;
+        provider = "toss";
         isLoading = false;
         error = null;
         successMessage = null;
@@ -33,8 +47,15 @@
         }
 
         const file = files[0];
-        if (file.type !== "application/pdf") {
-            error = "PDF 파일만 업로드 가능합니다.";
+        if (provider === "toss" && file.type !== "application/pdf") {
+            error = "토스증권은 PDF 파일만 업로드 가능합니다.";
+            return;
+        }
+        if (
+            provider === "common" &&
+            !file.name.toLowerCase().endsWith(".csv")
+        ) {
+            error = "공통양식은 CSV 파일만 업로드 가능합니다.";
             return;
         }
 
@@ -46,7 +67,7 @@
             const formData = new FormData();
             formData.append("file", file);
 
-            const result = await uploadTossPortfolio(formData);
+            const result = await uploadPortfolio(provider, formData);
 
             successMessage = result.message || "성공적으로 업로드되었습니다.";
 
@@ -69,7 +90,7 @@
 </script>
 
 <Modal
-    title="토스증권 포트폴리오 업로드"
+    title="거래내역 포트폴리오 업로드"
     bind:open
     size="sm"
     outsideclose={!isLoading}
@@ -101,11 +122,28 @@
             }}
         >
             <div>
-                <Label class="mb-2">거래내역서 PDF 파일</Label>
-                <Fileupload bind:files accept=".pdf" disabled={isLoading} />
+                <Label class="mb-2">증권사/양식 선택</Label>
+                <Select
+                    items={providers}
+                    bind:value={provider}
+                    class="mb-4"
+                    disabled={isLoading}
+                />
+
+                <Label class="mb-2">거래내역서 파일</Label>
+                <Fileupload
+                    bind:files
+                    accept={provider === "toss" ? ".pdf" : ".csv"}
+                    disabled={isLoading}
+                />
                 <p class="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-                    토스증권 앱에서 발급받은 '거래내역서.pdf' 파일을
-                    업로드해주세요.
+                    {#if provider === "toss"}
+                        토스증권 앱에서 발급받은 '거래내역서.pdf' 파일을
+                        업로드해주세요.
+                    {:else}
+                        알파샘 공통양식으로 작성된 .csv 파일을 업로드해주세요.
+                        양식에 맞추어 작성되어야 파싱이 가능합니다.
+                    {/if}
                 </p>
             </div>
 
@@ -123,10 +161,8 @@
                 <Button
                     color="alternative"
                     onclick={() => (open = false)}
-                    disabled={isLoading}
+                    disabled={isLoading}>취소</Button
                 >
-                    취소
-                </Button>
                 <Button
                     type="submit"
                     class="btn-primary"

@@ -16,24 +16,28 @@ from app.src.models.user import User
 
 @pytest.fixture
 def mock_parsed_transactions():
-    from app.src.services.toss_parser_service import ParsedTransaction
+    from app.src.schemas.transaction_common import CommonTransaction
     from datetime import datetime
     return [
-        ParsedTransaction(
+        CommonTransaction(
             date=datetime(2026, 1, 13),
             type="BUY",
             name="골드만삭스 나스닥 100 코어 프리미엄 인컴 ETF",
             ticker="GPIQ",
             quantity=10.0,
-            price=50.0
+            price=50.0,
+            currency="USD",
+            fee=0.0
         ),
-        ParsedTransaction(
+        CommonTransaction(
             date=datetime(2026, 1, 14),
             type="SELL",
             name="브로드컴",
             ticker="AVGO",
             quantity=2.0,
-            price=1500.0
+            price=1500.0,
+            currency="USD",
+            fee=0.0
         )
     ]
 
@@ -56,27 +60,31 @@ async def test_upload_toss_portfolio_success(
     app.dependency_overrides[get_session] = get_session_override
     app.dependency_overrides[get_current_user] = get_current_user_override
 
-    # Mock the ParsedTransaction so we don't need a real PDF
-    with patch('app.src.services.toss_parser_service.TossParserService.parse_pdf', new_callable=AsyncMock) as mock_parse_pdf:
+    # Mock the CommonTransaction so we don't need a real PDF
+    with patch('app.src.services.parsers.toss.TossParser.parse', new_callable=AsyncMock) as mock_parse_pdf:
         # Import the fixture data directly inside the test to avoid passing it
-        from app.src.services.toss_parser_service import ParsedTransaction
+        from app.src.schemas.transaction_common import CommonTransaction
         from datetime import datetime
         mock_parse_pdf.return_value = [
-            ParsedTransaction(
+            CommonTransaction(
                 date=datetime(2026, 1, 13),
                 type="BUY",
                 name="골드만삭스 나스닥 100 코어 프리미엄 인컴 ETF",
                 ticker="GPIQ",
                 quantity=10.0,
-                price=50.0
+                price=50.0,
+                currency="USD",
+                fee=0.0
             ),
-            ParsedTransaction(
+            CommonTransaction(
                 date=datetime(2026, 1, 14),
                 type="SELL",
                 name="브로드컴",
                 ticker="AVGO",
                 quantity=2.0,
-                price=1500.0
+                price=1500.0,
+                currency="USD",
+                fee=0.0
             )
         ]
         
@@ -174,8 +182,8 @@ async def test_upload_toss_portfolio_empty_parsing_result(
     app.dependency_overrides[get_session] = get_session_override
     app.dependency_overrides[get_current_user] = get_current_user_override
 
-    # Mock parse_pdf to return empty list
-    with patch('app.src.services.toss_parser_service.TossParserService.parse_pdf', new_callable=AsyncMock) as mock_parse_pdf:
+    # Mock parse to return empty list
+    with patch('app.src.services.parsers.toss.TossParser.parse', new_callable=AsyncMock) as mock_parse_pdf:
         mock_parse_pdf.return_value = []
         
         file_content = b"dummy pdf content without transactions"

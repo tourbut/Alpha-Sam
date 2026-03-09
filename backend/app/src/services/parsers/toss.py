@@ -1,5 +1,7 @@
 from typing import List
 import re
+import json
+from pathlib import Path
 from datetime import datetime
 import pdfplumber
 import tempfile
@@ -10,21 +12,11 @@ from app.src.schemas.transaction_common import CommonTransaction
 from app.src.services.parsers.base import BaseParser
 from app.src.services.parsers.registry import ParserEngine
 
-TICKER_MAP = {
-    "JP모건 커버드콜 옵션 ETF": "JEPI",
-    "JP모건 나스닥 프리미엄 인컴 ETF": "JEPQ",
-    "라운드힐 S&P 500 0DTE 커버드콜 전략": "XDTE",
-    "라운드힐 S&P 500 0DTE 커버드콜 전략 ETF": "XDTE",
-    "라운드힐 N-100 0DTE 커버드콜 전략 ETF": "QDTE",
-    "브로드컴": "AVGO",
-    "프로셰어즈 QQQ 3배 ETF": "TQQQ",
-    "골드만삭스 나스닥 100 코어 프리미엄 인컴": "GPIQ",
-    "골드만삭스 나스닥 100 코어 프리미엄 인컴 ETF": "GPIQ",
-    "앰플리파이 배당 수익 ETF": "DIVO", 
-    "앰플리파이 CWP 성장 & 인컴 ETF": "DIVO",
-    "글로벌엑스 DOW30 커버드콜 ETF": "DJIA",
-    "클라우드플레어": "NET"
-}
+# 종목명 → 티커 매핑을 외부 JSON 파일에서 로드
+# 새로운 종목 추가 시 ticker_map.json 파일만 수정하면 됩니다.
+_TICKER_MAP_PATH = Path(__file__).parent / "ticker_map.json"
+with _TICKER_MAP_PATH.open(encoding="utf-8") as _f:
+    TICKER_MAP: dict[str, str] = json.load(_f)
 
 class TossParser(BaseParser):
     @property

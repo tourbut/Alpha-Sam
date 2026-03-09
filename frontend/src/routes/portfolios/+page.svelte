@@ -12,8 +12,9 @@
   import { onMount } from "svelte";
   import { auth } from "$lib/stores/auth.svelte";
   import { Button, Card, Spinner } from "flowbite-svelte";
-  import { Plus, Wallet, AlertCircle } from "lucide-svelte";
+  import { Plus, Wallet, AlertCircle, FileText } from "lucide-svelte";
   import CreatePortfolioModal from "$lib/components/portfolio/CreatePortfolioModal.svelte";
+  import TransactionUploadModal from "$lib/components/portfolio/TransactionUploadModal.svelte";
   import PortfolioCard from "$lib/components/portfolio/PortfolioCard.svelte";
   import { goto } from "$app/navigation";
   import type { PortfolioWithAssets } from "$lib/types";
@@ -24,6 +25,7 @@
   let PortfolioPieChart: any = $state(null);
 
   let openCreateModal = $state(false);
+  let openUploadModal = $state(false);
   let editingPortfolio = $state<PortfolioWithAssets | null>(null);
   let portfoliosWithAssets = $state<PortfolioWithAssets[]>([]);
   let isLoading = $state(true);
@@ -95,6 +97,10 @@
     editingPortfolio = null;
     openCreateModal = true;
   }
+
+  function openUploadDialog() {
+    openUploadModal = true;
+  }
 </script>
 
 <svelte:head>
@@ -114,10 +120,16 @@
         Manage your portfolios, assets, and transactions
       </p>
     </div>
-    <Button class="btn-primary" size="sm" onclick={openCreateDialog}>
-      <Plus class="w-4 h-4 mr-2" />
-      Create Portfolio
-    </Button>
+    <div class="flex items-center gap-3">
+      <Button color="alternative" size="sm" onclick={openUploadDialog}>
+        <FileText class="w-4 h-4 mr-2" />
+        포트폴리오 업로드
+      </Button>
+      <Button class="btn-primary" size="sm" onclick={openCreateDialog}>
+        <Plus class="w-4 h-4 mr-2" />
+        Create Portfolio
+      </Button>
+    </div>
   </header>
 
   <!-- 로딩 상태 -->
@@ -201,4 +213,9 @@
   bind:open={openCreateModal}
   oncreated={handlePortfolioCreated}
   initialData={editingPortfolio}
+/>
+
+<TransactionUploadModal
+  bind:open={openUploadModal}
+  onuploaded={handlePortfolioCreated}
 />

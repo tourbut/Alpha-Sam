@@ -36,6 +36,7 @@ class PositionRead(PositionBase):
     profit_loss: Optional[float] = None
     return_rate: Optional[float] = None
     current_price: Optional[float] = None
+    realized_pl: Optional[float] = None  # 종목별 실현 손익 (SELL 거래 기준)
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -40,6 +40,7 @@ const _updateVisibility = api_router('portfolios', 'patch', '{id}/visibility');
 const _fetchSharedPortfolio = api_router('portfolios', 'get', 'shared/{token}');
 const _deletePortfolio = api_router('portfolios', 'delete', '{id}');
 const _updatePortfolio = api_router('portfolios', 'put', '{id}');
+const _uploadPortfolio = api_router('portfolios', 'post', 'upload/{provider}');
 
 export const fetchPortfolios = async (): Promise<Portfolio[]> => {
     return await _fetchPortfolios();
@@ -81,6 +82,11 @@ export const deletePortfolio = async (id: string): Promise<void> => {
 
 export const updatePortfolio = async (id: string, data: PortfolioCreate): Promise<Portfolio> => {
     return await _updatePortfolio({ id, ...data });
+}
+
+export const uploadPortfolio = async (provider: string, formData: FormData): Promise<{ message: string, transaction_count: number, portfolio_id: string }> => {
+    formData.append('provider', provider);
+    return await _uploadPortfolio(formData);
 }
 
 // 포트폴리오 목록 + 자산 요약 정보 조회

@@ -14,8 +14,11 @@ export const api_router = (router: string, method: string, endpoint: string) => 
         const fetchMethod = method.toUpperCase();
         let url = `${API_URL}/${router}`;
 
-        // Clone params to avoid mutation
-        const requestParams = { ...params };
+        // Check if params is FormData
+        const isFormData = params instanceof FormData;
+
+        // Clone params to avoid mutation (only if it's not FormData)
+        const requestParams = isFormData ? params : { ...params };
 
         // 1. Handle Path Parameters (e.g., {id})
         // If endpoint contains {key}, replace with param value and delete from requestParams
@@ -27,11 +30,23 @@ export const api_router = (router: string, method: string, endpoint: string) => 
         if (pathParamMatches) {
             pathParamMatches.forEach(match => {
                 const paramName = match.slice(1, -1); // remove { and }
-                if (requestParams[paramName] !== undefined) {
-                    processedEndpoint = processedEndpoint.replace(match, requestParams[paramName]);
-                    delete requestParams[paramName];
+
+                if (isFormData) {
+                    const formData = requestParams as FormData;
+                    if (formData.has(paramName)) {
+                        processedEndpoint = processedEndpoint.replace(match, formData.get(paramName) as string);
+                        formData.delete(paramName);
+                    } else {
+                        console.warn(`Missing path parameter in FormData: ${paramName}`);
+                    }
                 } else {
-                    console.warn(`Missing path parameter: ${paramName}`);
+                    const paramsRecord = requestParams as Record<string, any>;
+                    if (paramsRecord[paramName] !== undefined) {
+                        processedEndpoint = processedEndpoint.replace(match, paramsRecord[paramName]);
+                        delete paramsRecord[paramName];
+                    } else {
+                        console.warn(`Missing path parameter: ${paramName}`);
+                    }
                 }
             });
         }
@@ -74,7 +89,7 @@ export const api_router = (router: string, method: string, endpoint: string) => 
             const formData = new URLSearchParams();
 
             // Map email to username for OAuth2 compliance if needed
-            const loginParams = { ...requestParams };
+            const loginParams = { ...requestParams } as Record<string, any>;
             if (loginParams.email && !loginParams.username) {
                 loginParams.username = loginParams.email;
                 delete loginParams.email;
@@ -87,11 +102,14 @@ export const api_router = (router: string, method: string, endpoint: string) => 
             console.log(`Login Request Data:`, formData.toString());
         } else if (fetchMethod === 'GET') {
             const searchParams = new URLSearchParams();
-            Object.entries(requestParams).forEach(([key, value]) => {
-                if (value !== undefined && value !== null) {
-                    searchParams.append(key, String(value));
-                }
-            });
+            if (!isFormData) {
+                const paramsRecord = requestParams as Record<string, any>;
+                Object.entries(paramsRecord).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null) {
+                        searchParams.append(key, String(value));
+                    }
+                });
+            }
             const queryString = searchParams.toString();
             // If query string exists, remove trailing slash from URL if preferred, or keep it.
             // FastAPI is usually fine with `/assets/?q=...`
@@ -100,9 +118,14 @@ export const api_router = (router: string, method: string, endpoint: string) => 
                 url += `?${queryString}`;
             }
         } else {
-            // POST, PUT, DELETE (JSON)
-            (options.headers as Record<string, string>)['Content-Type'] = 'application/json';
-            options.body = JSON.stringify(requestParams);
+            // POST, PUT, DELETE
+            if (isFormData) {
+                // For FormData, let the browser set the Content-Type automatically (includes boundary)
+                options.body = requestParams as FormData;
+            } else {
+                (options.headers as Record<string, string>)['Content-Type'] = 'application/json';
+                options.body = JSON.stringify(requestParams);
+            }
         }
 
         // 4. Execute Request

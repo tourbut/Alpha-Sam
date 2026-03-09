@@ -25,8 +25,10 @@
     TrendingUp,
     TrendingDown,
     Briefcase,
+    FileText,
   } from "lucide-svelte";
   import AssetModal from "$lib/components/AssetModal.svelte";
+  import TransactionUploadModal from "$lib/components/portfolio/TransactionUploadModal.svelte";
   import { goto } from "$app/navigation";
 
   // 자산 데이터 인터페이스 정의
@@ -39,9 +41,11 @@
     currentPrice: number;
     totalValue: number;
     change: number;
+    realizedPl: number; // 종목별 실현 손익 (SELL 거래 기준)
   }
 
   let openAssetModal = $state(false);
+  let openUploadModal = $state(false);
   let portfolioId = $derived(page.params.id);
   let currentPortfolio = $derived(
     portfolioStore.portfolios.find((p) => p.id === portfolioId),
@@ -52,6 +56,13 @@
   let summary: PortfolioSummary | null = $state(null);
   let loading = $state(false);
   let error: string | null = $state(null);
+
+  // 수량 0 종목 표시 여부 (기본값: 숨김)
+  let showZeroQuantity = $state(false);
+  // 필터링된 자산 목록 (파생 상태)
+  let filteredAssets = $derived(
+    showZeroQuantity ? assets : assets.filter((a) => a.quantity > 0),
+  );
 
   onMount(async () => {
     if (!currentPortfolio) {
@@ -93,6 +104,7 @@
         totalValue:
           p.valuation || p.quantity * (p.current_price || p.avg_price),
         change: p.return_rate || 0,
+        realizedPl: p.realized_pl ?? 0, // 종목별 실현 손익 (없으면 0)
       }));
     } catch (e: any) {
       console.error("Failed to load assets:", e);
@@ -108,6 +120,10 @@
 
   function goBack() {
     goto("/portfolios");
+  }
+
+  function openUploadDialog() {
+    openUploadModal = true;
   }
 </script>
 
@@ -133,14 +149,20 @@
         Manage assets and track performance
       </p>
     </div>
-    <Button
-      class="btn-primary"
-      size="sm"
-      onclick={() => (openAssetModal = true)}
-    >
-      <Plus class="w-4 h-4 mr-2" />
-      Add Asset
-    </Button>
+    <div class="flex items-center gap-3">
+      <Button color="alternative" size="sm" onclick={openUploadDialog}>
+        <FileText class="w-4 h-4 mr-2" />
+        포트폴리오 업로드
+      </Button>
+      <Button
+        class="btn-primary"
+        size="sm"
+        onclick={() => (openAssetModal = true)}
+      >
+        <Plus class="w-4 h-4 mr-2" />
+        Add Asset
+      </Button>
+    </div>
   </div>
 
   {#if loading}
@@ -228,77 +250,128 @@
 
     {#if assets.length > 0}
       <Card class="!max-w-none w-full mt-6">
+        <!-- 수량 0 종목 표시 토글 -->
+        <div
+          class="flex items-center gap-2 px-4 pt-4 pb-2 border-b border-neutral-100 dark:border-neutral-700"
+        >
+          <input
+            type="checkbox"
+            id="show-zero-quantity"
+            bind:checked={showZeroQuantity}
+            class="w-4 h-4 rounded border-gray-300 text-primary-600 cursor-pointer"
+          />
+          <label
+            for="show-zero-quantity"
+            class="text-sm text-neutral-600 dark:text-neutral-400 cursor-pointer select-none"
+          >
+            수량 0 종목 보기
+          </label>
+          {#if !showZeroQuantity}
+            <span class="text-xs text-neutral-400 dark:text-neutral-500 ml-1">
+              (전량 매도 종목 숨김 중)
+            </span>
+          {/if}
+        </div>
         <div class="overflow-x-auto">
-          <Table hoverable={true}>
-            <TableHead>
-              <TableHeadCell>Asset</TableHeadCell>
-              <TableHeadCell class="text-right">Quantity</TableHeadCell>
-              <TableHeadCell class="text-right">Avg Price</TableHeadCell>
-              <TableHeadCell class="text-right">Current Price</TableHeadCell>
-              <TableHeadCell class="text-right">Total Value</TableHeadCell>
-              <TableHeadCell class="text-right">Change</TableHeadCell>
-              <TableHeadCell class="text-center">Actions</TableHeadCell>
-            </TableHead>
-            <TableBody>
-              {#each assets as asset}
-                <TableBodyRow>
-                  <TableBodyCell>
-                    <div class="flex items-center gap-2">
-                      <div
-                        class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center"
+          {#if filteredAssets.length === 0 && assets.length > 0}
+            <!-- 수량 0 필터로 인해 빈 경우 안내 -->
+            <div
+              class="text-center py-8 text-neutral-500 dark:text-neutral-400"
+            >
+              <p class="text-sm">수량이 있는 종목이 없습니다.</p>
+              <p class="text-xs mt-1">
+                "수량 0 종목 보기"를 체크하면 전량 매도된 종목을 확인할 수
+                있습니다.
+              </p>
+            </div>
+          {:else}
+            <Table hoverable={true}>
+              <TableHead>
+                <TableHeadCell>Asset</TableHeadCell>
+                <TableHeadCell class="text-right">Quantity</TableHeadCell>
+                <TableHeadCell class="text-right">Avg Price</TableHeadCell>
+                <TableHeadCell class="text-right">Current Price</TableHeadCell>
+                <TableHeadCell class="text-right">Total Value</TableHeadCell>
+                <TableHeadCell class="text-right">Change</TableHeadCell>
+                <TableHeadCell class="text-right">Realized P/L</TableHeadCell>
+                <TableHeadCell class="text-center">Actions</TableHeadCell>
+              </TableHead>
+              <TableBody>
+                {#each filteredAssets as asset}
+                  <TableBodyRow>
+                    <TableBodyCell>
+                      <div class="flex items-center gap-2">
+                        <div
+                          class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center"
+                        >
+                          <PieChart
+                            class="w-4 h-4 text-primary-600 dark:text-primary-400"
+                          />
+                        </div>
+                        <div>
+                          <div
+                            class="font-semibold text-neutral-900 dark:text-neutral-100"
+                          >
+                            {asset.symbol}
+                          </div>
+                          <div
+                            class="text-xs text-neutral-500 dark:text-neutral-400"
+                          >
+                            {asset.name}
+                          </div>
+                        </div>
+                      </div>
+                    </TableBodyCell>
+                    <TableBodyCell class="text-right"
+                      >{asset.quantity}</TableBodyCell
+                    >
+                    <TableBodyCell class="text-right"
+                      >${asset.avgPrice.toLocaleString()}</TableBodyCell
+                    >
+                    <TableBodyCell class="text-right"
+                      >${asset.currentPrice.toLocaleString()}</TableBodyCell
+                    >
+                    <TableBodyCell class="text-right font-semibold">
+                      ${asset.totalValue.toLocaleString()}
+                    </TableBodyCell>
+                    <TableBodyCell class="text-right">
+                      <span
+                        class={asset.change >= 0
+                          ? "text-accent-600 dark:text-accent-400"
+                          : "text-red-600 dark:text-red-400"}
                       >
-                        <PieChart
-                          class="w-4 h-4 text-primary-600 dark:text-primary-400"
-                        />
-                      </div>
-                      <div>
-                        <div
-                          class="font-semibold text-neutral-900 dark:text-neutral-100"
-                        >
-                          {asset.symbol}
-                        </div>
-                        <div
-                          class="text-xs text-neutral-500 dark:text-neutral-400"
-                        >
-                          {asset.name}
-                        </div>
-                      </div>
-                    </div>
-                  </TableBodyCell>
-                  <TableBodyCell class="text-right"
-                    >{asset.quantity}</TableBodyCell
-                  >
-                  <TableBodyCell class="text-right"
-                    >${asset.avgPrice.toLocaleString()}</TableBodyCell
-                  >
-                  <TableBodyCell class="text-right"
-                    >${asset.currentPrice.toLocaleString()}</TableBodyCell
-                  >
-                  <TableBodyCell class="text-right font-semibold">
-                    ${asset.totalValue.toLocaleString()}
-                  </TableBodyCell>
-                  <TableBodyCell class="text-right">
-                    <span
-                      class={asset.change >= 0
-                        ? "text-accent-600 dark:text-accent-400"
-                        : "text-red-600 dark:text-red-400"}
-                    >
-                      {asset.change >= 0 ? "+" : ""}{asset.change.toFixed(2)}%
-                    </span>
-                  </TableBodyCell>
-                  <TableBodyCell class="text-center">
-                    <Button
-                      size="xs"
-                      color="light"
-                      onclick={() => viewAssetTransactions(asset.id)}
-                    >
-                      View Transactions
-                    </Button>
-                  </TableBodyCell>
-                </TableBodyRow>
-              {/each}
-            </TableBody>
-          </Table>
+                        {asset.change >= 0 ? "+" : ""}{asset.change.toFixed(2)}%
+                      </span>
+                    </TableBodyCell>
+                    <TableBodyCell class="text-right">
+                      <span
+                        class={asset.realizedPl === 0
+                          ? "text-neutral-500 dark:text-neutral-400"
+                          : asset.realizedPl > 0
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-red-600 dark:text-red-400"}
+                      >
+                        {asset.realizedPl === 0
+                          ? "$0.00"
+                          : (asset.realizedPl > 0 ? "+" : "") +
+                            "$" +
+                            asset.realizedPl.toFixed(2)}
+                      </span>
+                    </TableBodyCell>
+                    <TableBodyCell class="text-center">
+                      <Button
+                        size="xs"
+                        color="light"
+                        onclick={() => viewAssetTransactions(asset.id)}
+                      >
+                        View Transactions
+                      </Button>
+                    </TableBodyCell>
+                  </TableBodyRow>
+                {/each}
+              </TableBody>
+            </Table>
+          {/if}
         </div>
       </Card>
     {:else}
@@ -328,3 +401,9 @@
 </div>
 
 <AssetModal bind:open={openAssetModal} {portfolioId} on:created={loadAssets} />
+
+<TransactionUploadModal
+  bind:open={openUploadModal}
+  {portfolioId}
+  onuploaded={loadAssets}
+/>

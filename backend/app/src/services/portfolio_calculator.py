@@ -151,6 +151,7 @@ def calculate_positions(
         txs = asset_transactions.get(asset.id, [])
         current_qty = Decimal("0")
         total_cost = Decimal("0")  # for avg price calc
+        asset_realized_pl = Decimal("0")  # 종목별 실현이익 (SELL 거래 기준)
         
         # Weighted Average Price 계산
         for tx in txs:
@@ -168,6 +169,7 @@ def calculate_positions(
                 # 평단가가 0이면 수익 계산이 애매하지만, 비용이 0이었다면 전액 수익으로 볼 수 있음
                 realized_gain = (price - avg_price) * qty
                 total_realized_pl += realized_gain
+                asset_realized_pl += realized_gain  # 종목별 실현이익 누적
                 
                 if current_qty > 0:
                     current_qty -= qty
@@ -203,7 +205,8 @@ def calculate_positions(
             valuation=0.0,
             profit_loss=0.0,
             return_rate=0.0,
-            current_price=None
+            current_price=None,
+            realized_pl=float(asset_realized_pl)  # 종목별 실현 손익 설정
         )
         positions.append(position)
     

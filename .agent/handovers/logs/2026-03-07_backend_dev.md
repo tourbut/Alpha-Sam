@@ -4,23 +4,24 @@
 - 2026-03-07
 
 ## 브랜치
-- `feature/backend-pdf-upload`
+- `feature/backend-parser-engine`
 
 ## 현재 상황
-- 샌드박스에서 파이썬 스크립트(`sandbox/import_toss_portfolio.py`)를 통해 토스증권 거래내역서 PDF(`sandbox/토스증권_거래내역서.pdf`)를 성공적으로 파싱하고 DB에 포트폴리오를 생성하여 45건의 거래 내역을 저장하는 테스트를 완료했습니다.
-- 이제 이 로직을 프로덕션 백엔드 코드에 통합하여 클라이언트에서 PDF를 업로드하면 자동으로 거래내역이 반영되는 기능을 개발해야 합니다.
+- 아키텍트의 설계에 따라, 기존 단일 토스증권 파서에서 벗어나 **공통 거래내역 포맷과 파서 엔진 시스템**을 구현해야 합니다.
+- 파일 업로드는 1) 공통 양식 파일(변환 없음) 또는 2) 특정 증권사 PDF 파일(엔진이 공통 양식으로 변환) 두 가지 형태로 진행됩니다.
 
 ## 해야 할 일
-1. `pdfplumber` 등 필요한 의존성을 백엔드 패키지 매니저(`pyproject.toml` 또는 `uv.lock`)에 추가하세요.
-2. `POST /api/v1/portfolios/upload/toss` 형태의 새로운 FastAPI 엔드포인트를 구현하여 PDF 파일 업로드를 받으세요.
-3. `sandbox/import_toss_portfolio.py`의 파싱 로직(`parse_pdf`, `guess_ticker` 등)을 적절한 서비스(Service) 계층 또는 유틸리티 모듈로 이관 및 리팩토링하세요.
-4. 파싱된 데이터를 사용하여 `Portfolio`, `Asset`, `Transaction` 정보를 DB에 삽입하는 비즈니스 로직을 구성하세요. 
-5. 해당 기능에 대한 단위 테스트를 작성하세요.
+1. Architect가 설계한 표준 인터페이스(`BaseParser` 등)를 기반으로 파서 엔진 디렉토리(`app/src/services/parsers/`)를 구성.
+2. 기존 `TossParserService`를 엔진의 플러그인 형태(`toss_parser.py`)로 리팩토링.
+3. 업로드 API(`POST /api/v1/portfolios/upload`) 통합 및 리팩토링:
+   - `provider` 또는 `format` 파라미터를 받아 (예: "common", "toss", "kiwoom" 등) 적절한 파서 전략을 런타임에 결정하여 변환 처리.
+   - 공통 양식 포맷인 경우 변환 없이 바로 파싱 및 포트폴리오 적재 처리 로직 구현.
+4. 통합 과정에서 변경된 로직에 맞춰 서비스 및 API 단위 테스트 업데이트.
 
 ## 기대 산출물
-- PDF 업로드를 처리하고 파싱을 통해 DB에 포트폴리오/거래내역을 적재하는 API 엔드포인트 코드가 생성되어야 합니다.
-- 관련 테스트 코드가 작성되고 모두 통과해야 합니다.
+- 플러그인 확장이 용이한 파서 엔진 폴더 구조 및 코드.
+- 확장 가능한 통합 업로드 엔드포인트 API (`routes/portfolios.py` 내).
+- 관련 테스트 코드 정상 통과.
 
 ## 참고 자료
-- `sandbox/import_toss_portfolio.py`
-- `sandbox/토스증권_거래내역서.pdf`
+- `to_architect.md`에서 도출된 설계 산출물.

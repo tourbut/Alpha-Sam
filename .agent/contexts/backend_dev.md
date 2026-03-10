@@ -23,8 +23,10 @@
 - [2026-01-21 11:50:00] **포트폴리오 상세 자산/거래 API 구현 완료**. 프론트엔드 자산 상세 페이지 지원을 위해 `GET /api/v1/portfolios/{id}/assets/{assetId}` 및 `../transactions` 엔드포인트를 `portfolios.py`에 추가함. `TransactionWithDetails`, `AssetSummaryRead` 스키마 추가. 단위 테스트 `test_portfolio_asset_details.py` 작성 및 통과.
 - [2026-02-24 23:15:00] **Agent-Centric Interface Backend 추가 완료**. 에이전트를 위한 `/api/v1/agent/login` 및 `/api/v1/agent/docs` 엔드포인트 구현 완료. `Agent`가 원활히 연동할 수 있도록 `agent.py` 신규 라우터 생성, 관련 통합 테스트 `test_agent_api.py` 작성 및 통과 확인 완료.
 
+- [2026-03-09 23:55:00] **포지션별 실현이익(realized_pl) API 추가 완료**. `PositionRead` 스키마에 `realized_pl: Optional[float]` 필드 추가, `calculate_positions()`에서 종목별 `asset_realized_pl` 변수를 별도 집계하여 각 position 객체에 설정. 전체 `total_realized_pl` 합산 로직은 그대로 유지. 단위 테스트로 SELL 있는 종목(200.0), SELL 없는 종목(0.0) 정상 확인.
+
 ## 해야 할 일 (Tasks)
-- (없음 - 복구 완료)
+- (없음)
 
 ## 기대 산출물 (Expected Outputs)
 - (없음)

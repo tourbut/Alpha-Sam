@@ -152,7 +152,7 @@
     <div class="flex items-center gap-3">
       <Button color="alternative" size="sm" onclick={openUploadDialog}>
         <FileText class="w-4 h-4 mr-2" />
-        포트폴리오 업로드
+        거래내역 업로드
       </Button>
       <Button
         class="btn-primary"

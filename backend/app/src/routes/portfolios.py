@@ -40,6 +40,7 @@ async def upload_portfolio(
     provider: str,
     current_user: CurrentUser,
     db: SessionDep_async,
+    portfolio_id: Optional[uuid.UUID] = None,
     file: UploadFile = File(...)
 ):
     """
@@ -61,24 +62,29 @@ async def upload_portfolio(
         raise HTTPException(status_code=400, detail="No transactions found in the file.")
 
     # 3. Get or create portfolio
-    provider_display_name = provider.capitalize()
-    if provider == "toss":
-        provider_display_name = "토스증권"
-    elif provider == "common":
-        provider_display_name = "알파샘 공통양식"
+    if portfolio_id:
+        portfolio = await crud_portfolio.get_portfolio(session=db, portfolio_id=portfolio_id, owner_id=current_user.id)
+        if not portfolio:
+            raise HTTPException(status_code=404, detail="Portfolio not found")
+    else:
+        provider_display_name = provider.capitalize()
+        if provider == "toss":
+            provider_display_name = "토스증권"
+        elif provider == "common":
+            provider_display_name = "알파샘 공통양식"
+            
+        portfolio_name = f"{provider_display_name} 포트폴리오(자동생성)"
+        from app.src.models.portfolio import Portfolio
+        result = await db.execute(select(Portfolio).where(Portfolio.owner_id == current_user.id, Portfolio.name == portfolio_name))
+        portfolio = result.scalars().first()
         
-    portfolio_name = f"{provider_display_name} 포트폴리오(자동생성)"
-    from app.src.models.portfolio import Portfolio
-    result = await db.execute(select(Portfolio).where(Portfolio.owner_id == current_user.id, Portfolio.name == portfolio_name))
-    portfolio = result.scalars().first()
-    
-    if not portfolio:
-        portfolio = await crud_portfolio.create_portfolio(
-            session=db,
-            owner_id=current_user.id,
-            name=portfolio_name,
-            description=f"{provider_display_name} 거래내역 파싱을 통해 자동 생성된 포트폴리오"
-        )
+        if not portfolio:
+            portfolio = await crud_portfolio.create_portfolio(
+                session=db,
+                owner_id=current_user.id,
+                name=portfolio_name,
+                description=f"{provider_display_name} 거래내역 파싱을 통해 자동 생성된 포트폴리오"
+            )
     
     # 4. Add transactions
     from app.src.models.asset import Asset
@@ -109,7 +115,7 @@ async def upload_portfolio(
         db_tx = Transaction(
             portfolio_id=portfolio.id,
             asset_id=asset.id,
-            type=tx.type.lower(), # Enum 호환성을 위해 소문자 변환
+            type=tx.type.upper(), # Enum/Calculation 호환성을 위해 대문자 변환
             quantity=tx.quantity,
             price=tx.price,
             executed_at=tx.date

@@ -10,9 +10,14 @@
     import { uploadPortfolio } from "$lib/apis/portfolio";
     import { FileText, CheckCircle, AlertCircle } from "lucide-svelte";
 
-    let { open = $bindable(false), onuploaded } = $props<{
+    let {
+        open = $bindable(false),
+        onuploaded,
+        portfolioId = null,
+    } = $props<{
         open: boolean;
         onuploaded: () => void;
+        portfolioId?: string | null;
     }>();
 
     let files = $state<FileList | undefined>();
@@ -67,7 +72,11 @@
             const formData = new FormData();
             formData.append("file", file);
 
-            const result = await uploadPortfolio(provider, formData);
+            const result = await uploadPortfolio(
+                provider,
+                formData,
+                portfolioId || undefined,
+            );
 
             successMessage = result.message || "성공적으로 업로드되었습니다.";
 
@@ -92,7 +101,7 @@
 <Modal
     title="거래내역 포트폴리오 업로드"
     bind:open
-    size="sm"
+    size="lg"
     outsideclose={!isLoading}
 >
     {#if successMessage}
@@ -136,15 +145,28 @@
                     accept={provider === "toss" ? ".pdf" : ".csv"}
                     disabled={isLoading}
                 />
-                <p class="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+                <div
+                    class="mt-2 text-sm text-neutral-500 dark:text-neutral-400"
+                >
                     {#if provider === "toss"}
                         토스증권 앱에서 발급받은 '거래내역서.pdf' 파일을
                         업로드해주세요.
                     {:else}
-                        알파샘 공통양식으로 작성된 .csv 파일을 업로드해주세요.
-                        양식에 맞추어 작성되어야 파싱이 가능합니다.
+                        <div class="flex items-center gap-2">
+                            <span
+                                >알파샘 공통양식으로 작성된 .csv 파일을
+                                업로드해주세요. 양식에 맞추어 작성되어야 파싱이
+                                가능합니다.</span
+                            >
+                            <Button
+                                size="xs"
+                                color="alternative"
+                                href="/data/sample_common_format.csv"
+                                download>샘플 양식 다운로드</Button
+                            >
+                        </div>
                     {/if}
-                </p>
+                </div>
             </div>
 
             {#if error}

@@ -1,19 +1,11 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import {
-    Button,
-    Card,
-    Table,
-    TableBody,
-    TableBodyCell,
-    TableBodyRow,
-    TableHead,
-    TableHeadCell,
-    Spinner,
-    Alert,
-  } from "flowbite-svelte";
+  import { Button, Card, Spinner, Alert } from "flowbite-svelte";
   import { Plus, ArrowLeft, DollarSign, Edit, Trash2 } from "lucide-svelte";
   import { goto } from "$app/navigation";
+  import DataTable, {
+    type ColumnDef,
+  } from "$lib/components/common/DataTable.svelte";
   import { onMount } from "svelte";
   import {
     fetchPortfolioAsset,
@@ -90,6 +82,32 @@
       alert(e.message || "Failed to delete transaction");
     }
   }
+
+  // 거래 내역 셀 렌더링을 정의
+  // 현금 자산일 경우와 아닐 경우 컬럼이 다르므로 이를 여기서 계산합니다.
+  let columns = $derived.by(() => {
+    if (!asset) return [];
+
+    if (asset.category === "cash") {
+      return [
+        { key: "date", label: "Date" },
+        { key: "type", label: "Type" },
+        { key: "quantity", label: "Amount", align: "right" },
+        { key: "fee", label: "Fee", align: "right" },
+        { key: "actions", label: "Action", align: "center", sortable: false },
+      ] as ColumnDef<AssetTransaction>[];
+    } else {
+      return [
+        { key: "date", label: "Date" },
+        { key: "type", label: "Type" },
+        { key: "quantity", label: "Quantity", align: "right" },
+        { key: "price", label: "Price", align: "right" },
+        { key: "total", label: "Total", align: "right" },
+        { key: "fee", label: "Fee", align: "right" },
+        { key: "actions", label: "Action", align: "center", sortable: false },
+      ] as ColumnDef<AssetTransaction>[];
+    }
+  });
 </script>
 
 <div class="space-y-6">
@@ -174,95 +192,51 @@
         >
           Transactions
         </h2>
-        <div class="overflow-x-auto">
-          <Table hoverable={true}>
-            <TableHead>
-              <TableHeadCell>Date</TableHeadCell>
-              <TableHeadCell>Type</TableHeadCell>
-              {#if asset.category === "cash"}
-                <TableHeadCell>Amount</TableHeadCell>
-                <TableHeadCell>Fee</TableHeadCell>
-                <TableHeadCell>Action</TableHeadCell>
+        <DataTable data={transactions} {columns}>
+          {#snippet customCell(tx, colKey)}
+            {#if colKey === "date"}
+              {new Date(tx.date).toLocaleDateString()}
+            {:else if colKey === "type"}
+              <span
+                class={tx.type.toLowerCase() === "buy"
+                  ? "badge badge-success"
+                  : "badge badge-error"}
+              >
+                {tx.type.toUpperCase()}
+              </span>
+            {:else if colKey === "quantity"}
+              {#if asset?.category === "cash"}
+                {tx.quantity.toLocaleString()}
               {:else}
-                <TableHeadCell>Quantity</TableHeadCell>
-                <TableHeadCell>Price</TableHeadCell>
-                <TableHeadCell>Total</TableHeadCell>
-                <TableHeadCell>Fee</TableHeadCell>
-                <TableHeadCell>Action</TableHeadCell>
+                {tx.quantity}
               {/if}
-            </TableHead>
-            <TableBody>
-              {#each transactions as tx}
-                <TableBodyRow>
-                  <TableBodyCell>
-                    {new Date(tx.date).toLocaleDateString()}
-                  </TableBodyCell>
-                  <TableBodyCell>
-                    <span
-                      class={tx.type.toLowerCase() === "buy"
-                        ? "badge badge-success"
-                        : "badge badge-error"}
-                    >
-                      {tx.type.toUpperCase()}
-                    </span>
-                  </TableBodyCell>
-
-                  {#if asset.category === "cash"}
-                    <TableBodyCell>{tx.quantity.toLocaleString()}</TableBodyCell
-                    >
-                    <!-- amount is stored in quantity -->
-                    <TableBodyCell>{tx.fee ? `$${tx.fee}` : "-"}</TableBodyCell>
-                    <TableBodyCell>
-                      <div class="flex items-center gap-2">
-                        <button
-                          class="text-neutral-500 hover:text-primary-600"
-                          onclick={() => {
-                            selectedTransaction = tx;
-                            showEditTransactionModal = true;
-                          }}
-                        >
-                          <Edit class="w-4 h-4" />
-                        </button>
-                        <button
-                          class="text-neutral-500 hover:text-red-600"
-                          onclick={() => handleDeleteTransaction(tx.id)}
-                        >
-                          <Trash2 class="w-4 h-4" />
-                        </button>
-                      </div>
-                    </TableBodyCell>
-                  {:else}
-                    <TableBodyCell>{tx.quantity}</TableBodyCell>
-                    <TableBodyCell>${tx.price.toLocaleString()}</TableBodyCell>
-                    <TableBodyCell class="font-semibold">
-                      ${tx.total.toLocaleString()}
-                    </TableBodyCell>
-                    <TableBodyCell>{tx.fee ? `$${tx.fee}` : "-"}</TableBodyCell>
-                    <TableBodyCell>
-                      <div class="flex items-center gap-2">
-                        <button
-                          class="text-neutral-500 hover:text-primary-600"
-                          onclick={() => {
-                            selectedTransaction = tx;
-                            showEditTransactionModal = true;
-                          }}
-                        >
-                          <Edit class="w-4 h-4" />
-                        </button>
-                        <button
-                          class="text-neutral-500 hover:text-red-600"
-                          onclick={() => handleDeleteTransaction(tx.id)}
-                        >
-                          <Trash2 class="w-4 h-4" />
-                        </button>
-                      </div>
-                    </TableBodyCell>
-                  {/if}
-                </TableBodyRow>
-              {/each}
-            </TableBody>
-          </Table>
-        </div>
+            {:else if colKey === "price"}
+              ${tx.price.toLocaleString()}
+            {:else if colKey === "total"}
+              <span class="font-semibold">${tx.total.toLocaleString()}</span>
+            {:else if colKey === "fee"}
+              {tx.fee ? `$${tx.fee}` : "-"}
+            {:else if colKey === "actions"}
+              <div class="flex items-center justify-center gap-2">
+                <button
+                  class="text-neutral-500 hover:text-primary-600"
+                  onclick={() => {
+                    selectedTransaction = tx;
+                    showEditTransactionModal = true;
+                  }}
+                >
+                  <Edit class="w-4 h-4" />
+                </button>
+                <button
+                  class="text-neutral-500 hover:text-red-600"
+                  onclick={() => handleDeleteTransaction(tx.id)}
+                >
+                  <Trash2 class="w-4 h-4" />
+                </button>
+              </div>
+            {/if}
+          {/snippet}
+        </DataTable>
       </Card>
     {:else}
       <Card class="!max-w-none w-full text-center py-12">

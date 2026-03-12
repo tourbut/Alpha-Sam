@@ -31,7 +31,8 @@ argument-hint: "[선택사항: 특정 스킬 이름 또는 집중할 영역]"
 | 스킬 | 설명 | 커버 파일 패턴 |
 |------|------|---------------|
 | `verify-backend-style` | 백엔드 코드 스타일 검증 | `backend/app/src/schemas/*.py`, `backend/app/src/crud/*.py`, `backend/app/src/routes/*.py` |
-| `verify-frontend-style` | 프론트엔드 API 호출 양식 검증 | `frontend/src/lib/apis/*.js` |
+| `verify-frontend-style` | 프론트엔드 코드 스타일 검증 | `frontend/src/**/*.svelte`, `frontend/src/**/*.ts`, `frontend/src/**/*.js` |
+| `verify-git-rules` | 커밋 및 브랜치 규칙 검증 | (전체 로컬 Git 변경 사항) |
 
 <!-- 스킬이 추가되면 아래 형식으로 등록:
 | 스킬 | 설명 | 커버 파일 패턴 |

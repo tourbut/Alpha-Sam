@@ -158,7 +158,6 @@
       {#each portfoliosWithAssets as portfolio (portfolio.id)}
         <PortfolioCard
           {portfolio}
-          isCurrent={portfolio.id === portfolioStore.selectedPortfolioId}
           ChartComponent={PortfolioPieChart}
           onclick={() => viewPortfolio(portfolio.id)}
           onManageClick={() => viewPortfolio(portfolio.id)}

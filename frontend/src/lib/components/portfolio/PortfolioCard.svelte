@@ -23,7 +23,6 @@
 
     let {
         portfolio,
-        isCurrent = false,
         ChartComponent = null,
         onclick,
         onManageClick,
@@ -31,7 +30,6 @@
         ondelete,
     }: {
         portfolio: PortfolioWithAssets;
-        isCurrent?: boolean;
         ChartComponent?: any;
         onclick?: () => void;
         onManageClick?: (e: MouseEvent) => void;
@@ -61,9 +59,6 @@
                 >
                     {portfolio.name}
                 </h3>
-                {#if isCurrent}
-                    <Badge color="blue" class="text-xs mt-1">Current</Badge>
-                {/if}
             </div>
         </div>
 

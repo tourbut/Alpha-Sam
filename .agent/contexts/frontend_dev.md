@@ -77,3 +77,13 @@
 - [2026-02-24 23:20:00] **Agent-Centric Interface 프론트엔드 작업 완료**.
   - **+layout.svelte**: `/agent/login` 경로일 경우 AppNavbar 및 Sidebar 등을 모두 배제하도록 조건 추가.
   - **/agent/login/+page.svelte**: 에이전트를 위한 시맨틱 HTML 기반 로그인 폼 구현. 인증 성공 시 raw JSON(API 스펙 포함)을 `<pre>` 태그로 반환하여 에이전트 토큰 낭비를 최소화함.
+
+- [2026-03-09 23:59:00] **포트폴리오 상세 페이지 기능 추가 완료**.
+  - **수량 0 종목 필터 체크박스**: `showZeroQuantity: $state(false)`, `filteredAssets: $derived` 적용. 체크박스 토글로 전량 매도 종목 표시 여부 제어.
+  - **Realized P/L 컬럼**: `AssetRow.realizedPl: number` 추가, `p.realized_pl ?? 0` 매핑. 양수(파란색), 음수(빨간색), 0(중립 회색) 색상 구분.
+  - TypeScript 검증: 0 errors.
+
+- [2026-03-12 23:32:21] **공통 테이블 컴포넌트(DataTable.svelte) 도입 및 리팩토링 완료**. 
+  - 포트폴리오 자산 목록과 거래 내역 UI에서 반복되던 테이블 마크업 및 정렬 로직을 `DataTable` 공용 컴포넌트로 분리 적용함.
+  - Svelte 5 Snippet 기능(`{#snippet customCell}`)을 활용하여 각 화면별 커스텀 셀 렌더링을 깔끔하게 처리.
+  - `npm run check` 타입 검증 0 errors 통과.

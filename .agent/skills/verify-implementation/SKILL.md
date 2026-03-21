@@ -30,7 +30,8 @@ argument-hint: "[선택사항: 특정 verify 스킬 이름]"
 | # | 스킬 | 설명 |
 |---|------|------|
 | 1 | `verify-backend-style` | 백엔드 코드 스타일 검증 (FastAPI + SQLModel) |
-| 2 | `verify-frontend-style` | 프론트엔드 API 호출 양식 검증 (Svelte + FastAPI Client) |
+| 2 | `verify-frontend-style` | 프론트엔드 코드 스타일 검증 (Svelte 5 + API) |
+| 3 | `verify-git-rules` | 커밋 및 브랜치 컨벤션 검증 |
 
 <!-- 스킬이 추가되면 아래 형식으로 등록:
 | # | 스킬 | 설명 |

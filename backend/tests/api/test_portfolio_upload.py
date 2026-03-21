@@ -199,3 +199,78 @@ async def test_upload_toss_portfolio_empty_parsing_result(
             assert "No transactions found" in response.json()["detail"]
 
     app.dependency_overrides = {}
+
+@pytest.mark.asyncio
+async def test_upload_toss_portfolio_merge_success(
+    test_session: AsyncSession
+):
+    # Setup test user and an existing portfolio
+    user = User(email="test_merge@example.com", username="test_merge", nickname="TestMerge", hashed_password="pw", is_active=True)
+    test_session.add(user)
+    await test_session.commit()
+    await test_session.refresh(user)
+
+    existing_portfolio = Portfolio(
+        owner_id=user.id,
+        name="Existing Portfolio",
+        description="A portfolio manually created"
+    )
+    test_session.add(existing_portfolio)
+    await test_session.commit()
+    await test_session.refresh(existing_portfolio)
+
+    async def get_current_user_override():
+        return user
+
+    async def get_session_override():
+        yield test_session
+
+    app.dependency_overrides[get_session] = get_session_override
+    app.dependency_overrides[get_current_user] = get_current_user_override
+
+    with patch('app.src.services.parsers.toss.TossParser.parse', new_callable=AsyncMock) as mock_parse_pdf:
+        from app.src.schemas.transaction_common import CommonTransaction
+        from datetime import datetime
+        mock_parse_pdf.return_value = [
+            CommonTransaction(
+                date=datetime(2026, 1, 15),
+                type="BUY",
+                name="애플",
+                ticker="AAPL",
+                quantity=5.0,
+                price=150.0,
+                currency="USD",
+                fee=0.0
+            )
+        ]
+        
+        file_content = b"dummy pdf content"
+        files = {"file": ("test_toss.pdf", file_content, "application/pdf")}
+        
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            response = await ac.post(
+                f"/api/v1/portfolios/upload/toss?portfolio_id={existing_portfolio.id}",
+                files=files
+            )
+            
+            assert response.status_code == 201
+            data = response.json()
+            assert data["message"] == "Successfully added 1 transactions to portfolio."
+            assert data["transaction_count"] == 1
+            assert data["portfolio_id"] == str(existing_portfolio.id)
+            
+            # Verify DB records
+            from sqlalchemy import select
+            
+            # Asset should be associated with the existing portfolio
+            result = await test_session.execute(select(Asset).where(Asset.portfolio_id == existing_portfolio.id))
+            assets = result.scalars().all()
+            assert len(assets) == 1
+            assert assets[0].symbol == "AAPL"
+            
+            # Transaction should be associated with the existing portfolio
+            result = await test_session.execute(select(Transaction).where(Transaction.portfolio_id == existing_portfolio.id))
+            transactions = result.scalars().all()
+            assert len(transactions) == 1
+
+    app.dependency_overrides = {}

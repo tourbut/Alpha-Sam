@@ -43,7 +43,31 @@ async def update_transaction(
     """
     거래 내역 수정
     """
-    tx = await crud_transaction.update_transaction(session=session, transaction_id=transaction_id, transaction_in=transaction_in, owner_id=current_user.id)
+    tx = await crud_transaction.update_transaction(
+        session=session,
+        transaction_id=transaction_id,
+        transaction_in=transaction_in,
+        owner_id=current_user.id,
+    )
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found or access denied")
     return tx
+
+
+@router.delete("/{transaction_id}", status_code=204)
+async def delete_transaction(
+    transaction_id: uuid.UUID,
+    session: SessionDep_async,
+    current_user: CurrentUser
+):
+    """
+    거래 내역 삭제
+    """
+    success = await crud_transaction.delete_transaction(
+        session=session, transaction_id=transaction_id, owner_id=current_user.id
+    )
+    if not success:
+        raise HTTPException(
+            status_code=404, detail="Transaction not found or access denied"
+        )
+    return None

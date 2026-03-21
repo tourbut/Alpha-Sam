@@ -14,7 +14,6 @@
   import { Button, Card, Spinner } from "flowbite-svelte";
   import { Plus, Wallet, AlertCircle, FileText } from "lucide-svelte";
   import CreatePortfolioModal from "$lib/components/portfolio/CreatePortfolioModal.svelte";
-  import TransactionUploadModal from "$lib/components/portfolio/TransactionUploadModal.svelte";
   import PortfolioCard from "$lib/components/portfolio/PortfolioCard.svelte";
   import { goto } from "$app/navigation";
   import type { PortfolioWithAssets } from "$lib/types";
@@ -25,7 +24,6 @@
   let PortfolioPieChart: any = $state(null);
 
   let openCreateModal = $state(false);
-  let openUploadModal = $state(false);
   let editingPortfolio = $state<PortfolioWithAssets | null>(null);
   let portfoliosWithAssets = $state<PortfolioWithAssets[]>([]);
   let isLoading = $state(true);
@@ -97,10 +95,6 @@
     editingPortfolio = null;
     openCreateModal = true;
   }
-
-  function openUploadDialog() {
-    openUploadModal = true;
-  }
 </script>
 
 <svelte:head>
@@ -121,10 +115,6 @@
       </p>
     </div>
     <div class="flex items-center gap-3">
-      <Button color="alternative" size="sm" onclick={openUploadDialog}>
-        <FileText class="w-4 h-4 mr-2" />
-        포트폴리오 업로드
-      </Button>
       <Button class="btn-primary" size="sm" onclick={openCreateDialog}>
         <Plus class="w-4 h-4 mr-2" />
         Create Portfolio
@@ -168,7 +158,6 @@
       {#each portfoliosWithAssets as portfolio (portfolio.id)}
         <PortfolioCard
           {portfolio}
-          isCurrent={portfolio.id === portfolioStore.selectedPortfolioId}
           ChartComponent={PortfolioPieChart}
           onclick={() => viewPortfolio(portfolio.id)}
           onManageClick={() => viewPortfolio(portfolio.id)}
@@ -213,9 +202,4 @@
   bind:open={openCreateModal}
   oncreated={handlePortfolioCreated}
   initialData={editingPortfolio}
-/>
-
-<TransactionUploadModal
-  bind:open={openUploadModal}
-  onuploaded={handlePortfolioCreated}
 />

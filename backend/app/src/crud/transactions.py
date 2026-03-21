@@ -155,3 +155,34 @@ async def update_transaction(
         print(e)
         await session.rollback()
         raise e
+
+
+async def delete_transaction(
+    *, session: AsyncSession, transaction_id: uuid.UUID, owner_id: uuid.UUID
+) -> bool:
+    """
+    거래 내역 삭제
+    - Transaction 존재 확인 및 소유권 검증 후 삭제
+    """
+    try:
+        stmt = (
+            select(Transaction)
+            .options(selectinload(Transaction.portfolio))
+            .where(Transaction.id == transaction_id)
+        )
+        result = await session.execute(stmt)
+        transaction = result.scalar_one_or_none()
+
+        if not transaction:
+            return False
+
+        if not transaction.portfolio or transaction.portfolio.owner_id != owner_id:
+            return False
+
+        await session.delete(transaction)
+        await session.commit()
+        return True
+    except Exception as e:
+        print(e)
+        await session.rollback()
+        raise e

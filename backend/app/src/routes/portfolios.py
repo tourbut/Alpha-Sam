@@ -1,3 +1,4 @@
+from typing import Any
 from typing import List, Optional
 import uuid
 from datetime import datetime
@@ -20,7 +21,7 @@ from fastapi import UploadFile, File
 router = APIRouter(tags=["portfolios"])
 
 @router.post("", response_model=PortfolioRead, status_code=status.HTTP_201_CREATED)
-async def create_portfolio(
+async def create_portfolio(*, 
     portfolio_in: PortfolioCreate,
     current_user: CurrentUser,
     db: SessionDep_async
@@ -35,8 +36,8 @@ async def create_portfolio(
         description=portfolio_in.description
     )
 
-@router.post("/upload/{provider}", status_code=status.HTTP_201_CREATED)
-async def upload_portfolio(
+@router.post("/upload/{provider}", status_code=status.HTTP_201_CREATED, response_model=Any)
+async def upload_portfolio(*, 
     provider: str,
     current_user: CurrentUser,
     db: SessionDep_async,
@@ -128,7 +129,7 @@ async def upload_portfolio(
     return {"message": f"Successfully added {added_count} transactions to portfolio.", "portfolio_id": portfolio.id, "transaction_count": added_count}
 
 @router.get("", response_model=List[PortfolioRead])
-async def read_portfolios(
+async def read_portfolios(*, 
     current_user: CurrentUser,
     db: SessionDep_async
 ):
@@ -138,7 +139,7 @@ async def read_portfolios(
     return await crud_portfolio.get_user_portfolios(session=db, owner_id=current_user.id)
 
 @router.get("/with-assets", response_model=List[PortfolioWithAssetsSummary])
-async def read_portfolios_with_assets(
+async def read_portfolios_with_assets(*, 
     current_user: CurrentUser,
     db: SessionDep_async
 ):
@@ -148,7 +149,7 @@ async def read_portfolios_with_assets(
     return await PortfolioService.get_portfolios_with_assets(session=db, user_id=current_user.id)
 
 @router.get("/summary", response_model=PortfolioResponse)
-async def get_portfolio_summary(
+async def get_portfolio_summary(*, 
     session: SessionDep_async,
     current_user: CurrentUser,
     portfolio_id: Optional[uuid.UUID] = None
@@ -159,7 +160,7 @@ async def get_portfolio_summary(
     return await PortfolioService.get_summary(session, current_user.id, portfolio_id)
 
 @router.get("/{portfolio_id}", response_model=PortfolioRead)
-async def read_portfolio(
+async def read_portfolio(*, 
     portfolio_id: uuid.UUID,
     current_user: CurrentUser,
     db: SessionDep_async
@@ -177,7 +178,7 @@ async def read_portfolio(
     return portfolio
 
 @router.get("/{portfolio_id}/positions", response_model=List[PositionWithAsset])
-async def read_portfolio_positions(
+async def read_portfolio_positions(*, 
     portfolio_id: uuid.UUID,
     current_user: CurrentUser,
     db: SessionDep_async
@@ -193,7 +194,7 @@ async def read_portfolio_positions(
     return await PortfolioService.get_positions(session=db, portfolio_id=portfolio_id)
 
 @router.patch("/{portfolio_id}/visibility", response_model=PortfolioRead)
-async def update_portfolio_visibility(
+async def update_portfolio_visibility(*, 
     portfolio_id: uuid.UUID,
     visibility_in: PortfolioVisibilityUpdate,
     current_user: CurrentUser,
@@ -211,7 +212,7 @@ async def update_portfolio_visibility(
     return updated_portfolio
 
 @router.get("/shared/{token}", response_model=PortfolioSharedRead)
-async def read_shared_portfolio(
+async def read_shared_portfolio(*, 
     token: uuid.UUID,
     db: SessionDep_async
 ):
@@ -224,7 +225,7 @@ async def read_shared_portfolio(
     return portfolio_shared
 
 @router.post("/{portfolio_id}/transactions", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
-async def create_transaction(
+async def create_transaction(*, 
     portfolio_id: uuid.UUID,
     tx_in: TransactionCreate,
     current_user: CurrentUser,
@@ -244,7 +245,7 @@ async def create_transaction(
     )
 
 @router.get("/{portfolio_id}/assets/{asset_id}", response_model=AssetSummaryRead)
-async def read_portfolio_asset_summary(
+async def read_portfolio_asset_summary(*, 
     portfolio_id: uuid.UUID,
     asset_id: uuid.UUID,
     current_user: CurrentUser,
@@ -285,7 +286,7 @@ async def read_portfolio_asset_summary(
     )
 
 @router.get("/{portfolio_id}/assets/{asset_id}/transactions", response_model=List[TransactionWithDetails])
-async def read_asset_transactions(
+async def read_asset_transactions(*, 
     portfolio_id: uuid.UUID,
     asset_id: uuid.UUID,
     current_user: CurrentUser,
@@ -325,7 +326,7 @@ async def read_asset_transactions(
     return tx_list
 
 @router.put("/{portfolio_id}", response_model=PortfolioRead)
-async def update_portfolio(
+async def update_portfolio(*, 
     portfolio_id: uuid.UUID,
     portfolio_in: PortfolioUpdate,
     current_user: CurrentUser,
@@ -342,7 +343,7 @@ async def update_portfolio(
     return updated_portfolio
 
 @router.delete("/{portfolio_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_portfolio(
+async def delete_portfolio(*, 
     portfolio_id: uuid.UUID,
     current_user: CurrentUser,
     db: SessionDep_async

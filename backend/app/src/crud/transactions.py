@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 import uuid
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -57,7 +61,7 @@ async def create_transaction(*, session: AsyncSession, transaction_in: Transacti
         await session.rollback()
         raise he
     except Exception as e:
-        print(e)
+        logger.exception(e)
         await session.rollback()
         raise e
 
@@ -99,7 +103,8 @@ async def get_transactions(
         result = await session.execute(stmt)
         return result.scalars().all()
     except Exception as e:
-        print(e)
+        logger.exception(e)
+        await session.rollback()
         raise e
 
 
@@ -120,7 +125,8 @@ async def get_recent_transactions(
         result = await session.execute(stmt)
         return result.scalars().all()
     except Exception as e:
-        print(e)
+        logger.exception(e)
+        await session.rollback()
         raise e
 
 async def update_transaction(
@@ -152,7 +158,7 @@ async def update_transaction(
         await session.refresh(transaction)
         return transaction
     except Exception as e:
-        print(e)
+        logger.exception(e)
         await session.rollback()
         raise e
 
@@ -183,6 +189,6 @@ async def delete_transaction(
         await session.commit()
         return True
     except Exception as e:
-        print(e)
+        logger.exception(e)
         await session.rollback()
         raise e

@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 import uuid
 from typing import List, Optional, Tuple
 from datetime import datetime
@@ -33,7 +37,8 @@ async def get_assets(
             
         return assets
     except Exception as e:
-        print(e)
+        logger.exception(e)
+        await session.rollback()
         raise e
 
 async def get_asset_by_symbol(*, session: AsyncSession, symbol: str, owner_id: Optional[uuid.UUID] = None, portfolio_id: Optional[uuid.UUID] = None) -> Optional[Asset]:
@@ -52,14 +57,16 @@ async def get_asset_by_symbol(*, session: AsyncSession, symbol: str, owner_id: O
         # Use first() to avoid MultipleResultsFound error if data integrity was compromised or concurrent creates happen
         return result.scalars().first()
     except Exception as e:
-        print(e)
+        logger.exception(e)
+        await session.rollback()
         raise e
 
 async def get_asset(*, session: AsyncSession, asset_id: uuid.UUID) -> Optional[Asset]:
     try:
         return await session.get(Asset, asset_id)
     except Exception as e:
-        print(e)
+        logger.exception(e)
+        await session.rollback()
         raise e
 
 async def create_asset(*, session: AsyncSession, obj_in: AssetCreate) -> Asset:
@@ -70,7 +77,7 @@ async def create_asset(*, session: AsyncSession, obj_in: AssetCreate) -> Asset:
         await session.refresh(db_obj)
         return db_obj
     except Exception as e:
-        print(e)
+        logger.exception(e)
         await session.rollback()
         raise e
 
@@ -82,7 +89,7 @@ async def remove_asset(*, session: AsyncSession, asset_id: uuid.UUID) -> Optiona
             await session.commit()
         return obj
     except Exception as e:
-        print(e)
+        logger.exception(e)
         await session.rollback()
         raise e
 
@@ -99,7 +106,8 @@ async def get_recent_assets(
         result = await session.execute(stmt)
         return result.scalars().all()
     except Exception as e:
-        print(e)
+        logger.exception(e)
+        await session.rollback()
         raise e
 
 async def update_asset(
@@ -119,6 +127,6 @@ async def update_asset(
         await session.refresh(asset)
         return asset
     except Exception as e:
-        print(e)
+        logger.exception(e)
         await session.rollback()
         raise e

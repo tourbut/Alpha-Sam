@@ -68,8 +68,8 @@ AGENT_API_DOCS = [
     }
 ]
 
-@router.post("/login")
-async def login_agent(
+@router.post("/login", response_model=Any)
+async def login_agent(*, 
     session: SessionDep_async,
     form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
@@ -91,7 +91,7 @@ async def login_agent(
         "api_docs": AGENT_API_DOCS
     }
 
-@router.get("/docs")
+@router.get("/docs", response_model=Any)
 async def get_agent_docs() -> Any:
     """
     Get the API specifications for Agents.

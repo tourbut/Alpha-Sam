@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import List, Optional
 import uuid
 from sqlmodel import select, desc
@@ -18,7 +22,7 @@ async def create_portfolio(
         await session.refresh(portfolio)
         return portfolio
     except Exception as e:
-        print(e)
+        logger.exception(e)
         await session.rollback()
         raise e
 
@@ -77,7 +81,7 @@ async def update_visibility(
         await session.refresh(portfolio)
         return portfolio
     except Exception as e:
-        print(e)
+        logger.exception(e)
         await session.rollback()
         raise e
 
@@ -127,6 +131,6 @@ async def delete_portfolio(
         await session.commit()
         return True
     except Exception as e:
-        print(e)
+        logger.exception(e)
         await session.rollback()
         raise e

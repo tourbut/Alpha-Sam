@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,7 +12,7 @@ from app.src.deps import SessionDep_async, CurrentUser
 router = APIRouter()
 
 @router.get("/me", response_model=UserRead)
-async def read_user_me(
+async def read_user_me(*, 
     current_user: CurrentUser
 ):
     """
@@ -19,7 +21,7 @@ async def read_user_me(
     return current_user
 
 @router.put("/me", response_model=UserRead)
-async def update_user_me(
+async def update_user_me(*, 
     user_in: UserUpdate,
     session: SessionDep_async,
     current_user: CurrentUser
@@ -30,8 +32,8 @@ async def update_user_me(
     user = await crud_user.update_user(session=session, db_user=current_user, obj_in=user_in)
     return user
 
-@router.post("/password", status_code=status.HTTP_200_OK)
-async def update_password(
+@router.post("/password", status_code=status.HTTP_200_OK, response_model=Any)
+async def update_password(*, 
     password_in: UserPasswordUpdate,
     session: SessionDep_async,
     current_user: CurrentUser

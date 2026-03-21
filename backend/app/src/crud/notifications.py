@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 import uuid
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,7 +18,8 @@ async def get_notification_settings(*, session: AsyncSession, user_id: uuid.UUID
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
     except Exception as e:
-        print(e)
+        logger.exception(e)
+        await session.rollback()
         raise e
 
 async def create_default_notification_settings(*, session: AsyncSession, user_id: uuid.UUID) -> NotificationSettings:
@@ -28,7 +33,7 @@ async def create_default_notification_settings(*, session: AsyncSession, user_id
         await session.refresh(settings)
         return settings
     except Exception as e:
-        print(e)
+        logger.exception(e)
         await session.rollback()
         raise e
 
@@ -56,6 +61,6 @@ async def update_notification_settings(
         await session.refresh(settings)
         return settings
     except Exception as e:
-        print(e)
+        logger.exception(e)
         await session.rollback()
         raise e

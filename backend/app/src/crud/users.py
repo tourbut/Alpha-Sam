@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 import uuid
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +15,8 @@ async def get_user(*, session: AsyncSession, user_id: uuid.UUID) -> Optional[Use
     try:
         return await session.get(User, user_id)
     except Exception as e:
-        print(e)
+        logger.exception(e)
+        await session.rollback()
         raise e
 
 async def get_user_by_email(*, session: AsyncSession, email: str) -> Optional[User]:
@@ -20,7 +25,8 @@ async def get_user_by_email(*, session: AsyncSession, email: str) -> Optional[Us
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
     except Exception as e:
-        print(e)
+        logger.exception(e)
+        await session.rollback()
         raise e
 
 async def create_user(*, session: AsyncSession, obj_in: UserCreate) -> User:
@@ -35,7 +41,7 @@ async def create_user(*, session: AsyncSession, obj_in: UserCreate) -> User:
         await session.refresh(db_obj)
         return db_obj
     except Exception as e:
-        print(e)
+        logger.exception(e)
         await session.rollback()
         raise e
 
@@ -50,7 +56,7 @@ async def update_user(*, session: AsyncSession, db_user: User, obj_in: UserUpdat
         await session.refresh(db_user)
         return db_user
     except Exception as e:
-        print(e)
+        logger.exception(e)
         await session.rollback()
         raise e
 
@@ -74,7 +80,7 @@ async def update_user_password(*, session: AsyncSession, db_user: User, password
         await session.refresh(db_user)
         return db_user
     except Exception as e:
-        print(e)
+        logger.exception(e)
         await session.rollback()
         raise e
 
@@ -88,5 +94,6 @@ async def authenticate(*, session: AsyncSession, email: str, password: str) -> O
             return None
         return user
     except Exception as e:
-        print(e)
+        logger.exception(e)
+        await session.rollback()
         raise e

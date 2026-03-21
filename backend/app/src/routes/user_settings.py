@@ -12,7 +12,7 @@ from app.src.deps import SessionDep_async, CurrentUser
 router = APIRouter()
 
 @router.get("/me/settings", response_model=NotificationSettingsRead)
-async def get_my_settings(
+async def get_my_settings(*, 
     session: SessionDep_async,
     current_user: CurrentUser
 ):
@@ -26,7 +26,7 @@ async def get_my_settings(
     return settings
 
 @router.post("/me/settings", response_model=NotificationSettingsRead)
-async def update_my_settings(
+async def update_my_settings(*, 
     settings_in: NotificationSettingsUpdate,
     session: SessionDep_async,
     current_user: CurrentUser

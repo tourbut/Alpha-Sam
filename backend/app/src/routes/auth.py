@@ -12,7 +12,7 @@ from app.src.deps import SessionDep_async, CurrentUser
 router = APIRouter()
 
 @router.post("/signup", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-async def signup(
+async def signup(*, 
     user_in: UserCreate,
     session: SessionDep_async
 ) -> Any:
@@ -30,7 +30,7 @@ async def signup(
     return user
 
 @router.post("/login", response_model=Token)
-async def login(
+async def login(*, 
     session: SessionDep_async,
     form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
@@ -51,7 +51,7 @@ async def login(
     }
 
 @router.get("/me", response_model=UserRead)
-async def read_users_me(
+async def read_users_me(*, 
     current_user: CurrentUser,
 ) -> Any:
     """

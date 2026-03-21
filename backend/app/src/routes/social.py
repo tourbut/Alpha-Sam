@@ -1,3 +1,4 @@
+from typing import Any
 from typing import List, Any
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -15,7 +16,7 @@ from app.src.services.leaderboard_service import leaderboard_service
 router = APIRouter()
 
 @router.get("/leaderboard", response_model=List[LeaderboardEntry])
-async def get_leaderboard(
+async def get_leaderboard(*, 
     session: SessionDep_async,
     n: int = 10
 ) -> Any:
@@ -67,8 +68,8 @@ async def get_leaderboard(
     
     return leaderboard
 
-@router.post("/leaderboard/calculate", status_code=status.HTTP_202_ACCEPTED)
-async def calculate_leaderboard_manually(
+@router.post("/leaderboard/calculate", status_code=status.HTTP_202_ACCEPTED, response_model=Any)
+async def calculate_leaderboard_manually(*, 
     session: SessionDep_async,
     # Admin only check in real app
 ):
@@ -79,7 +80,7 @@ async def calculate_leaderboard_manually(
     return {"message": "Leaderboard calculation triggered", "updated_count": count}
 
 @router.post("/follow/{target_id}", response_model=FollowerResponse, status_code=status.HTTP_201_CREATED)
-async def follow_user(
+async def follow_user(*, 
     target_id: uuid.UUID,
     session: SessionDep_async,
     current_user: CurrentUser
@@ -105,7 +106,7 @@ async def follow_user(
         raise HTTPException(status_code=400, detail="Already following this user")
 
 @router.delete("/follow/{target_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def unfollow_user(
+async def unfollow_user(*, 
     target_id: uuid.UUID,
     session: SessionDep_async,
     current_user: CurrentUser
@@ -124,7 +125,7 @@ async def unfollow_user(
         raise HTTPException(status_code=404, detail="Follow relationship not found")
 
 @router.get("/users/{user_id}/followers", response_model=FollowListResponse)
-async def get_followers(
+async def get_followers(*, 
     user_id: uuid.UUID,
     session: SessionDep_async,
     skip: int = 0, 
@@ -154,7 +155,7 @@ async def get_followers(
     )
 
 @router.get("/users/{user_id}/following", response_model=FollowListResponse)
-async def get_following(
+async def get_following(*, 
     user_id: uuid.UUID,
     session: SessionDep_async,
     skip: int = 0, 

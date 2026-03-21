@@ -19,7 +19,7 @@ async def check_portfolio_ownership(session: AsyncSession, portfolio_id: uuid.UU
     return portfolio
 
 @router.get("/portfolio/{portfolio_id}/allocation", response_model=List[AssetAllocationResponse])
-async def get_allocation(
+async def get_allocation(*, 
     portfolio_id: uuid.UUID,
     session: SessionDep_async,
     current_user: CurrentUser
@@ -32,7 +32,7 @@ async def get_allocation(
     return allocations
 
 @router.get("/portfolio/{portfolio_id}/history", response_model=List[PortfolioHistoryResponse])
-async def get_history(
+async def get_history(*, 
     portfolio_id: uuid.UUID,
     session: SessionDep_async,
     current_user: CurrentUser,
@@ -46,7 +46,7 @@ async def get_history(
     return history
 
 @router.get("/portfolios/allocation", response_model=List[AssetAllocationResponse])
-async def get_portfolios_allocation(
+async def get_portfolios_allocation(*, 
     session: SessionDep_async,
     current_user: CurrentUser
 ):
@@ -57,7 +57,7 @@ async def get_portfolios_allocation(
     return allocations
 
 @router.get("/portfolios/history", response_model=List[PortfolioHistoryResponse])
-async def get_portfolios_history(
+async def get_portfolios_history(*, 
     session: SessionDep_async,
     current_user: CurrentUser,
     range: str = Query("1M", regex="^(1W|1M|1Y|YTD|ALL)$")

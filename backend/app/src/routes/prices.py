@@ -10,8 +10,8 @@ from app.src.deps import SessionDep_async
 
 router = APIRouter()
 
-@router.post("/refresh", status_code=status.HTTP_200_OK)
-async def refresh_prices(
+@router.post("/refresh", status_code=status.HTTP_200_OK, response_model=Dict[str, int])
+async def refresh_prices(*, 
     session: SessionDep_async
 ) -> Dict[str, int]:
     """

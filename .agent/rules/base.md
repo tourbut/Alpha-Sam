@@ -1,9 +1,19 @@
----
-trigger: always_on
----
+# Agent Base Rules
 
-# Antigravity Agent Rules
+본 문서는 프로젝트 디렉토리 구조와 에이전트 기본 작업 원칙을 정의합니다. **가장 중요한 핵심 원칙은 모든 행동과 응답에서 토큰 낭비를 최소화하는 것입니다.**
 
-1. **Language**: Always respond in Korean (한국어). Even if the user asks in English or the context is technical, provide explanations in Korean unless explicitly requested otherwise.
-2. **Tasks & Plans**: Always write the 'Implementation Plan' and 'Walkthrough' steps in Korean.
-3. **Code Comments**: Always write code comments in Korean.
+## 1. 프로젝트 디렉토리 구조
+- `backend/`: 백엔드 소스 코드 (FastAPI 등)
+- `frontend/`: 프론트엔드 소스 코드 (Svelte 등)
+- `tester/`: 통합 테스트 코드
+- `.agent/`: 에이전트 작업 공간
+  - `rules/`: 에이전트 행동 지침 및 원칙 (`base.md`, `git-rules.md` 등)
+  - `workflows/`: 각 역할(Role)의 수행 절차
+  - `handovers/`: 코디네이터가 할당한 Task 큐(`to_*.md`) 및 완료 로그(`logs/`)
+  - `project/`: **프로젝트의 구체적인 내용(목적, 아키텍처, 스택 등)이 포함된 곳 (상세 내용은 반드시 이 폴더 참조)**
+
+## 2. 핵심 작업 원칙
+- **토큰 절약**: 모든 도구 사용, 코드 작성, 그리고 문서 기록은 간결하고 명확하게 유지하여 토큰 낭비를 최소화합니다.
+- **상세 정보 확인**: 프로젝트 아키텍처나 기능 명세는 본 문서에 싣지 않으며, 반드시 `.agent/project/` 폴더 내의 산출물(`context.md`, `system_architecture.md` 등)을 참고합니다.
+- **역할 한정**: `.agent/workflows/`에 지정된 역할의 책임만 수행하며, `.agent/handovers/` 에 할당된 명시적 작업 단위로만 움직입니다.
+- **비동기 이관**: 완료한 작업 지시사항은 즉시 `.agent/handovers/logs/` 디렉토리에 백업하고 기존 큐를 비웁니다.

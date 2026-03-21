@@ -10,7 +10,7 @@ from app.src.crud import transactions as crud_transaction
 router = APIRouter(tags=["dashboard"])
 
 @router.get("/activities", response_model=List[ActivityItem])
-async def get_recent_activities(
+async def get_recent_activities(*, 
     current_user: CurrentUser,
     db: SessionDep_async
 ):

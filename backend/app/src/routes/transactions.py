@@ -1,3 +1,4 @@
+from typing import Any
 import uuid
 from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, HTTPException
@@ -9,7 +10,7 @@ from app.src.deps import SessionDep_async, CurrentUser
 router = APIRouter()
 
 @router.post("", response_model=TransactionRead)
-async def create_transaction(
+async def create_transaction(*, 
     transaction_in: TransactionCreate,
     session: SessionDep_async,
     current_user: CurrentUser
@@ -21,7 +22,7 @@ async def create_transaction(
     return await TransactionService.create_transaction(session, transaction_in.dict())
 
 @router.get("", response_model=List[TransactionRead])
-async def read_transactions(
+async def read_transactions(*, 
     session: SessionDep_async,
     current_user: CurrentUser,
     skip: int = 0,
@@ -34,7 +35,7 @@ async def read_transactions(
     return await crud_transaction.get_transactions(session=session, owner_id=current_user.id, skip=skip, limit=limit, asset_id=asset_id)
 
 @router.put("/{transaction_id}", response_model=TransactionRead)
-async def update_transaction(
+async def update_transaction(*, 
     transaction_id: uuid.UUID,
     transaction_in: TransactionUpdate,
     session: SessionDep_async,
@@ -55,7 +56,7 @@ async def update_transaction(
 
 
 @router.delete("/{transaction_id}", status_code=204)
-async def delete_transaction(
+async def delete_transaction(*, 
     transaction_id: uuid.UUID,
     session: SessionDep_async,
     current_user: CurrentUser

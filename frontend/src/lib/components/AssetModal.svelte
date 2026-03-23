@@ -10,19 +10,23 @@
     } from "flowbite-svelte";
     import { PlusOutline, RefreshOutline } from "flowbite-svelte-icons";
     import { create_asset as createAsset } from "$lib/apis/assets";
-    import { createEventDispatcher } from "svelte";
 
     // portfolioId를 optional로 변경 (레이아웃에서 전역적으로 사용될 수 있음)
-    export let open = false;
-    export let portfolioId: string | undefined = undefined;
+    let { 
+        open = $bindable(false), 
+        portfolioId,
+        oncreated
+    }: { 
+        open?: boolean;
+        portfolioId?: string;
+        oncreated?: () => void;
+    } = $props();
 
-    const dispatch = createEventDispatcher();
-
-    let symbol = "";
-    let name = "";
-    let category = "";
-    let loading = false;
-    let error: string | null = null;
+    let symbol = $state("");
+    let name = $state("");
+    let category = $state("");
+    let loading = $state(false);
+    let error = $state<string | null>(null);
 
     const categories = [
         { value: "Stock", name: "Stock" },
@@ -48,7 +52,7 @@
                 category,
                 portfolio_id: portfolioId,
             });
-            dispatch("created");
+            if (oncreated) oncreated();
             open = false;
             resetForm();
         } catch (e: any) {
@@ -76,7 +80,7 @@
     closeBtnClass="hidden"
 >
     <form
-        on:submit|preventDefault={handleSubmit}
+        onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}
         class="flex flex-col space-y-4"
     >
         <div>

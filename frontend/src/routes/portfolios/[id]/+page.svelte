@@ -250,7 +250,7 @@
   {/if}
 </div>
 
-<AssetModal bind:open={openAssetModal} {portfolioId} on:created={loadAssets} />
+<AssetModal bind:open={openAssetModal} {portfolioId} oncreated={loadAssets} />
 
 <TransactionUploadModal
   bind:open={openUploadModal}

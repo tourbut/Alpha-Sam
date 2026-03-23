@@ -2,7 +2,6 @@
   import "../app.css";
   import AppNavbar from "$lib/components/common/AppNavbar.svelte";
   import Footer from "$lib/components/Footer.svelte";
-  import AssetModal from "$lib/components/AssetModal.svelte";
   import { onMount } from "svelte";
   import { auth } from "$lib/stores/auth.svelte";
   import ChatWidget from "$lib/components/chat/ChatWidget.svelte";
@@ -15,8 +14,6 @@
   } from "flowbite-svelte-icons";
 
   let { children } = $props();
-
-  let openAssetModal = $state(false);
 
   // 사이드바 네비게이션 아이템 (전역 적용)
   const navItems = [

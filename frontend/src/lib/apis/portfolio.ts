@@ -83,27 +83,14 @@ export const updatePortfolio = async (id: string, data: PortfolioCreate): Promis
     return await _updatePortfolio({ id, ...data });
 }
 
-import { API_URL } from '$lib/constants';
-import { auth } from '$lib/stores/auth.svelte';
+const _uploadPortfolio = api_router('portfolios', 'post', 'upload/{provider}');
 
 export const uploadPortfolio = async (provider: string, formData: FormData, portfolioId?: string): Promise<{ message: string, transaction_count: number, portfolio_id: string }> => {
-    let url = `${API_URL}/portfolios/upload/${provider}`;
     if (portfolioId) {
-        url += `?portfolio_id=${portfolioId}`;
+        formData.append('portfolio_id', portfolioId);
     }
-    const headers: HeadersInit = {};
-    if (auth.token) {
-        headers['Authorization'] = `Bearer ${auth.token}`;
-    }
-    const response = await fetch(url, { method: 'POST', headers, body: formData });
-    if (!response.ok) {
-        const errorText = await response.text();
-        let detail = errorText;
-        try { detail = JSON.parse(errorText).detail || errorText; } catch (e) { }
-        if (typeof detail === 'object') detail = JSON.stringify(detail);
-        throw new Error(detail);
-    }
-    return await response.json();
+    formData.append('provider', provider);
+    return await _uploadPortfolio(formData);
 }
 
 // 포트폴리오 목록 + 자산 요약 정보 조회

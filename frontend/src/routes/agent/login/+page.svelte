@@ -1,5 +1,7 @@
 <script lang="ts">
     import { API_URL } from "$lib/constants";
+    import { api_router } from "$lib/fastapi";
+    import { auth } from "$lib/stores/auth.svelte";
 
     let result = $state("");
     let error = $state("");
@@ -23,23 +25,12 @@
         }
 
         try {
-            const response = await fetch(`${API_URL}/agent/login`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: urlEncodedData,
-            });
+            const _agentLogin = api_router('agent', 'login', '');
+            const data = await _agentLogin(Object.fromEntries(formData));
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                error = errorData.detail || "Login failed";
-                result = "";
-                return;
-            }
-
-            const data = await response.json();
             accessToken = data.access_token;
+            auth.token = accessToken; // Set global token so api_router can pick it up
+
             // Only show the api_docs to keep it clean, drop token text from screen
             result = JSON.stringify(data.api_docs, null, 2);
             error = "";
@@ -55,39 +46,35 @@
         apiError = "";
 
         try {
-            const options: RequestInit = {
-                method: reqMethod,
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                },
-            };
-            if (
-                reqMethod !== "GET" &&
-                reqMethod !== "DELETE" &&
-                reqBody.trim() !== ""
-            ) {
-                (options.headers as Record<string, string>)["Content-Type"] =
-                    "application/json";
-                options.body = reqBody;
+            // Remove leading slash for api_router and construct router logic
+            const cleanUrl = reqUrl.startsWith("/") ? reqUrl.substring(1) : reqUrl;
+            // Split if URL contains path parameters or just use trailing as router and '' as endpoint
+            const test_api = api_router(cleanUrl, reqMethod.toLowerCase(), '');
+
+            let params = {};
+            if (reqMethod !== "GET" && reqMethod !== "DELETE" && reqBody.trim() !== "") {
+                try {
+                    params = JSON.parse(reqBody);
+                } catch (e) {
+                    apiError = "Invalid JSON format in body";
+                    apiResult = "";
+                    return;
+                }
+            } else if (reqMethod === "GET" && reqBody.trim() !== "") {
+                // If it's a GET, parse body as query params, which api_router converts automatically
+                try {
+                    params = JSON.parse(reqBody);
+                } catch (e) {
+                    // Ignore or warn
+                }
             }
 
-            // Ensure URL has leading slash for API_URL concatenation
-            const urlPath = reqUrl.startsWith("/") ? reqUrl : `/${reqUrl}`;
-
-            const res = await fetch(`${API_URL}${urlPath}`, options);
-            if (!res.ok) {
-                const errData = await res
-                    .json()
-                    .catch(() => ({ detail: res.statusText }));
-                apiError = JSON.stringify(errData, null, 2);
-                apiResult = "";
-                return;
-            }
-            if (res.status === 204) {
+            const data = await test_api(params);
+            
+            if (data === null) { // api_router returns null for 204 No Content
                 apiResult = "Success (204 No Content)";
                 return;
             }
-            const data = await res.json();
             apiResult = JSON.stringify(data, null, 2);
         } catch (err: any) {
             apiError = err.message;
